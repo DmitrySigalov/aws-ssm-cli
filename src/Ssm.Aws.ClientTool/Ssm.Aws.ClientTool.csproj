@@ -6,6 +6,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <AssemblyName>ssm-aws-cli</AssemblyName>
+        <RootNamespace>Ssm.Aws.ClientTool</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>

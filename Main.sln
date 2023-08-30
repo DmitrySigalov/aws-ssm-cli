@@ -2,7 +2,7 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{19983796-EB52-480F-86C9-B2B3D492DCD4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ssm.Aws.Cli", "src\Ssm.Aws.Cli\Ssm.Aws.Cli.csproj", "{62975C31-9219-4BE9-A715-CAB2B04773EA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ssm.Aws.ClientTool", "src\Ssm.Aws.ClientTool\Ssm.Aws.ClientTool.csproj", "{62975C31-9219-4BE9-A715-CAB2B04773EA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

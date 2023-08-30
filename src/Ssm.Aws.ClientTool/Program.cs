@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Ssm.Aws.ClientTool.Commands;
 
 var cts = new CancellationTokenSource();
 Console.CancelKeyPress += (s, e) =>
@@ -17,16 +18,29 @@ var configuration = new ConfigurationBuilder()
 
 var services = new ServiceCollection();
 
-services.AddSingleton<IConfiguration>(configuration);
+services
+    .AddLogging(builder =>
+    {
+        builder.ClearProviders();
+        builder.AddConsole();
+    })
+    .AddSingleton<IConfiguration>(configuration);
+
+services
+    .AddCliCommands();
 
 var provider = services.BuildServiceProvider();
 var logger = provider.GetRequiredService<ILogger<Program>>();
 
 try
 {
-    var relevantArgs = args.Where(arg => arg != "--debug").ToArray();
+    var commandName = args.FirstOrDefault();
 
-    throw new Exception("Test exception");
+    var cliHandler = provider
+        .GetRequiredService<CommandHandlerProvider>()
+        .Get(commandName);
+
+    await cliHandler.Handle(cts.Token);
 }
 catch (Exception e)
 {

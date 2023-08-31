@@ -5,7 +5,7 @@ namespace Ssm.Aws.ClientTool.Commands;
 
 public static class StartupExtensions
 {
-    public static IServiceCollection AddCliCommands(this IServiceCollection serviceCollection)
+    public static IServiceCollection AddCommandHandlers(this IServiceCollection serviceCollection)
     {
         serviceCollection
             .AddSingleton<CommandHandlerProvider>();

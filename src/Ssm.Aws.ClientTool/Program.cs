@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Ssm.Aws.ClientTool.Commands;
+using Ssm.Aws.ClientTool.UserSettings;
 
 var cts = new CancellationTokenSource();
 Console.CancelKeyPress += (s, e) =>
@@ -27,7 +28,8 @@ services
     .AddSingleton<IConfiguration>(configuration);
 
 services
-    .AddCliCommands();
+    .AddCommandHandlers()
+    .AddUserSettings();
 
 var provider = services.BuildServiceProvider();
 var logger = provider.GetRequiredService<ILogger<Program>>();

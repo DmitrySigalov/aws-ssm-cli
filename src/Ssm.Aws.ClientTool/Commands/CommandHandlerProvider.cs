@@ -4,7 +4,6 @@ namespace Ssm.Aws.ClientTool.Commands;
 
 public class CommandHandlerProvider
 {
-    private readonly IDictionary<string, ICommandHandler> _handlers;
     private readonly HelpCommandHandler _helpCommandHandler;
 
     public CommandHandlerProvider(IEnumerable<ICommandHandler> handlers)
@@ -13,21 +12,23 @@ public class CommandHandlerProvider
         
         _helpCommandHandler = new HelpCommandHandler(handlers);
         
-        _handlers = new [] { _helpCommandHandler } 
+        All = new [] { _helpCommandHandler } 
             .Union(handlers)
             .ToDictionary(h => h.Name, h => h);
     }
+    
+    public IDictionary<string, ICommandHandler> All { get; }
 
     public ICommandHandler Get(string? commandName)
     {
         if (string.IsNullOrEmpty(commandName))
         {
-            Console.WriteLine("Select command argument");
+            Console.WriteLine("Select command");
             
             return _helpCommandHandler;
         }
 
-        if (!_handlers.TryGetValue(commandName, out var handler))
+        if (!All.TryGetValue(commandName, out var handler))
         {
             Console.WriteLine("Invalid command argument");
             

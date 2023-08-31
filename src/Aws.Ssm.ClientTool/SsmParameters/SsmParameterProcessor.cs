@@ -5,12 +5,13 @@ namespace Aws.Ssm.ClientTool.SsmParameters;
 
 public class SsmParameterProcessor : DefaultParameterProcessor
 {
-    public const string SectionName = "ssm";
+    public static readonly string InternalConfigKeyDelimeter = Guid.NewGuid().ToString();
     
     public override string GetKey(Parameter parameter, string path)
     {
-        var resolvedKey = base.GetKey(parameter, path);
+        var resolvedKey = parameter.Name
+            .Replace(KeyDelimiter, InternalConfigKeyDelimeter);
         
-        return SectionName + KeyDelimiter + resolvedKey;
+        return resolvedKey;
     }
 }

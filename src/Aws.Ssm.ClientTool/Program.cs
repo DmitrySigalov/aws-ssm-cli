@@ -4,7 +4,6 @@ using Microsoft.Extensions.Logging;
 using Aws.Ssm.ClientTool.Commands;
 using Aws.Ssm.ClientTool.SsmParameters;
 using Aws.Ssm.ClientTool.UserSettings;
-using Aws.Ssm.ClientTool.Utils;
 
 var cts = new CancellationTokenSource();
 Console.CancelKeyPress += (s, e) =>
@@ -13,14 +12,10 @@ Console.CancelKeyPress += (s, e) =>
     e.Cancel = true;
 };
 
-var configurationBuilder = new ConfigurationBuilder()
+var configuration = new ConfigurationBuilder()
     //.SetBasePath(Directory.GetCurrentDirectory())
     .AddJsonFile("appsettings.json", false)
-    .AddAwsSsmConfiguration();
-
-var configuration = SpinnerUtils.Run(
-    configurationBuilder.Build,
-    "Connect to AWS System Manager and load parameters");
+    .Build();
 
 var services = new ServiceCollection();
 
@@ -34,8 +29,8 @@ services
 
 services
     .AddCommandHandlers()
-    .AddUserSettings()
-    .AddSsmParametersRepository();
+    .AddSingleton<UserSettingsRepository>()
+    .AddSingleton<SsmParametersRepository>();
 
 var serviceProvider = services.BuildServiceProvider();
 

@@ -6,9 +6,9 @@ public class UserSettingsRepository
     {
         var result = new UserSettingsDo();
 
-        result.Paths.Add("/db/mysql/main");
-        result.Paths.Add("/db/mysql/main-replica-stm");
-        result.Paths.Add("/message-broker/kafka/hermes");
+        result.Paths.Add("/db/error");
+        result.Paths.Add("/db/mysql");
+        result.Paths.Add("/message-broker/kafka");
         
         return result;
     }

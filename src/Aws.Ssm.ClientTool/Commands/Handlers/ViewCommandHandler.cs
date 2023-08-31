@@ -27,30 +27,43 @@ public class ViewCommandHandler : ICommandHandler
     {
         var userSettings = SpinnerUtils.Run(
             _userSettingsRepository.Load,
-            "Load user settings");
+            "Load configured user settings");
         
-        Console.WriteLine("Configured user settings:");
         Console.WriteLine("- Prefix: " + userSettings?.Prefix);
         Console.WriteLine("- Delimeter: " + userSettings?.Delimeter);
-        Console.WriteLine("- Paths: " + (userSettings?.Paths?.Count ?? 0) + " items");
 
         if (userSettings?.Paths?.Any() != true)
         {
+            Console.WriteLine("- Paths: not configured");
+
             return Task.CompletedTask;
         }
         
         var pathsToView = Prompt.MultiSelect(
             "Select paths to view",
-            userSettings.Paths,
-            defaultValues: userSettings.Paths);
+            userSettings.Paths);
 
         var ssmParameters = SpinnerUtils.Run(
-            () =>_ssmParametersRepository.GetDictionaryBy(pathsToView.ToHashSet()),
-            "Search ssm parameters by configured paths");
+            () => _ssmParametersRepository.GetDictionaryBy(pathsToView.ToHashSet()),
+            "Get parameters from AWS System Manager");
+
+        var invalidPaths = pathsToView
+            .Where(x => ssmParameters.Keys.All(key => !key.StartsWith(x)))
+            .ToList();
+        if (invalidPaths.Any())
+        {
+            Console.WriteLine("Invalid paths:");
+            invalidPaths.ForEach(x => Console.WriteLine($"- {x}"));
+        }
         
-        var table = new ConsoleTable("path", "status", "value");
+        var table = new ConsoleTable("path", "value");
+        table.Options.EnableCount = true;
+        foreach (var resolvedParameterValue in ssmParameters)
+        {
+            table.AddRow(resolvedParameterValue.Key, resolvedParameterValue.Value);
+        }
+        table.Write(Format.Minimal);
         
-        table.Write();
         Console.WriteLine();
 
         return Task.CompletedTask;

@@ -4,6 +4,19 @@ namespace Aws.Ssm.ClientTool.Utils;
 
 public static class SpinnerUtils
 {
+    public static void Run<TResult>(
+        Action callback,
+        string text)
+    {
+        Run(
+            () =>
+            {
+                callback();
+                return true;
+            },
+            text);
+    }
+
     public static TResult Run<TResult>(
         Func<TResult> callback,
         string text)

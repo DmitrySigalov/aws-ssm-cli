@@ -4,44 +4,35 @@ namespace Aws.Ssm.ClientTool.SsmParameters;
 
 public class SsmParametersRepository
 {
-    private readonly IConfiguration _configuration;
-    
-    public SsmParametersRepository(IConfiguration configuration)
-    {
-        _configuration = configuration;
-    }
-    
     public IDictionary<string, string> GetDictionaryBy(ISet<string> paths)
     {
-        var configurationSection = 
-            _configuration.GetSection(SsmParameterProcessor.SectionName)
-            ?? throw new ArgumentException("Not loaded SSM parameters");
-
-        var allParameters = new Dictionary<string, string>();
-        configurationSection.Bind(allParameters);
-        // var allParameters = 
-        //     configurationSection
-        //         .GetChildren()
-        //         .ToDictionary(
-        //             x => x.Key,
-        //             y => y.Value);
-
-        var result = new Dictionary<string, string>();
-
-        foreach (var path in paths.OrderBy(x => x))
+        if (paths.Any() == false)
         {
-            foreach (var keyItem in allParameters
-                         .Where(x => ConvertToSsmFormat(x.Key).StartsWith(path))
-                         .OrderBy(x => x.Key))
-            {
-                result.Add(
-                    ConvertToSsmFormat(keyItem.Key),
-                    keyItem.Value);                
-            }
+            return new Dictionary<string, string>();
         }
+
+        var configuration = LoadSystemParameters(paths);
+        
+        var result = new SortedDictionary<string, string>();
+        configuration.Bind(result);
 
         return result;
     }
 
-    private static string ConvertToSsmFormat(string parameterName) => "/" + parameterName.Replace(":", "/");
+    private IConfiguration LoadSystemParameters(IEnumerable<string> paths)
+    {
+        var configurationBuilder = new ConfigurationBuilder();
+
+        foreach (var path in paths)
+        {
+            configurationBuilder.AddSystemsManager(configurationSource =>
+            {
+                configurationSource.Path = path;
+                //configurationSource.ReloadAfter = TimeSpan.FromMinutes(15);
+                configurationSource.ParameterProcessor = new SsmParameterProcessor();
+            });
+        }
+
+        return configurationBuilder.Build();
+    }
 }

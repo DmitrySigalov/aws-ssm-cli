@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Aws.Ssm.ClientTool": {
+      "commandName": "Project",
+      "commandLineArgs": "view"
+    }
+  }
+}

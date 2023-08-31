@@ -10,7 +10,7 @@ public class UserSettingsRepository
         result.Paths.Add("/db/mysql/main-replica-stm");
         result.Paths.Add("/message-broker/kafka/hermes");
         
-        return new UserSettingsDo();
+        return result;
     }
 
     public void Save(UserSettingsDo data)

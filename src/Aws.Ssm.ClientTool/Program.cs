@@ -2,7 +2,9 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Aws.Ssm.ClientTool.Commands;
+using Aws.Ssm.ClientTool.SsmParameters;
 using Aws.Ssm.ClientTool.UserSettings;
+using Aws.Ssm.ClientTool.Utils;
 
 var cts = new CancellationTokenSource();
 Console.CancelKeyPress += (s, e) =>
@@ -11,11 +13,14 @@ Console.CancelKeyPress += (s, e) =>
     e.Cancel = true;
 };
 
-var configuration = new ConfigurationBuilder()
+var configurationBuilder = new ConfigurationBuilder()
     //.SetBasePath(Directory.GetCurrentDirectory())
     .AddJsonFile("appsettings.json", false)
-    .AddEnvironmentVariables()
-    .Build();
+    .AddAwsSsmConfiguration();
+
+var configuration = SpinnerUtils.Run(
+    configurationBuilder.Build,
+    "Connect to AWS System Manager and load parameters");
 
 var services = new ServiceCollection();
 
@@ -29,16 +34,16 @@ services
 
 services
     .AddCommandHandlers()
-    .AddUserSettings();
+    .AddUserSettings()
+    .AddSsmParametersRepository();
 
-var provider = services.BuildServiceProvider();
-var logger = provider.GetRequiredService<ILogger<Program>>();
+var serviceProvider = services.BuildServiceProvider();
 
 try
 {
     var commandName = args.FirstOrDefault();
 
-    var cliHandler = provider
+    var cliHandler = serviceProvider
         .GetRequiredService<CommandHandlerProvider>()
         .Get(commandName);
 
@@ -46,5 +51,7 @@ try
 }
 catch (Exception e)
 {
-    logger.LogError(e, "An error has occurred");
+    serviceProvider
+        .GetRequiredService<ILogger<Program>>()
+        .LogError(e, "An error has occurred");
 }

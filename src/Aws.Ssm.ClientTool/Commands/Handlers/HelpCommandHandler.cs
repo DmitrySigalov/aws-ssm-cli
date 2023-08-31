@@ -1,4 +1,4 @@
-namespace Ssm.Aws.ClientTool.Commands.Handlers;
+namespace Aws.Ssm.ClientTool.Commands.Handlers;
 
 public class HelpCommandHandler : ICommandHandler
 {

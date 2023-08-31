@@ -1,4 +1,4 @@
-namespace Ssm.Aws.ClientTool.Commands;
+namespace Aws.Ssm.ClientTool.Commands;
 
 public interface ICommandHandler
 {

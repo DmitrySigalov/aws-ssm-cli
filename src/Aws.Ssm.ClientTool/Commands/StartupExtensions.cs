@@ -1,7 +1,7 @@
+using Aws.Ssm.ClientTool.Commands.Handlers;
 using Microsoft.Extensions.DependencyInjection;
-using Ssm.Aws.ClientTool.Commands.Handlers;
 
-namespace Ssm.Aws.ClientTool.Commands;
+namespace Aws.Ssm.ClientTool.Commands;
 
 public static class StartupExtensions
 {

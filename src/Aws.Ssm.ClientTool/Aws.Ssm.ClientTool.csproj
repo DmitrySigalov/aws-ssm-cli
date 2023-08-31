@@ -5,8 +5,8 @@
         <TargetFramework>net6.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <AssemblyName>ssm-aws-cli</AssemblyName>
-        <RootNamespace>Ssm.Aws.ClientTool</RootNamespace>
+        <AssemblyName>aws-ssm-cli</AssemblyName>
+        <RootNamespace>Aws.Ssm.ClientTool</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>

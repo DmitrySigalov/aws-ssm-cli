@@ -1,4 +1,4 @@
-namespace Ssm.Aws.ClientTool.UserSettings;
+namespace Aws.Ssm.ClientTool.UserSettings;
 
 public class UserSettingsRepository
 {

@@ -1,8 +1,8 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Ssm.Aws.ClientTool.Commands;
-using Ssm.Aws.ClientTool.UserSettings;
+using Aws.Ssm.ClientTool.Commands;
+using Aws.Ssm.ClientTool.UserSettings;
 
 var cts = new CancellationTokenSource();
 Console.CancelKeyPress += (s, e) =>

@@ -1,6 +1,6 @@
-using Ssm.Aws.ClientTool.Commands.Handlers;
+using Aws.Ssm.ClientTool.Commands.Handlers;
 
-namespace Ssm.Aws.ClientTool.Commands;
+namespace Aws.Ssm.ClientTool.Commands;
 
 public class CommandHandlerProvider
 {

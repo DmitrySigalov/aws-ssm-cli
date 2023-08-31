@@ -1,8 +1,8 @@
-namespace Ssm.Aws.ClientTool.Commands.Handlers;
+namespace Aws.Ssm.ClientTool.Commands.Handlers;
 
-public class ConfigCommandHandler : ICommandHandler
+public class ViewCommandHandler : ICommandHandler
 {
-    public string Name => "config";
+    public string Name => "view";
     
     public Task Handle(CancellationToken cancellationToken)
     {

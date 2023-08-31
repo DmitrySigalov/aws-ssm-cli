@@ -1,8 +1,8 @@
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Ssm.Aws.ClientTool.UserSettings;
+namespace Aws.Ssm.ClientTool.UserSettings;
 
-public static class StartupExcensions
+public static class StartupExtensions
 {
     public static IServiceCollection AddUserSettings(this IServiceCollection serviceCollection)
     {

@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Aws.Ssm.ClientTool.Commands;
+using Aws.Ssm.ClientTool.Environment;
 using Aws.Ssm.ClientTool.SsmParameters;
 using Aws.Ssm.ClientTool.UserSettings;
 
@@ -30,7 +31,8 @@ services
 services
     .AddCommandHandlers()
     .AddSingleton<UserSettingsRepository>()
-    .AddSingleton<SsmParametersRepository>();
+    .AddSingleton<SsmParametersRepository>()
+    .AddSingleton<EnvironmentRepository>();
 
 var serviceProvider = services.BuildServiceProvider();
 

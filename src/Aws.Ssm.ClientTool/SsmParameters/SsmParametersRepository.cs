@@ -28,7 +28,6 @@ public class SsmParametersRepository
             configurationBuilder.AddSystemsManager(configurationSource =>
             {
                 configurationSource.Path = path;
-                //configurationSource.ReloadAfter = TimeSpan.FromMinutes(15);
                 configurationSource.ParameterProcessor = new SsmParameterProcessor();
             });
         }

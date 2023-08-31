@@ -1,3 +1,4 @@
+using Aws.Ssm.ClientTool.Environment;
 using Aws.Ssm.ClientTool.SsmParameters;
 using Aws.Ssm.ClientTool.UserSettings;
 using Aws.Ssm.ClientTool.Utils;
@@ -12,13 +13,18 @@ public class ViewCommandHandler : ICommandHandler
 
     private readonly SsmParametersRepository _ssmParametersRepository;
     
+    private readonly EnvironmentRepository _environmentRepository;
+
     public ViewCommandHandler(
         UserSettingsRepository userSettingsRepository,
-        SsmParametersRepository ssmParametersRepository)
+        SsmParametersRepository ssmParametersRepository,
+        EnvironmentRepository environmentRepository)
     {
         _userSettingsRepository = userSettingsRepository;
 
         _ssmParametersRepository = ssmParametersRepository;
+        
+        _environmentRepository = environmentRepository;
     }
     
     public string Name => "view";
@@ -26,46 +32,75 @@ public class ViewCommandHandler : ICommandHandler
     public Task Handle(CancellationToken cancellationToken)
     {
         var userSettings = SpinnerUtils.Run(
-            _userSettingsRepository.Load,
-            "Load configured user settings");
-        
-        Console.WriteLine("- Prefix: " + userSettings?.Prefix);
-        Console.WriteLine("- Delimeter: " + userSettings?.Delimeter);
+            _userSettingsRepository.Get,
+            "Get user settings");
 
-        if (userSettings?.Paths?.Any() != true)
+        Console.WriteLine($"- {nameof(userSettings.EnvVarNamePrefix)}: " + userSettings.EnvVarNamePrefix);
+        Console.WriteLine($"- {nameof(userSettings.EnvVarNameDelimeter)}: " + userSettings.EnvVarNameDelimeter);
+
+        if (userSettings.SsmPaths.Any() != true)
         {
-            Console.WriteLine("- Paths: not configured");
+            Console.WriteLine($"- {nameof(userSettings.SsmPaths)}: not configured");
 
             return Task.CompletedTask;
         }
         
         var pathsToView = Prompt.MultiSelect(
-            "Select paths to view",
-            userSettings.Paths);
+            $"- Select {nameof(userSettings.SsmPaths)} to view",
+            userSettings.SsmPaths);
 
         var ssmParameters = SpinnerUtils.Run(
             () => _ssmParametersRepository.GetDictionaryBy(pathsToView.ToHashSet()),
-            "Get parameters from AWS System Manager");
+            "Get ssm parameters from AWS System Manager");
 
         var invalidPaths = pathsToView
             .Where(x => ssmParameters.Keys.All(key => !key.StartsWith(x)))
             .ToList();
         if (invalidPaths.Any())
         {
-            Console.WriteLine("Invalid paths:");
+            Console.WriteLine($"Invalid {nameof(userSettings.SsmPaths)}:");
             invalidPaths.ForEach(x => Console.WriteLine($"- {x}"));
         }
-        
-        var table = new ConsoleTable("path", "value");
+
+        PrintSsmParameters(ssmParameters, userSettings);
+
+        return Task.CompletedTask;
+    }
+
+    private void PrintSsmParameters(IDictionary<string, string> ssmParameters, UserSettingsDo userSettings)
+    {
+        var table = new ConsoleTable("ssm-param-name", "env-var-status", "ssm-param-value");
         table.Options.EnableCount = true;
         foreach (var resolvedParameterValue in ssmParameters)
         {
-            table.AddRow(resolvedParameterValue.Key, resolvedParameterValue.Value);
-        }
-        table.Write(Format.Minimal);
-        
-        Console.WriteLine();
+            var environmentVariableName = EnvironmentVariableNameConverter.ConvertFromSsmPath(
+                resolvedParameterValue.Key,
+                userSettings);
+            var environmentVariableValue = _environmentRepository.GetEnvironmentVariable(
+                environmentVariableName);
 
-        return Task.CompletedTask;
+            var envVarStatus = "";
+            if (environmentVariableValue == resolvedParameterValue.Value)
+            {
+                envVarStatus = "OK";
+            }
+            else if (!string.IsNullOrEmpty(environmentVariableValue))
+            {
+                envVarStatus = "Failed";
+            }
+            else
+            {
+                envVarStatus = "None";
+            }
+            
+            table.AddRow(
+                resolvedParameterValue.Key, 
+                envVarStatus,
+                resolvedParameterValue.Value);
+        }
+
+        Console.WriteLine();
+        table.Write(Format.Minimal);
+        Console.WriteLine();
     }
 }

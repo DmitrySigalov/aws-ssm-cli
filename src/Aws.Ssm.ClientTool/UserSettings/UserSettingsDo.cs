@@ -2,9 +2,9 @@ namespace Aws.Ssm.ClientTool.UserSettings;
 
 public class UserSettingsDo
 {
-    public string Prefix { get; set; } = "SSM";
+    public string EnvVarNamePrefix { get; set; } = "SSM";
 
-    public string Delimeter { get; set; } = "_";
+    public char EnvVarNameDelimeter { get; set; } = '_';
 
-    public HashSet<string> Paths { get; set; } = new HashSet<string>();
+    public HashSet<string> SsmPaths { get; set; } = new HashSet<string>();
 }

@@ -9,7 +9,7 @@ namespace Aws.Ssm.ClientTool.Commands.Handlers;
 
 public class ConfigCommandHandler : ICommandHandler
 {
-    private readonly char[] _validEnvVarNameDelimeters = new[] { '_', '-', };
+    private readonly char[] _validEnvVarNameDelimeters = new[] { '.', ':', ';', '_', '-', };
 
     private readonly UserSettingsRepository _userSettingsRepository;
 
@@ -20,7 +20,7 @@ public class ConfigCommandHandler : ICommandHandler
     private enum OperationEnum
     {
         Add,
-        ViewOrDelete,
+        Delete,
     }
     
     public ConfigCommandHandler(
@@ -60,26 +60,22 @@ public class ConfigCommandHandler : ICommandHandler
         allowedOperations.AddRange(new [] { OperationEnum.Add });
         if (userSettings.SsmPaths.Any() == true)
         {
-            allowedOperations.Add(OperationEnum.ViewOrDelete);
+            allowedOperations.Add(OperationEnum.Delete);
         }
         var operation = Prompt.Select<OperationEnum>(
             $"Select operation to edit {nameof(userSettings.SsmPaths)}",
             defaultValue: OperationEnum.Add,
             items: allowedOperations);
 
-        if (operation == OperationEnum.ViewOrDelete)
+        if (operation == OperationEnum.Delete)
         {
-            var pathsToRemain = Prompt
+            var pathsToDelete = Prompt
                 .MultiSelect(
-                    $"- Select actual {nameof(userSettings.SsmPaths)}",
+                    $"- Select {nameof(userSettings.SsmPaths)} to delete",
                     userSettings.SsmPaths,
-                    defaultValues: userSettings.SsmPaths,
                     minimum: 0)
+                .OrderBy(x => x)
                 .ToArray();
-
-            var pathsToDelete = userSettings.SsmPaths
-                .Except(pathsToRemain)
-                .ToHashSet();
 
             if (pathsToDelete.Any())
             {

@@ -50,38 +50,42 @@ public class RunCommandHandler : ICommandHandler
         
         var selectedProfileDo = SpinnerUtils.Run(
             () => _profilesRepository.GetByName(selectedProfileName),
-            $"Read selected profile [{selectedProfileName}]");
+            $"Read profile [{selectedProfileName}]");
 
         if (selectedProfileDo?.SsmPaths?.Any() != true)
         {
-            ConsoleUtils.WriteLineError($"Not configured selected profile [{selectedProfileName}]");
+            ConsoleUtils.WriteLineError($"Not configured profile [{selectedProfileName}]");
 
             return Task.CompletedTask;
         }
 
         if (!string.IsNullOrEmpty(lastActiveProfileName))
         {
-            ConsoleUtils.WriteLineNotification($"Start de-activating profile [{lastActiveProfileName}]");
+            ConsoleUtils.WriteLineNotification($"Deactivate profile [{lastActiveProfileName}]");
 
             var lastActiveProfileDo = 
                 lastActiveProfileName == selectedProfileName
                 ? selectedProfileDo
                 : SpinnerUtils.Run(
                     () => _profilesRepository.GetByName(lastActiveProfileName),
-                    $"Read last active profile [{lastActiveProfileName}]");
+                    $"Read profile [{lastActiveProfileName}]");
 
             if (lastActiveProfileDo != null)
             {
                 var deletedEnvironmentVariables = SpinnerUtils.Run(
                     () => _environmentVariablesRepository.DeleteEnvironmentVariables(lastActiveProfileDo),
-                    $"Delete last active profile [{lastActiveProfileName}] environment variables");
+                    "Delete environment variables");
                 
                 deletedEnvironmentVariables.PrintEnvironmentVariables();
+            }
+            else 
+            {
+                ConsoleUtils.WriteLineError($"Not configured profile [{lastActiveProfileDo}]");
             }
         }
 
         _profilesRepository.ActiveName = selectedProfileName;
-        ConsoleUtils.WriteLineNotification($"Start activating profile [{selectedProfileName}]");
+        ConsoleUtils.WriteLineNotification($"Activate profile [{selectedProfileName}]");
         
         var ssmParameters = SpinnerUtils.Run(
             () => _ssmParametersRepository.GetDictionaryBy(selectedProfileDo.SsmPaths),

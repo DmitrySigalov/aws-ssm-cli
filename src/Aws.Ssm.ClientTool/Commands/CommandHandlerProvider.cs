@@ -38,7 +38,7 @@ public class CommandHandlerProvider
             return _helpCommandHandler;
         }
         
-        ConsoleUtils.WriteLineNotification($"Command argument: {commandName}");
+        ConsoleUtils.WriteLineNotification($"Command [{commandName}]");
 
         return handler;
     }

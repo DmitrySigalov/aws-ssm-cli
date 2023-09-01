@@ -6,7 +6,7 @@ public class ProfilesRepository : IProfilesRepository
     {
         get
         {
-            return "Profile1";
+            return "Profile2";
         }
         set
         {

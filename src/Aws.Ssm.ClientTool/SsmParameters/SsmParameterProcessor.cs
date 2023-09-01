@@ -9,9 +9,8 @@ public class SsmParameterProcessor : DefaultParameterProcessor
     
     public override string GetKey(Parameter parameter, string path)
     {
-        var resolvedKey = parameter.Name
-            .Replace(KeyDelimiter, InternalConfigKeyDelimeter);
-        
-        return resolvedKey;
+        return parameter
+            .Name
+            .Replace(KeyDelimiter, InternalConfigKeyDelimeter);;
     }
 }

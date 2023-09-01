@@ -43,18 +43,18 @@ public class ConfigCommandHandler : ICommandHandler
             _userSettingsRepository.Get,
             "Get user settings");
 
-        userSettings.EnvVarNamePrefix = Prompt.Input<string>(
-            $"Enter {nameof(userSettings.EnvVarNamePrefix)} (space is undefined)",
-            defaultValue: userSettings.EnvVarNamePrefix,
+        userSettings.EnvironmentVariablePrefix = Prompt.Input<string>(
+            $"Set {nameof(userSettings.EnvironmentVariablePrefix)} (space is undefined)",
+            defaultValue: userSettings.EnvironmentVariablePrefix,
             validators: new List<Func<object, ValidationResult>>
             {
-                (check) => ValidateEnvVarNamePrefix((string) check),
+                (check) => ValidateEnvironmentVariablePrefix((string) check),
             }).Trim();
 
-        userSettings.EnvVarNameDelimeter = Prompt.Select(
-            $"Enter {nameof(userSettings.EnvVarNameDelimeter)}",
+        userSettings.EnvironmentVariableDelimeter = Prompt.Select(
+            $"Set {nameof(userSettings.EnvironmentVariableDelimeter)}",
             items: _validEnvVarNameDelimeters,
-            defaultValue: userSettings.EnvVarNameDelimeter);
+            defaultValue: userSettings.EnvironmentVariableDelimeter);
 
         var allowedOperations = new List<OperationEnum>();
         allowedOperations.AddRange(new [] { OperationEnum.Add });
@@ -115,7 +115,7 @@ public class ConfigCommandHandler : ICommandHandler
         return Task.CompletedTask;
     }
 
-    private ValidationResult ValidateEnvVarNamePrefix(string check)
+    private ValidationResult ValidateEnvironmentVariablePrefix(string check)
     {
         if (check == " ")
         {

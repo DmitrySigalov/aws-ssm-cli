@@ -23,7 +23,7 @@ public class CommandHandlerProvider
     {
         if (string.IsNullOrEmpty(commandName))
         {
-            Console.WriteLine("Select command");
+            Console.WriteLine("Set command argument");
             
             return _helpCommandHandler;
         }

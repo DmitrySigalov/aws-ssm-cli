@@ -15,11 +15,11 @@ public static class EnvironmentVariableNameConverter
             result = result.TrimStart('/');
         }
         
-        result = result.Replace('/', userSettings.EnvVarNameDelimeter);
+        result = result.Replace('/', userSettings.EnvironmentVariableDelimeter);
 
-        if (!string.IsNullOrEmpty(userSettings.EnvVarNamePrefix))
+        if (!string.IsNullOrEmpty(userSettings.EnvironmentVariablePrefix))
         {
-            result = userSettings.EnvVarNamePrefix + userSettings.EnvVarNameDelimeter + result;
+            result = userSettings.EnvironmentVariablePrefix + userSettings.EnvironmentVariableDelimeter + result;
         }
         
         return result;

@@ -1,3 +1,5 @@
+using ConsoleTables;
+
 namespace Aws.Ssm.ClientTool.Commands.Handlers;
 
 public class HelpCommandHandler : ICommandHandler
@@ -15,12 +17,17 @@ public class HelpCommandHandler : ICommandHandler
 
     public Task Handle(CancellationToken cancellationToken)
     {
-        Console.WriteLine("Supported command(s):");
-        Console.WriteLine($"- {Name}");
-        foreach (var commandName in _commandNames)
+        var table = new ConsoleTable("Supported commands");
+        table.Options.EnableCount = false;
+
+        table.AddRow(Name);
+
+        foreach (var commandName in _commandNames.OrderBy(x => x))
         {
-            Console.WriteLine($"- {commandName}");
+            table.AddRow(commandName);
         }
+
+        table.Write(Format.Minimal);
 
         return Task.CompletedTask;
     }

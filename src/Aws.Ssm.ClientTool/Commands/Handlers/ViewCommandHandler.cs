@@ -35,13 +35,10 @@ public class ViewCommandHandler : ICommandHandler
             _userSettingsRepository.Get,
             "Get user settings");
 
-        Console.WriteLine($"- {nameof(userSettings.EnvVarNamePrefix)}: " + userSettings.EnvVarNamePrefix);
-        Console.WriteLine($"- {nameof(userSettings.EnvVarNameDelimeter)}: " + userSettings.EnvVarNameDelimeter);
+        PrintUserSettings(userSettings);
 
         if (userSettings.SsmPaths.Any() != true)
         {
-            Console.WriteLine($"- {nameof(userSettings.SsmPaths)}: not configured");
-
             return Task.CompletedTask;
         }
         
@@ -53,24 +50,35 @@ public class ViewCommandHandler : ICommandHandler
             () => _ssmParametersRepository.GetDictionaryBy(pathsToView.ToHashSet()),
             "Get ssm parameters from AWS System Manager");
 
-        var invalidPaths = pathsToView
-            .Where(x => ssmParameters.Keys.All(key => !key.StartsWith(x)))
-            .ToList();
-        if (invalidPaths.Any())
-        {
-            Console.WriteLine($"Invalid {nameof(userSettings.SsmPaths)}:");
-            invalidPaths.ForEach(x => Console.WriteLine($"- {x}"));
-        }
-
         PrintSsmParameters(ssmParameters, userSettings);
 
         return Task.CompletedTask;
     }
 
+    private void PrintUserSettings(UserSettingsDo userSettings)
+    {
+        var table = new ConsoleTable("setting-name", "setting-value");
+        table.Options.EnableCount = false;
+        
+        table.AddRow(
+            nameof(userSettings.EnvironmentVariablePrefix), 
+            userSettings.EnvironmentVariablePrefix);
+
+        table.AddRow(
+            nameof(userSettings.EnvironmentVariableDelimeter), 
+            userSettings.EnvironmentVariableDelimeter);
+
+        table.AddRow(
+            nameof(userSettings.SsmPaths) + ".Count()", 
+            userSettings.SsmPaths.Count);
+
+        table.Write(Format.Minimal);
+    }
+
     private void PrintSsmParameters(IDictionary<string, string> ssmParameters, UserSettingsDo userSettings)
     {
         var table = new ConsoleTable("ssm-param-name", "env-var-status", "ssm-param-value");
-        table.Options.EnableCount = true;
+        table.Options.EnableCount = false;
         foreach (var resolvedParameterValue in ssmParameters)
         {
             var environmentVariableName = EnvironmentVariableNameConverter.ConvertFromSsmPath(
@@ -86,7 +94,7 @@ public class ViewCommandHandler : ICommandHandler
             }
             else if (!string.IsNullOrEmpty(environmentVariableValue))
             {
-                envVarStatus = "Failed";
+                envVarStatus = "Invalid";
             }
             else
             {
@@ -99,8 +107,6 @@ public class ViewCommandHandler : ICommandHandler
                 resolvedParameterValue.Value);
         }
 
-        Console.WriteLine();
         table.Write(Format.Minimal);
-        Console.WriteLine();
     }
 }

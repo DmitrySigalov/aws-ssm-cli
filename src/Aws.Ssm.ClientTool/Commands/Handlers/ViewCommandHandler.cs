@@ -42,15 +42,17 @@ public class ViewCommandHandler : ICommandHandler
             return Task.CompletedTask;
         }
         
-        var pathsToView = Prompt.MultiSelect(
+        var ssmPathsToView = Prompt.MultiSelect(
             $"- Select {nameof(userSettings.SsmPaths)} to view",
             userSettings.SsmPaths);
 
         var ssmParameters = SpinnerUtils.Run(
-            () => _ssmParametersRepository.GetDictionaryBy(pathsToView.ToHashSet()),
+            () => _ssmParametersRepository.GetDictionaryBy(ssmPathsToView.ToHashSet()),
             "Get ssm parameters from AWS System Manager");
 
         PrintSsmParameters(ssmParameters, userSettings);
+
+        PrintNoFoundSsmPaths(ssmParameters, ssmPathsToView);
 
         return Task.CompletedTask;
     }
@@ -61,6 +63,10 @@ public class ViewCommandHandler : ICommandHandler
         table.Options.EnableCount = false;
         
         table.AddRow(
+            nameof(userSettings.SsmPaths) + ".Count()", 
+            userSettings.SsmPaths.Count);
+
+        table.AddRow(
             nameof(userSettings.EnvironmentVariablePrefix), 
             userSettings.EnvironmentVariablePrefix);
 
@@ -69,8 +75,8 @@ public class ViewCommandHandler : ICommandHandler
             userSettings.EnvironmentVariableDelimeter);
 
         table.AddRow(
-            nameof(userSettings.SsmPaths) + ".Count()", 
-            userSettings.SsmPaths.Count);
+            nameof(userSettings.EnvironmentVariableNamingType), 
+            userSettings.EnvironmentVariableNamingType);
 
         table.Write(Format.Minimal);
     }
@@ -105,6 +111,22 @@ public class ViewCommandHandler : ICommandHandler
                 resolvedParameterValue.Key, 
                 envVarStatus,
                 resolvedParameterValue.Value);
+        }
+
+        table.Write(Format.Minimal);
+    }
+    
+    private void PrintNoFoundSsmPaths(IDictionary<string, string> ssmParameters, IEnumerable<string> ssmPathsToView)
+    {
+        var invalidPaths = ssmPathsToView
+            .Where(x => ssmParameters.Keys.All(y => !y.StartsWith(x)))
+            .ToArray();
+
+        var table = new ConsoleTable("unavailable-ssm-paths");
+        table.Options.EnableCount = false;
+        foreach (var ssmPath in invalidPaths)
+        {
+            table.AddRow(ssmPath);
         }
 
         table.Write(Format.Minimal);

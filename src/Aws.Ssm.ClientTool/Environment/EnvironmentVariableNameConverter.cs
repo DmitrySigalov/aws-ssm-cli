@@ -19,7 +19,16 @@ public static class EnvironmentVariableNameConverter
 
         if (!string.IsNullOrEmpty(userSettings.EnvironmentVariablePrefix))
         {
-            result = userSettings.EnvironmentVariablePrefix + userSettings.EnvironmentVariableDelimeter + result;
+            result = userSettings.EnvironmentVariablePrefix + result;
+        }
+
+        if (userSettings.EnvironmentVariableNamingType == UserSettingsDo.NamingTypeEnum.UpperCase)
+        {
+            result = result.ToUpper();
+        }
+        else if (userSettings.EnvironmentVariableNamingType == UserSettingsDo.NamingTypeEnum.LowerCase)
+        {
+            result = result.ToLower();
         }
         
         return result;

@@ -9,19 +9,13 @@ namespace Aws.Ssm.ClientTool.Commands.Handlers;
 
 public class ConfigCommandHandler : ICommandHandler
 {
-    private readonly char[] _validEnvVarNameDelimeters = new[] { '.', ':', ';', '_', '-', };
+    private readonly char[] _validEnvVarNameDelimeters = new[] { '_', '-', };
 
     private readonly UserSettingsRepository _userSettingsRepository;
 
     private readonly EnvironmentRepository _environmentRepository;
 
     private readonly SsmParametersRepository _ssmParametersRepository;
-    
-    private enum OperationEnum
-    {
-        Add,
-        Delete,
-    }
     
     public ConfigCommandHandler(
         UserSettingsRepository userSettingsRepository,
@@ -39,77 +33,75 @@ public class ConfigCommandHandler : ICommandHandler
     
     public Task Handle(CancellationToken cancellationToken)
     {
-        var userSettings = SpinnerUtils.Run(
+        var oldUserSettings = SpinnerUtils.Run(
             _userSettingsRepository.Get,
             "Get user settings");
 
-        userSettings.EnvironmentVariablePrefix = Prompt.Input<string>(
-            $"Set {nameof(userSettings.EnvironmentVariablePrefix)} (space is undefined)",
-            defaultValue: userSettings.EnvironmentVariablePrefix,
-            validators: new List<Func<object, ValidationResult>>
-            {
-                (check) => ValidateEnvironmentVariablePrefix((string) check),
-            }).Trim();
+        var newUserSettings = oldUserSettings.Clone();
 
-        userSettings.EnvironmentVariableDelimeter = Prompt.Select(
-            $"Set {nameof(userSettings.EnvironmentVariableDelimeter)}",
-            items: _validEnvVarNameDelimeters,
-            defaultValue: userSettings.EnvironmentVariableDelimeter);
-
-        var allowedOperations = new List<OperationEnum>();
-        allowedOperations.AddRange(new [] { OperationEnum.Add });
-        if (userSettings.SsmPaths.Any() == true)
-        {
-            allowedOperations.Add(OperationEnum.Delete);
-        }
-        var operation = Prompt.Select<OperationEnum>(
-            $"Select operation to edit {nameof(userSettings.SsmPaths)}",
-            defaultValue: OperationEnum.Add,
-            items: allowedOperations);
-
-        if (operation == OperationEnum.Delete)
-        {
-            var pathsToDelete = Prompt
-                .MultiSelect(
-                    $"- Select {nameof(userSettings.SsmPaths)} to delete",
-                    userSettings.SsmPaths,
-                    minimum: 0)
-                .OrderBy(x => x)
-                .ToArray();
-
-            if (pathsToDelete.Any())
-            {
-                foreach (var path in pathsToDelete)
-                {
-                    userSettings.SsmPaths.Remove(path);
-                }
-            
-                SpinnerUtils.Run(
-                    () =>
-                    {
-                        var convertedEnvironmentVariableNames = pathsToDelete
-                            .Select(x => EnvironmentVariableNameConverter.ConvertFromSsmPath(x, userSettings))
-                            .ToArray();
-                    
-                        _environmentRepository.DeleteEnvironmentVariables(convertedEnvironmentVariableNames);
-                    },
-                    "Delete environment variables");
-            }
-        }
-        else if (operation == OperationEnum.Add)
+        const string ADD_NEW_PLACEHOLDER = "[Add New]";
+        var ssmPathsToAddOrDelete = Prompt
+            .MultiSelect(
+                $"- Select {nameof(oldUserSettings.SsmPaths)} to add or delete",
+                new [] { ADD_NEW_PLACEHOLDER }.Union(oldUserSettings.SsmPaths),
+                minimum: 0)
+            .OrderBy(x => x)
+            .ToArray();
+        
+        if (ssmPathsToAddOrDelete.Contains(ADD_NEW_PLACEHOLDER))
         {
             var newSsmPath = Prompt.Input<string>(
                 "Enter new ssm path (start from the /)",
                 validators: new List<Func<object, ValidationResult>>
                 {
-                    (check) => ValidateSsmPath((string) check, userSettings),
+                    (check) => ValidateSsmPath((string) check, oldUserSettings.SsmPaths),
                 }).Trim();
 
-            userSettings.SsmPaths.Add(newSsmPath);
+            newUserSettings.SsmPaths.Add(newSsmPath);
+        }
+
+        var ssmPathsToDelete = ssmPathsToAddOrDelete
+            .Where(x => x != ADD_NEW_PLACEHOLDER)
+            .ToArray();
+        if (ssmPathsToDelete.Any())
+        {
+            newUserSettings.SsmPaths.ExceptWith(ssmPathsToDelete);
+        }
+
+        newUserSettings.EnvironmentVariablePrefix = Prompt.Input<string>(
+            $"Set {nameof(oldUserSettings.EnvironmentVariablePrefix)} (space is undefined)",
+            defaultValue: oldUserSettings.EnvironmentVariablePrefix ?? " ",
+            validators: new List<Func<object, ValidationResult>>
+            {
+                (check) => ValidateEnvironmentVariablePrefix((string) check),
+            }).Trim();
+
+        newUserSettings.EnvironmentVariableDelimeter = Prompt.Select(
+            $"Set {nameof(oldUserSettings.EnvironmentVariableDelimeter)}",
+            items: _validEnvVarNameDelimeters,
+            defaultValue: oldUserSettings.EnvironmentVariableDelimeter);
+
+        newUserSettings.EnvironmentVariableNamingType = Prompt.Select(
+            $"Set {nameof(oldUserSettings.EnvironmentVariableNamingType)}",
+            new[] { UserSettingsDo.NamingTypeEnum.None, UserSettingsDo.NamingTypeEnum.UpperCase, UserSettingsDo.NamingTypeEnum.LowerCase, },
+            defaultValue: oldUserSettings.EnvironmentVariableNamingType);
+
+        if (oldUserSettings.SsmPaths.Any())
+        {
+            SpinnerUtils.Run(
+                () =>
+                {
+                    var convertedEnvironmentVariableNames = oldUserSettings.SsmPaths
+                        .Select(x => EnvironmentVariableNameConverter.ConvertFromSsmPath(x, oldUserSettings))
+                        .ToArray();
+                    
+                    _environmentRepository.DeleteEnvironmentVariables(convertedEnvironmentVariableNames);
+                },
+                "Delete old environment variables");
         }
 
         SpinnerUtils.Run(
-            () => _userSettingsRepository.Save(userSettings),
+            () => _userSettingsRepository.Save(oldUserSettings),
             "Save user settings");
 
         return Task.CompletedTask;
@@ -127,12 +119,8 @@ public class ConfigCommandHandler : ICommandHandler
             return new ValidationResult("Empty value");
         }
 
-        if (check.Contains(' '))
-        {
-            return new ValidationResult("Invalid value - Contains white space");
-        }
-
-        if (check.Contains('/') ||
+        if (check.Contains(' ') ||
+            check.Contains('/') ||
             check.Contains('$') ||
             check.Contains('@'))
         {
@@ -142,7 +130,7 @@ public class ConfigCommandHandler : ICommandHandler
         return ValidationResult.Success;
     }
 
-    private ValidationResult ValidateSsmPath(string check, UserSettingsDo userSettings)
+    private ValidationResult ValidateSsmPath(string check, IEnumerable<string> configuredSsmPaths)
     {
         if (string.IsNullOrWhiteSpace(check) ||
             check.Replace("/", "") == "")
@@ -155,7 +143,7 @@ public class ConfigCommandHandler : ICommandHandler
             return new ValidationResult("Invalid value - start from /");
         }
 
-        var firstFoundParameter = userSettings.SsmPaths.FirstOrDefault(x => check.StartsWith(x));
+        var firstFoundParameter = configuredSsmPaths.FirstOrDefault(x => check.StartsWith(x));
         if (firstFoundParameter != null)
         {
             return new ValidationResult($"Duplicated value - {firstFoundParameter}");

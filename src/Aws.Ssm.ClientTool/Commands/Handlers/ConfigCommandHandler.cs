@@ -13,18 +13,18 @@ public class ConfigCommandHandler : ICommandHandler
 
     private readonly UserSettingsRepository _userSettingsRepository;
 
-    private readonly EnvironmentRepository _environmentRepository;
+    private readonly IEnvironmentVariablesRepository _environmentVariablesRepository;
 
-    private readonly SsmParametersRepository _ssmParametersRepository;
+    private readonly ISsmParametersRepository _ssmParametersRepository;
     
     public ConfigCommandHandler(
         UserSettingsRepository userSettingsRepository,
-        EnvironmentRepository environmentRepository,
-        SsmParametersRepository ssmParametersRepository)
+        IEnvironmentVariablesRepository environmentVariablesRepository,
+        ISsmParametersRepository ssmParametersRepository)
     {
         _userSettingsRepository = userSettingsRepository;
         
-        _environmentRepository = environmentRepository;
+        _environmentVariablesRepository = environmentVariablesRepository;
 
         _ssmParametersRepository = ssmParametersRepository;
     }
@@ -95,7 +95,7 @@ public class ConfigCommandHandler : ICommandHandler
                         .Select(x => EnvironmentVariableNameConverter.ConvertFromSsmPath(x, oldUserSettings))
                         .ToArray();
                     
-                    _environmentRepository.DeleteEnvironmentVariables(convertedEnvironmentVariableNames);
+                    _environmentVariablesRepository.DeleteEnvironmentVariables(convertedEnvironmentVariableNames);
                 },
                 "Delete old environment variables");
         }

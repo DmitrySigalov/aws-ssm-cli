@@ -23,11 +23,11 @@ public static class EnvironmentVariableNameConverter
             result = profileSettings.EnvironmentVariablePrefix + result;
         }
 
-        if (profileSettings.EnvironmentVariableNamingType == ProfileDo.NamingTypeEnum.UpperCase)
+        if (profileSettings.EnvironmentVariableNamingConvertType == ProfileDo.NamingConvertTypeEnum.UpperCase)
         {
             result = result.ToUpper();
         }
-        else if (profileSettings.EnvironmentVariableNamingType == ProfileDo.NamingTypeEnum.LowerCase)
+        else if (profileSettings.EnvironmentVariableNamingConvertType == ProfileDo.NamingConvertTypeEnum.LowerCase)
         {
             result = result.ToLower();
         }

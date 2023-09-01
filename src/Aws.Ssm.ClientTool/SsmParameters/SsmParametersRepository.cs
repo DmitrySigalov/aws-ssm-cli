@@ -2,7 +2,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace Aws.Ssm.ClientTool.SsmParameters;
 
-public class SsmParametersRepository
+public class SsmParametersRepository : ISsmParametersRepository
 {
     public IDictionary<string, string> GetDictionaryBy(ISet<string> paths)
     {

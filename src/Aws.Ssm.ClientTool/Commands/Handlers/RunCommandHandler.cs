@@ -2,27 +2,26 @@ using Aws.Ssm.ClientTool.Environment;
 using Aws.Ssm.ClientTool.Profiles;
 using Aws.Ssm.ClientTool.SsmParameters;
 using Aws.Ssm.ClientTool.Utils;
-using ConsoleTables;
 using Sharprompt;
 
 namespace Aws.Ssm.ClientTool.Commands.Handlers;
 
 public class RunCommandHandler : ICommandHandler
 {
-    private readonly ProfilesRepository _profilesRepository;
+    private readonly IProfilesRepository _profilesRepository;
 
-    private readonly EnvironmentRepository _environmentRepository;
+    private readonly IEnvironmentVariablesRepository _environmentVariablesRepository;
     
-    private readonly SsmParametersRepository _ssmParametersRepository;
+    private readonly ISsmParametersRepository _ssmParametersRepository;
 
     public RunCommandHandler(
-        ProfilesRepository profilesRepository,
-        EnvironmentRepository environmentRepository,
-        SsmParametersRepository ssmParametersRepository)
+        IProfilesRepository profilesRepository,
+        IEnvironmentVariablesRepository environmentVariablesRepository,
+        ISsmParametersRepository ssmParametersRepository)
     {
         _profilesRepository = profilesRepository;
 
-        _environmentRepository = environmentRepository;
+        _environmentVariablesRepository = environmentVariablesRepository;
 
         _ssmParametersRepository = ssmParametersRepository;
     }
@@ -55,24 +54,15 @@ public class RunCommandHandler : ICommandHandler
 
         if (selectedProfileDo?.SsmPaths?.Any() != true)
         {
-            ConsoleUtils.WriteLineError($"Not configured profile [{selectedProfileName}]");
-
-            return Task.CompletedTask;
-        }
-
-        var ssmParameters = SpinnerUtils.Run(
-            () => _ssmParametersRepository.GetDictionaryBy(selectedProfileDo.SsmPaths),
-            "Get ssm parameters from AWS System Manager");
-
-        if (ssmParameters.Any() != true)
-        {
-            ConsoleUtils.WriteLineError("No found any ssm parameters according to selected profile");
+            ConsoleUtils.WriteLineError($"Not configured selected profile [{selectedProfileName}]");
 
             return Task.CompletedTask;
         }
 
         if (!string.IsNullOrEmpty(lastActiveProfileName))
         {
+            ConsoleUtils.WriteLineNotification($"Start de-activating profile [{lastActiveProfileName}]");
+
             var lastActiveProfileDo = 
                 lastActiveProfileName == selectedProfileName
                 ? selectedProfileDo
@@ -83,54 +73,32 @@ public class RunCommandHandler : ICommandHandler
             if (lastActiveProfileDo != null)
             {
                 var deletedEnvironmentVariables = SpinnerUtils.Run(
-                    () => DeleteLastActiveProfileEnvironmentVariables(lastActiveProfileDo),
+                    () => _environmentVariablesRepository.DeleteEnvironmentVariables(lastActiveProfileDo),
                     $"Delete last active profile [{lastActiveProfileName}] environment variables");
                 
-                PrintDeletedEnvironmentVariableNames(deletedEnvironmentVariables);
+                deletedEnvironmentVariables.PrintEnvironmentVariables();
             }
         }
+
+        _profilesRepository.ActiveName = selectedProfileName;
+        ConsoleUtils.WriteLineNotification($"Start activating profile [{selectedProfileName}]");
         
-        Console.WriteLine($"Not implemented command {Name}");
+        var ssmParameters = SpinnerUtils.Run(
+            () => _ssmParametersRepository.GetDictionaryBy(selectedProfileDo.SsmPaths),
+            "Get ssm parameters from AWS System Manager");
+        
+        ssmParameters.PrintSsmParameters(selectedProfileDo.SsmPaths);
+        
+        var appliedEnvironmentVariables = SpinnerUtils.Run(
+            () => _environmentVariablesRepository.SetEnvironmentVariables(
+                ssmParameters,
+                selectedProfileDo),
+            $"Apply environment variables");
+        
+        appliedEnvironmentVariables.PrintEnvironmentVariables();
+        
+        ConsoleUtils.WriteLineInfo("DONE");
 
         return Task.CompletedTask;
-    }
-
-    private ISet<string> DeleteLastActiveProfileEnvironmentVariables(ProfileDo lastActiveProfileDo)
-    {
-        var convertedEnvironmentVariableBaseNames = lastActiveProfileDo.SsmPaths
-            .Select(x => EnvironmentVariableNameConverter.ConvertFromSsmPath(x, lastActiveProfileDo))
-            .ToArray();
-
-        var environmentVariablesToDelete = _environmentRepository
-            .GetEnvironmentVariableNames(convertedEnvironmentVariableBaseNames);
-
-        if (environmentVariablesToDelete.Any() == false)
-        {
-            return new HashSet<string>();
-        }
-        
-        _environmentRepository.DeleteEnvironmentVariables(environmentVariablesToDelete);
-
-        return environmentVariablesToDelete;
-    }
-
-    private void PrintDeletedEnvironmentVariableNames(ISet<string> deletedEnvironmentVariables)
-    {
-        if (deletedEnvironmentVariables.Any() == false)
-        {
-            ConsoleUtils.WriteLineNotification("No found any environment variables");
-            
-            return;
-        }
-        
-        var table = new ConsoleTable("deleted-environment-variable-name");
-        table.Options.EnableCount = false;
-
-        foreach (var envVar in deletedEnvironmentVariables)
-        {
-            table.AddRow(envVar);
-        }
-        
-        table.Write(Format.Minimal);
     }
 }

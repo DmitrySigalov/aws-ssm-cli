@@ -32,9 +32,9 @@ services
 services
     .AddCommandHandlers()
     .AddSingleton<UserSettingsRepository>()
-    .AddSingleton<ProfilesRepository>()
-    .AddSingleton<SsmParametersRepository>()
-    .AddSingleton<EnvironmentRepository>();
+    .AddSingleton<IProfilesRepository, ProfilesRepository>()
+    .AddSingleton<ISsmParametersRepository, SsmParametersRepository>()
+    .AddSingleton<IEnvironmentVariablesRepository, EnvironmentVariablesRepository>();
 
 var serviceProvider = services.BuildServiceProvider();
 

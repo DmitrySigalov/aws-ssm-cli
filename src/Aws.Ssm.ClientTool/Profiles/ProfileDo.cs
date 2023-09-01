@@ -8,14 +8,13 @@ public class ProfileDo
 
     public char EnvironmentVariableDelimeter { get; set; } = '_';
 
-    public enum NamingTypeEnum
+    public enum NamingConvertTypeEnum
     {
-        None = 0,
         UpperCase = 1,
         LowerCase = 2,
     }
     
-    public NamingTypeEnum EnvironmentVariableNamingType { get; set; } = NamingTypeEnum.UpperCase;
+    public NamingConvertTypeEnum EnvironmentVariableNamingConvertType { get; set; } = NamingConvertTypeEnum.UpperCase;
 
     public ProfileDo Clone() => (ProfileDo) this.MemberwiseClone();
 }

@@ -11,20 +11,20 @@ public class ViewCommandHandler : ICommandHandler
 {
     private readonly UserSettingsRepository _userSettingsRepository;
 
-    private readonly SsmParametersRepository _ssmParametersRepository;
+    private readonly ISsmParametersRepository _ssmParametersRepository;
     
-    private readonly EnvironmentRepository _environmentRepository;
+    private readonly IEnvironmentVariablesRepository _environmentVariablesRepository;
 
     public ViewCommandHandler(
         UserSettingsRepository userSettingsRepository,
-        SsmParametersRepository ssmParametersRepository,
-        EnvironmentRepository environmentRepository)
+        ISsmParametersRepository ssmParametersRepository,
+        IEnvironmentVariablesRepository environmentVariablesRepository)
     {
         _userSettingsRepository = userSettingsRepository;
 
         _ssmParametersRepository = ssmParametersRepository;
         
-        _environmentRepository = environmentRepository;
+        _environmentVariablesRepository = environmentVariablesRepository;
     }
     
     public string Name => "view";
@@ -90,7 +90,7 @@ public class ViewCommandHandler : ICommandHandler
             var environmentVariableName = EnvironmentVariableNameConverter.ConvertFromSsmPath(
                 resolvedParameterValue.Key,
                 userSettings);
-            var environmentVariableValue = _environmentRepository.GetEnvironmentVariable(
+            var environmentVariableValue = _environmentVariablesRepository.Get(
                 environmentVariableName);
 
             var envVarStatus = "";

@@ -1,6 +1,6 @@
 namespace Aws.Ssm.ClientTool.Profiles;
 
-public class ProfilesRepository
+public class ProfilesRepository : IProfilesRepository
 {
     public string ActiveName
     {

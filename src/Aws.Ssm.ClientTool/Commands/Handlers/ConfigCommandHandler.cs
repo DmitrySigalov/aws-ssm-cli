@@ -19,7 +19,7 @@ public class ConfigCommandHandler : ICommandHandler
     private enum OperationEnum
     {
         Create,
-        Edit,
+        Update,
         Delete,
     }
 
@@ -125,6 +125,7 @@ public class ConfigCommandHandler : ICommandHandler
         Console.WriteLine();
 
         ConsoleUtils.WriteLineNotification($"View profile [{profileDetails.ProfileName}] configuration");
+        Console.WriteLine();
 
         var resolvedSsmParameters = SpinnerUtils.Run(
             () => _ssmParametersRepository.GetDictionaryBy(profileDetails.ProfileDo.SsmPaths),
@@ -165,8 +166,8 @@ public class ConfigCommandHandler : ICommandHandler
         {
             operation = Prompt.Select(
                 "Select profile operation",
-                items: new[] { OperationEnum.Create, OperationEnum.Edit, OperationEnum.Delete },
-                defaultValue: OperationEnum.Edit);
+                items: new[] { OperationEnum.Create, OperationEnum.Update, OperationEnum.Delete },
+                defaultValue: OperationEnum.Update);
         }
 
         if (operation == OperationEnum.Create)

@@ -17,10 +17,10 @@ public class ProfilesRepository : IProfilesRepository
     {
         return new HashSet<string>
         {
-            "Default",
-            "Profile1",
-            "Profile2",
-            // "Profile3WithAddedMissingSsmParameter",
+            // "Default",
+            // "Profile1",
+            // "Profile2",
+            "Profile3WithAddedMissingSsmParameter",
             // "Profile4WithMissingSsmParameterOnly",
             // "UnavailableProfile",
         };

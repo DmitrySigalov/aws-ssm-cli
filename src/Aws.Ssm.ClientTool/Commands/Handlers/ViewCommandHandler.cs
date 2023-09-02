@@ -76,7 +76,7 @@ public class ViewCommandHandler : ICommandHandler
             () => _environmentVariablesRepository.GetAll(selectedProfileDo),
             "Get environment variables");
 
-        actualEnvironmentVariables.PrintEnvironmentVariables(
+        actualEnvironmentVariables.PrintEnvironmentVariablesWithSsmParametersValidation(
             resolvedSsmParameters,
             selectedProfileDo);
 

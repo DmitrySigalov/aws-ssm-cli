@@ -83,14 +83,12 @@ public static class EnvironmentExtensions
         return result;
     }
     
-    public static void PrintEnvironmentVariables(
+    public static void PrintEnvironmentVariablesWithSsmParametersValidation(
         this IDictionary<string, string> environmentVariables,
         IDictionary<string, string> ssmParameters,
         ProfileDo profileDo)
     {
-        PrintEnvironmentVariables(
-            environmentVariables,
-            profileDo);
+        PrintEnvironmentVariables(environmentVariables);
         
         var ssmConvertedNamesValues = ssmParameters
             .Select(x => new
@@ -102,36 +100,22 @@ public static class EnvironmentExtensions
                 x => x.Name,
                 y => y.Value);
         
-        var unavailableSsmParameters = environmentVariables
-            .Keys
-            .Where(x => !ssmConvertedNamesValues.ContainsKey(x))
-            .ToHashSet();
-        
         var notSynchronizedEnvVars = ssmConvertedNamesValues
-            .Keys
-            .Where(x => !environmentVariables.ContainsKey(x))
+            .Where(x => environmentVariables.ContainsKey(x.Key))
+            .Where(x => x.Value != environmentVariables[x.Key])
+            .Select(x => x.Key)
             .ToHashSet();
-        
+
         notSynchronizedEnvVars.UnionWith(
             ssmConvertedNamesValues
-                .Where(x => environmentVariables.ContainsKey(x.Key))
-                .Where(x => x.Value != environmentVariables[x.Key])
-                .Select(x => x.Key));
+                    .Keys
+                    .Where(x => !environmentVariables.ContainsKey(x)));
+        
+        var table = new ConsoleTable("not-synchronized-environment-variable_name");
 
-        var table = new ConsoleTable("environment-variable_name", "ssm-parameter-status");
-
-        foreach (var invalidEnvVar in notSynchronizedEnvVars
-                     .Union(unavailableSsmParameters)
-                     .OrderBy(x => x)
-                 )
+        foreach (var invalidEnvVar in notSynchronizedEnvVars.OrderBy(x => x))
         {
-            if (notSynchronizedEnvVars.Contains(invalidEnvVar))
-            {
-                table.AddRow(invalidEnvVar, "NotSynchronized");
-                continue;
-            }
-
-            table.AddRow(invalidEnvVar, "Unavailable");
+            table.AddRow(invalidEnvVar);
         }
 
         if (table.Rows.Any())
@@ -140,25 +124,11 @@ public static class EnvironmentExtensions
         }
     }
 
-    public static void PrintEnvironmentVariables(
+    public static void PrintEnvironmentVariablesWithProfileValidation(
         this IDictionary<string, string> environmentVariables,
         ProfileDo profileDo)
     {
-        if (environmentVariables.Any() == false)
-        {
-            ConsoleUtils.WriteLineWarn("Environment variables empty list");
-        }
-        else
-        {
-            var table = new ConsoleTable("environment-variable-name", "value");
-
-            foreach (var envVar in environmentVariables)
-            {
-                table.AddRow(envVar.Key, envVar.Value);
-            }
-        
-            table.Write(Format.Minimal);
-        }
+        PrintEnvironmentVariables(environmentVariables);
         
         var invalidVariables = profileDo.SsmPaths
             .Distinct()
@@ -179,5 +149,25 @@ public static class EnvironmentExtensions
                 table.Write(Format.Minimal);
             });
         }
+    }
+
+    public static void PrintEnvironmentVariables(
+        this IDictionary<string, string> environmentVariables)
+    {
+        if (environmentVariables.Any() == false)
+        {
+            ConsoleUtils.WriteLineWarn("Environment variables empty list");
+
+            return;
+        }
+
+        var table = new ConsoleTable("environment-variable-name", "value");
+
+        foreach (var envVar in environmentVariables)
+        {
+            table.AddRow(envVar.Key, envVar.Value);
+        }
+
+        table.Write(Format.Minimal);
     }
 }

@@ -83,7 +83,7 @@ public class RunCommandHandler : ICommandHandler
                     () => _environmentVariablesRepository.DeleteAll(lastActiveProfileDo),
                     "Delete environment variables");
                 
-                deletedEnvironmentVariables.PrintEnvironmentVariables(lastActiveProfileDo);
+                deletedEnvironmentVariables.PrintEnvironmentVariablesWithProfileValidation(lastActiveProfileDo);
             }
             else 
             {
@@ -113,7 +113,7 @@ public class RunCommandHandler : ICommandHandler
                 selectedProfileDo),
             $"Apply environment variables");
         
-        appliedEnvironmentVariables.PrintEnvironmentVariables(
+        appliedEnvironmentVariables.PrintEnvironmentVariablesWithSsmParametersValidation(
             resolvedSsmParameters,
             selectedProfileDo);
         

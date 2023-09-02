@@ -5,29 +5,31 @@ namespace Aws.Ssm.ClientTool.Commands.Handlers;
 
 public class HelpCommandHandler : ICommandHandler
 {
-    private readonly IEnumerable<string> _commandNames;
+    private readonly ISet<ICommandHandler> _commandHandlers;
     
     public HelpCommandHandler(IEnumerable<ICommandHandler> commandHandlers)
     {
-        _commandNames = commandHandlers
-            .Select(x => x.Name)
+        _commandHandlers =new [] { this } 
+            .Union(commandHandlers)
             .ToHashSet();
     }
     
     public string Name => "help";
 
-    public Task Handle(CancellationToken cancellationToken)
+    public string Help => "?";
+
+    public Task Handle(string[] args, CancellationToken cancellationToken)
     {
+        ConsoleUtils.WriteLineNotification($"Process [{Name}] command");
+
         ConsoleUtils.Notification(() =>
         {
-            var table = new ConsoleTable("supported-command-args");
+            var table = new ConsoleTable("command-name", "help");
             table.Options.EnableCount = false;
 
-            table.AddRow(Name);
-
-            foreach (var commandName in _commandNames.OrderBy(x => x))
+            foreach (var commandHandler in _commandHandlers)
             {
-                table.AddRow(commandName);
+                table.AddRow(commandHandler.Name, commandHandler.Help);
             }
 
             table.Write(Format.Minimal);

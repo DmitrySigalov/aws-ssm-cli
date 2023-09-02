@@ -48,7 +48,9 @@ try
         .GetRequiredService<CommandHandlerProvider>()
         .Get(commandName);
 
-    await cliHandler.Handle(cts.Token);
+    await cliHandler.Handle(
+        args.Skip(1).ToArray(), 
+        cts.Token);
 }
 catch (Exception e)
 {

@@ -38,18 +38,19 @@ public class ProfilesRepository : IProfilesRepository
         
         if (name.Contains( "Profile1"))
         {
-            result.EnvironmentVariablePrefix = "ssm_";
+            result.EnvironmentVariablePrefix = "SSM_";
             result.EnvironmentVariableDelimeter = '_';
         }
 
         if (name.Contains( "Profile2"))
         {
-            result.EnvironmentVariablePrefix = "ssm-";
+            result.EnvironmentVariablePrefix = "SSM-";
             result.EnvironmentVariableDelimeter = '-';
         }
 
         if (name.Contains( "Profile3"))
         {
+            result.EnvironmentVariablePrefix = "ssm_";
             result.EnvironmentVariableNamingConvertType = ProfileDo.NamingConvertTypeEnum.LowerCase;
         }
 

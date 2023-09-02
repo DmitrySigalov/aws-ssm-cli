@@ -28,7 +28,9 @@ public class RunCommandHandler : ICommandHandler
     
     public string Name => "run";
     
-    public Task Handle(CancellationToken cancellationToken)
+    public string Help => "Activate profile configuration";
+
+    public Task Handle(string[] args, CancellationToken cancellationToken)
     {
         ConsoleUtils.WriteLineNotification($"Process [{Name}] command");
         Console.WriteLine();
@@ -58,6 +60,8 @@ public class RunCommandHandler : ICommandHandler
         var selectedProfileDo = SpinnerUtils.Run(
             () => _profilesRepository.GetByName(selectedProfileName),
             $"Read profile [{selectedProfileName}]");
+
+        selectedProfileDo?.PrintProfileSettings();
 
         if (selectedProfileDo?.SsmPaths?.Any() != true)
         {

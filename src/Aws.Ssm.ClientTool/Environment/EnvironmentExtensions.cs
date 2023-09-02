@@ -143,7 +143,7 @@ public static class EnvironmentExtensions
                 var table = new ConsoleTable("missing-environment-variable-name");
                 foreach (var envVar in invalidVariables.OrderBy(x => x))
                 {
-                    table.AddRow(envVar + "(_*)");
+                    table.AddRow(envVar + "(*)");
                 }
 
                 table.Write(Format.Minimal);

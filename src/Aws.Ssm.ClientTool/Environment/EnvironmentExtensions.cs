@@ -151,7 +151,7 @@ public static class EnvironmentExtensions
         }
     }
 
-    public static void PrintEnvironmentVariables(
+    private static void PrintEnvironmentVariables(
         this IDictionary<string, string> environmentVariables)
     {
         if (environmentVariables.Any() == false)

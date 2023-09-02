@@ -6,7 +6,7 @@ public class ProfilesRepository : IProfilesRepository
     {
         get
         {
-            return "Profile2";
+            return GetNames().FirstOrDefault();
         }
         set
         {
@@ -18,11 +18,11 @@ public class ProfilesRepository : IProfilesRepository
         return new HashSet<string>
         {
             "Default",
-            "Profile1",
-            "Profile2",
-            "Profile3WithAddedMissingSsmParameter",
-            "Profile4WithMissingSsmParameterOnly",
-            "UnavailableProfile",
+            // "Profile1",
+            // "Profile2",
+            // "Profile3WithAddedMissingSsmParameter",
+            // "Profile4WithMissingSsmParameterOnly",
+            // "UnavailableProfile",
         };
     }
 
@@ -54,7 +54,11 @@ public class ProfilesRepository : IProfilesRepository
             result.EnvironmentVariableNamingConvertType = ProfileDo.NamingConvertTypeEnum.LowerCase;
         }
 
-        if (!name.Contains("WithMissingSsmParameterOnly")) result.SsmPaths.Add("/message-broker/kafka/hermes");
+        if (!name.Contains("WithMissingSsmParameterOnly"))
+        {
+            result.SsmPaths.Add("/db/mysql/main");
+            result.SsmPaths.Add("/message-broker/kafka/hermes");
+        }
         
         if (name == "Profile2") result.SsmPaths.Add("/message-broker/kafka/cdc");
         

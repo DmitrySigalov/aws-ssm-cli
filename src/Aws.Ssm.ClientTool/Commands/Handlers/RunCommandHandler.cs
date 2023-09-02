@@ -52,10 +52,13 @@ public class RunCommandHandler : ICommandHandler
             ConsoleUtils.WriteLineNotification($"Current active profile is [{lastActiveProfileName}]");
         }
 
-        var selectedProfileName = Prompt.Select(
-            "Select profile for the activation",
-            items: profileNames,
-            defaultValue: lastActiveProfileName);
+        var selectedProfileName = 
+            profileNames.Count == 1
+            ? profileNames.Single()
+            : Prompt.Select(
+                "Select profile for the activation",
+                items: profileNames,
+                defaultValue: lastActiveProfileName);
         
         var selectedProfileDo = SpinnerUtils.Run(
             () => _profilesRepository.GetByName(selectedProfileName),

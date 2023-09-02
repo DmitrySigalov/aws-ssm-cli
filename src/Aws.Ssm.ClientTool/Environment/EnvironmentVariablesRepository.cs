@@ -17,7 +17,10 @@ public class EnvironmentVariablesRepository : IEnvironmentVariablesRepository
 
     public ISet<string> GetNames(IEnumerable<string> baseNames)
     {
-        return baseNames.Skip(1).ToHashSet();
+        return baseNames
+            .Skip(1)
+            .Select(x => x + "_*")
+            .ToHashSet();
     }
 
     // TODO: delete

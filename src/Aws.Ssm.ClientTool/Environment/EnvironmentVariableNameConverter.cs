@@ -1,4 +1,4 @@
-using Aws.Ssm.ClientTool.UserSettings;
+using Aws.Ssm.ClientTool.Profiles;
 
 namespace Aws.Ssm.ClientTool.Environment;
 
@@ -6,7 +6,7 @@ public static class EnvironmentVariableNameConverter
 {
     public static string ConvertFromSsmPath(
         string ssmPath,
-        UserSettingsDo userSettings)
+        ProfileDo profileSettings)
     {
         var result = ssmPath;
         
@@ -15,18 +15,18 @@ public static class EnvironmentVariableNameConverter
             result = result.TrimStart('/');
         }
         
-        result = result.Replace('/', userSettings.EnvironmentVariableDelimeter);
+        result = result.Replace('/', profileSettings.EnvironmentVariableDelimeter);
 
-        if (!string.IsNullOrEmpty(userSettings.EnvironmentVariablePrefix))
+        if (!string.IsNullOrEmpty(profileSettings.EnvironmentVariablePrefix))
         {
-            result = userSettings.EnvironmentVariablePrefix + result;
+            result = profileSettings.EnvironmentVariablePrefix + result;
         }
 
-        if (userSettings.EnvironmentVariableNamingType == UserSettingsDo.NamingTypeEnum.UpperCase)
+        if (profileSettings.EnvironmentVariableNamingConvertType == ProfileDo.NamingConvertTypeEnum.UpperCase)
         {
             result = result.ToUpper();
         }
-        else if (userSettings.EnvironmentVariableNamingType == UserSettingsDo.NamingTypeEnum.LowerCase)
+        else if (profileSettings.EnvironmentVariableNamingConvertType == ProfileDo.NamingConvertTypeEnum.LowerCase)
         {
             result = result.ToLower();
         }

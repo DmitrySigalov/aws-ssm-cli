@@ -4,5 +4,7 @@ public interface ICommandHandler
 {
     string Name { get; }
 
-    Task Handle(CancellationToken cancellationToken);
+    string Help { get; }
+
+    Task Handle(string[] args, CancellationToken cancellationToken);
 }

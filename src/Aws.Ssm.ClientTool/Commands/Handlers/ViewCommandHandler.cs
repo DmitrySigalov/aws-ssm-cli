@@ -1,134 +1,94 @@
 using Aws.Ssm.ClientTool.Environment;
+using Aws.Ssm.ClientTool.Profiles;
 using Aws.Ssm.ClientTool.SsmParameters;
-using Aws.Ssm.ClientTool.UserSettings;
 using Aws.Ssm.ClientTool.Utils;
-using ConsoleTables;
 using Sharprompt;
 
 namespace Aws.Ssm.ClientTool.Commands.Handlers;
 
 public class ViewCommandHandler : ICommandHandler
 {
-    private readonly UserSettingsRepository _userSettingsRepository;
+    private readonly IProfilesRepository _profilesRepository;
 
-    private readonly SsmParametersRepository _ssmParametersRepository;
+    private readonly IEnvironmentVariablesRepository _environmentVariablesRepository;
     
-    private readonly EnvironmentRepository _environmentRepository;
+    private readonly ISsmParametersRepository _ssmParametersRepository;
 
     public ViewCommandHandler(
-        UserSettingsRepository userSettingsRepository,
-        SsmParametersRepository ssmParametersRepository,
-        EnvironmentRepository environmentRepository)
+        IProfilesRepository profilesRepository,
+        IEnvironmentVariablesRepository environmentVariablesRepository,
+        ISsmParametersRepository ssmParametersRepository)
     {
-        _userSettingsRepository = userSettingsRepository;
+        _profilesRepository = profilesRepository;
+
+        _environmentVariablesRepository = environmentVariablesRepository;
 
         _ssmParametersRepository = ssmParametersRepository;
-        
-        _environmentRepository = environmentRepository;
     }
     
     public string Name => "view";
     
-    public Task Handle(CancellationToken cancellationToken)
+    public string Help => "View profile configuration";
+
+    public Task Handle(string[] args, CancellationToken cancellationToken)
     {
-        var userSettings = SpinnerUtils.Run(
-            _userSettingsRepository.Get,
-            "Get user settings");
+        ConsoleUtils.WriteLineNotification($"Process [{Name}] command");
+        Console.WriteLine();
 
-        PrintUserSettings(userSettings);
+        var profileNames = SpinnerUtils.Run(
+            _profilesRepository.GetNames,
+            "Get profile names");
 
-        if (userSettings.SsmPaths.Any() != true)
+        if (profileNames.Any() == false)
         {
+            ConsoleUtils.WriteLineError("Not configured any profile");
+
+            return Task.CompletedTask;
+        }
+
+        var lastActiveProfileName = _profilesRepository.ActiveName;
+        if (!string.IsNullOrEmpty(lastActiveProfileName))
+        {
+            ConsoleUtils.WriteLineNotification($"Current active profile is [{lastActiveProfileName}]");
+        }
+
+        var selectedProfileName = 
+            profileNames.Count == 1
+            ? profileNames.Single()
+            : Prompt.Select(
+                "Select profile to view",
+                items: profileNames,
+                defaultValue: lastActiveProfileName);
+
+        var selectedProfileDo = SpinnerUtils.Run(
+            () => _profilesRepository.GetByName(selectedProfileName),
+            $"Read profile [{selectedProfileName}]");
+        
+        selectedProfileDo?.PrintProfileSettings();
+
+        if (selectedProfileDo?.SsmPaths?.Any() != true)
+        {
+            ConsoleUtils.WriteLineError($"Not configured profile [{selectedProfileName}]");
+
             return Task.CompletedTask;
         }
         
-        var ssmPathsToView = Prompt.MultiSelect(
-            $"- Select {nameof(userSettings.SsmPaths)} to view",
-            userSettings.SsmPaths);
-
-        var ssmParameters = SpinnerUtils.Run(
-            () => _ssmParametersRepository.GetDictionaryBy(ssmPathsToView.ToHashSet()),
+        var resolvedSsmParameters = SpinnerUtils.Run(
+            () => _ssmParametersRepository.GetDictionaryBy(selectedProfileDo.SsmPaths),
             "Get ssm parameters from AWS System Manager");
+        
+        resolvedSsmParameters.PrintSsmParameters(selectedProfileDo);
 
-        PrintSsmParameters(ssmParameters, userSettings);
+        var actualEnvironmentVariables = SpinnerUtils.Run(
+            () => _environmentVariablesRepository.GetAll(selectedProfileDo),
+            "Get environment variables");
 
-        PrintNoFoundSsmPaths(ssmParameters, ssmPathsToView);
+        actualEnvironmentVariables.PrintEnvironmentVariablesWithSsmParametersValidation(
+            resolvedSsmParameters,
+            selectedProfileDo);
+
+        ConsoleUtils.WriteLineInfo($"DONE - Viewed profile [{selectedProfileName}]");
 
         return Task.CompletedTask;
-    }
-
-    private void PrintUserSettings(UserSettingsDo userSettings)
-    {
-        var table = new ConsoleTable("setting-name", "setting-value");
-        table.Options.EnableCount = false;
-        
-        table.AddRow(
-            nameof(userSettings.SsmPaths) + ".Count()", 
-            userSettings.SsmPaths.Count);
-
-        table.AddRow(
-            nameof(userSettings.EnvironmentVariablePrefix), 
-            userSettings.EnvironmentVariablePrefix);
-
-        table.AddRow(
-            nameof(userSettings.EnvironmentVariableDelimeter), 
-            userSettings.EnvironmentVariableDelimeter);
-
-        table.AddRow(
-            nameof(userSettings.EnvironmentVariableNamingType), 
-            userSettings.EnvironmentVariableNamingType);
-
-        table.Write(Format.Minimal);
-    }
-
-    private void PrintSsmParameters(IDictionary<string, string> ssmParameters, UserSettingsDo userSettings)
-    {
-        var table = new ConsoleTable("ssm-param-name", "env-var-status", "ssm-param-value");
-        table.Options.EnableCount = false;
-        foreach (var resolvedParameterValue in ssmParameters)
-        {
-            var environmentVariableName = EnvironmentVariableNameConverter.ConvertFromSsmPath(
-                resolvedParameterValue.Key,
-                userSettings);
-            var environmentVariableValue = _environmentRepository.GetEnvironmentVariable(
-                environmentVariableName);
-
-            var envVarStatus = "";
-            if (environmentVariableValue == resolvedParameterValue.Value)
-            {
-                envVarStatus = "OK";
-            }
-            else if (!string.IsNullOrEmpty(environmentVariableValue))
-            {
-                envVarStatus = "Invalid";
-            }
-            else
-            {
-                envVarStatus = "None";
-            }
-            
-            table.AddRow(
-                resolvedParameterValue.Key, 
-                envVarStatus,
-                resolvedParameterValue.Value);
-        }
-
-        table.Write(Format.Minimal);
-    }
-    
-    private void PrintNoFoundSsmPaths(IDictionary<string, string> ssmParameters, IEnumerable<string> ssmPathsToView)
-    {
-        var invalidPaths = ssmPathsToView
-            .Where(x => ssmParameters.Keys.All(y => !y.StartsWith(x)))
-            .ToArray();
-
-        var table = new ConsoleTable("unavailable-ssm-paths");
-        table.Options.EnableCount = false;
-        foreach (var ssmPath in invalidPaths)
-        {
-            table.AddRow(ssmPath);
-        }
-
-        table.Write(Format.Minimal);
     }
 }

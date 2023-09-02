@@ -1,33 +1,39 @@
+using Aws.Ssm.ClientTool.Utils;
 using ConsoleTables;
 
 namespace Aws.Ssm.ClientTool.Commands.Handlers;
 
 public class HelpCommandHandler : ICommandHandler
 {
-    private readonly IEnumerable<string> _commandNames;
+    private readonly ISet<ICommandHandler> _commandHandlers;
     
     public HelpCommandHandler(IEnumerable<ICommandHandler> commandHandlers)
     {
-        _commandNames = commandHandlers
-            .Select(x => x.Name)
+        _commandHandlers =new [] { this } 
+            .Union(commandHandlers)
             .ToHashSet();
     }
     
     public string Name => "help";
 
-    public Task Handle(CancellationToken cancellationToken)
+    public string Help => "?";
+
+    public Task Handle(string[] args, CancellationToken cancellationToken)
     {
-        var table = new ConsoleTable("Supported commands");
-        table.Options.EnableCount = false;
+        ConsoleUtils.WriteLineNotification($"Process [{Name}] command");
 
-        table.AddRow(Name);
-
-        foreach (var commandName in _commandNames.OrderBy(x => x))
+        ConsoleUtils.Notification(() =>
         {
-            table.AddRow(commandName);
-        }
+            var table = new ConsoleTable("command-name", "help");
+            table.Options.EnableCount = false;
 
-        table.Write(Format.Minimal);
+            foreach (var commandHandler in _commandHandlers)
+            {
+                table.AddRow(commandHandler.Name, commandHandler.Help);
+            }
+
+            table.Write(Format.Minimal);
+        });
 
         return Task.CompletedTask;
     }

@@ -1,4 +1,6 @@
 using Aws.Ssm.ClientTool.Commands.Handlers;
+using Aws.Ssm.ClientTool.Utils;
+using Sharprompt;
 
 namespace Aws.Ssm.ClientTool.Commands;
 
@@ -6,35 +8,43 @@ public class CommandHandlerProvider
 {
     private readonly HelpCommandHandler _helpCommandHandler;
 
-    public CommandHandlerProvider(IEnumerable<ICommandHandler> handlers)
+    private readonly ICommandHandler _defaultCommandHandler;
+
+    private readonly IDictionary<string, ICommandHandler> _allCommandHandlers;
+
+    public CommandHandlerProvider(
+        IEnumerable<ICommandHandler> handlers,
+        HelpCommandHandler helpCommandHandler)
     {
         handlers = handlers.ToArray();
+
+        _defaultCommandHandler = handlers.FirstOrDefault();
         
-        _helpCommandHandler = new HelpCommandHandler(handlers);
+        _helpCommandHandler = helpCommandHandler;
         
-        All = new [] { _helpCommandHandler } 
+        _allCommandHandlers = new [] { _helpCommandHandler } 
             .Union(handlers)
             .ToDictionary(h => h.Name, h => h);
     }
     
-    public IDictionary<string, ICommandHandler> All { get; }
-
-    public ICommandHandler Get(string? commandName)
+    public ICommandHandler Get(string commandName)
     {
         if (string.IsNullOrEmpty(commandName))
         {
-            Console.WriteLine("Set command argument");
-            
-            return _helpCommandHandler;
+            commandName = Prompt.Select(
+                "Select command",
+                _allCommandHandlers.Select(x => x.Key),
+                defaultValue: _defaultCommandHandler?.Name);
         }
 
-        if (!All.TryGetValue(commandName, out var handler))
+        if (!_allCommandHandlers.TryGetValue(commandName, out var handler))
         {
-            Console.WriteLine("Invalid command argument");
+            ConsoleUtils.WriteLineError("Invalid command argument");
+            Console.WriteLine();
             
             return _helpCommandHandler;
         }
-
+        
         return handler;
     }
 }

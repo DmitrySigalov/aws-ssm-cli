@@ -3,8 +3,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Aws.Ssm.ClientTool.Commands;
 using Aws.Ssm.ClientTool.Environment;
+using Aws.Ssm.ClientTool.Profiles;
 using Aws.Ssm.ClientTool.SsmParameters;
-using Aws.Ssm.ClientTool.UserSettings;
 
 var cts = new CancellationTokenSource();
 Console.CancelKeyPress += (s, e) =>
@@ -30,21 +30,25 @@ services
 
 services
     .AddCommandHandlers()
-    .AddSingleton<UserSettingsRepository>()
-    .AddSingleton<SsmParametersRepository>()
-    .AddSingleton<EnvironmentRepository>();
+    .AddSingleton<IProfilesRepository, ProfilesRepository>()
+    .AddSingleton<ISsmParametersRepository, SsmParametersRepository>()
+    .AddSingleton<IEnvironmentVariablesRepository, EnvironmentVariablesRepository>();
 
 var serviceProvider = services.BuildServiceProvider();
 
 try
 {
+    Console.WriteLine(Figgle.FiggleFonts.Standard.Render("Aws-Ssm-Cli"));
+
     var commandName = args.FirstOrDefault();
 
     var cliHandler = serviceProvider
         .GetRequiredService<CommandHandlerProvider>()
         .Get(commandName);
 
-    await cliHandler.Handle(cts.Token);
+    await cliHandler.Handle(
+        args.Skip(1).ToArray(), 
+        cts.Token);
 }
 catch (Exception e)
 {

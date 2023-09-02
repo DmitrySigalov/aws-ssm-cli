@@ -45,9 +45,13 @@ public class RunCommandHandler : ICommandHandler
         }
 
         var lastActiveProfileName = _profilesRepository.ActiveName;
+        if (!string.IsNullOrEmpty(lastActiveProfileName))
+        {
+            ConsoleUtils.WriteLineNotification($"Current active profile is [{lastActiveProfileName}]");
+        }
 
         var selectedProfileName = Prompt.Select(
-            "Select profile",
+            "Select profile for the activation",
             items: profileNames,
             defaultValue: lastActiveProfileName);
         
@@ -90,28 +94,30 @@ public class RunCommandHandler : ICommandHandler
         _profilesRepository.ActiveName = selectedProfileName;
         ConsoleUtils.WriteLineNotification($"Activate profile [{selectedProfileName}]");
         
-        var ssmParameters = SpinnerUtils.Run(
+        var resolvedSsmParameters = SpinnerUtils.Run(
             () => _ssmParametersRepository.GetDictionaryBy(selectedProfileDo.SsmPaths),
             "Get ssm parameters from AWS System Manager");
         
-        ssmParameters.PrintSsmParameters(selectedProfileDo);
+        resolvedSsmParameters.PrintSsmParameters(selectedProfileDo);
 
-        if (ssmParameters.Any() == false)
+        if (resolvedSsmParameters.Any() == false)
         {
-            ConsoleUtils.WriteLineError("NOT DONE");
+            ConsoleUtils.WriteLineError("NOT DONE - Unavailable ssm parameters");
 
             return Task.CompletedTask;
         }
 
         var appliedEnvironmentVariables = SpinnerUtils.Run(
             () => _environmentVariablesRepository.SetEnvironmentVariables(
-                ssmParameters,
+                resolvedSsmParameters,
                 selectedProfileDo),
             $"Apply environment variables");
         
-        appliedEnvironmentVariables.PrintEnvironmentVariables(selectedProfileDo);
+        appliedEnvironmentVariables.PrintEnvironmentVariables(
+            resolvedSsmParameters,
+            selectedProfileDo);
         
-        ConsoleUtils.WriteLineInfo("DONE");
+        ConsoleUtils.WriteLineInfo($"DONE - Activated profile [{selectedProfileName}]");
 
         return Task.CompletedTask;
     }

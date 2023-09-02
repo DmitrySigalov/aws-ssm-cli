@@ -57,6 +57,63 @@ public static class EnvironmentExtensions
     
     public static void PrintEnvironmentVariables(
         this IDictionary<string, string> environmentVariables,
+        IDictionary<string, string> ssmParameters,
+        ProfileDo profileDo)
+    {
+        PrintEnvironmentVariables(
+            environmentVariables,
+            profileDo);
+        
+        var ssmConvertedNamesValues = ssmParameters
+            .Select(x => new
+            {
+                Name = EnvironmentVariableNameConverter.ConvertFromSsmPath(x.Key, profileDo),
+                Value = x.Value,
+            })
+            .ToDictionary(
+                x => x.Name,
+                y => y.Value);
+        
+        var unavailableSsmParameters = environmentVariables
+            .Keys
+            .Where(x => !ssmConvertedNamesValues.ContainsKey(x))
+            .ToHashSet();
+        
+        var notSynchronizedEnvVars = ssmConvertedNamesValues
+            .Keys
+            .Where(x => !environmentVariables.ContainsKey(x))
+            .ToHashSet();
+        
+        notSynchronizedEnvVars.UnionWith(
+            ssmConvertedNamesValues
+                .Where(x => environmentVariables.ContainsKey(x.Key))
+                .Where(x => x.Value != environmentVariables[x.Key])
+                .Select(x => x.Key));
+
+        var table = new ConsoleTable("environment-variable_name", "ssm-parameter-status");
+
+        foreach (var invalidEnvVar in notSynchronizedEnvVars
+                     .Union(unavailableSsmParameters)
+                     .OrderBy(x => x)
+                 )
+        {
+            if (notSynchronizedEnvVars.Contains(invalidEnvVar))
+            {
+                table.AddRow(invalidEnvVar, "NotSynchronized");
+                continue;
+            }
+
+            table.AddRow(invalidEnvVar, "Unavailable");
+        }
+
+        if (table.Rows.Any())
+        {
+            ConsoleUtils.Warn(() => table.Write(Format.Minimal));
+        }
+    }
+
+    public static void PrintEnvironmentVariables(
+        this IDictionary<string, string> environmentVariables,
         ProfileDo profileDo)
     {
         if (environmentVariables.Any() == false)
@@ -85,10 +142,10 @@ public static class EnvironmentExtensions
         {
             ConsoleUtils.Warn(() =>
             {
-                var table = new ConsoleTable("missing-environment-variable_name");
+                var table = new ConsoleTable("missing-environment-variable-name");
                 foreach (var envVar in invalidVariables.OrderBy(x => x))
                 {
-                    table.AddRow(envVar + "(*)");
+                    table.AddRow(envVar + "(_*)");
                 }
 
                 table.Write(Format.Minimal);

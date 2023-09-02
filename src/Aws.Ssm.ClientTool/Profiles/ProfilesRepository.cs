@@ -33,26 +33,27 @@ public class ProfilesRepository : IProfilesRepository
         var result = new ProfileDo();
 
         result.EnvironmentVariablePrefix = "";
+        result.EnvironmentVariableDelimeter = '_';
+        result.EnvironmentVariableNamingConvertType = ProfileDo.NamingConvertTypeEnum.UpperCase;
+        
         if (name.Contains( "Profile1"))
         {
             result.EnvironmentVariablePrefix = "ssm_";
+            result.EnvironmentVariableDelimeter = '_';
         }
 
-        result.EnvironmentVariableDelimeter = '_';
         if (name.Contains( "Profile2"))
         {
+            result.EnvironmentVariablePrefix = "ssm-";
             result.EnvironmentVariableDelimeter = '-';
         }
 
-        result.EnvironmentVariableNamingConvertType = ProfileDo.NamingConvertTypeEnum.UpperCase;
         if (name.Contains( "Profile3"))
         {
             result.EnvironmentVariableNamingConvertType = ProfileDo.NamingConvertTypeEnum.LowerCase;
         }
 
         if (!name.Contains("WithMissingSsmParameterOnly")) result.SsmPaths.Add("/message-broker/kafka/hermes");
-        
-        if (name == "Profile1") result.SsmPaths.Add("/message-broker/kafka/hermes");
         
         if (name == "Profile2") result.SsmPaths.Add("/message-broker/kafka/cdc");
         

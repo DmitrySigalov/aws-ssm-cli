@@ -75,7 +75,7 @@ public class RunCommandHandler : ICommandHandler
 
         if (!string.IsNullOrEmpty(lastActiveProfileName))
         {
-            ConsoleUtils.WriteLineNotification($"Deactivate profile [{lastActiveProfileName}]");
+            ConsoleUtils.WriteLineNotification($"Deactivate profile [{lastActiveProfileName}] before new reactivation");
 
             var lastActiveProfileDo = 
                 lastActiveProfileName == selectedProfileName
@@ -94,7 +94,7 @@ public class RunCommandHandler : ICommandHandler
             }
             else 
             {
-                ConsoleUtils.WriteLineError($"Not configured profile [{lastActiveProfileDo}]");
+                ConsoleUtils.WriteLineError($"Not configured profile [{lastActiveProfileName}]");
             }
         }
 

@@ -9,7 +9,4 @@ public interface IEnvironmentVariablesRepository
     void Delete(string name);
 
     ISet<string> GetNames(IEnumerable<string> baseNames);
-
-    // TODO: delete
-    void DeleteEnvironmentVariables(IEnumerable<string> baseNames);
 }

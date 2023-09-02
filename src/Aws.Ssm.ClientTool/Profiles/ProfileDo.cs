@@ -2,14 +2,15 @@ namespace Aws.Ssm.ClientTool.Profiles;
 
 public class ProfileDo
 {
-    public HashSet<string> SsmPaths { get; set; } = new HashSet<string>();
+    public HashSet<string> SsmPaths { get; set; } = new();
 
-    public string EnvironmentVariablePrefix { get; set; }
+    public string EnvironmentVariablePrefix { get; set; } = "SSM_";
 
     public char EnvironmentVariableDelimeter { get; set; } = '_';
 
     public enum NamingConvertTypeEnum
     {
+        None = 0,
         UpperCase = 1,
         LowerCase = 2,
     }

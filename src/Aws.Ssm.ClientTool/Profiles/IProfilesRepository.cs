@@ -9,4 +9,6 @@ public interface IProfilesRepository
     ProfileDo GetByName(string name);
 
     void Save(string name, ProfileDo data);
+
+    void Delete(string name);
 }

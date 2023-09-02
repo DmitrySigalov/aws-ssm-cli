@@ -5,7 +5,6 @@ using Aws.Ssm.ClientTool.Commands;
 using Aws.Ssm.ClientTool.Environment;
 using Aws.Ssm.ClientTool.Profiles;
 using Aws.Ssm.ClientTool.SsmParameters;
-using Aws.Ssm.ClientTool.UserSettings;
 
 var cts = new CancellationTokenSource();
 Console.CancelKeyPress += (s, e) =>
@@ -31,7 +30,6 @@ services
 
 services
     .AddCommandHandlers()
-    .AddSingleton<UserSettingsRepository>()
     .AddSingleton<IProfilesRepository, ProfilesRepository>()
     .AddSingleton<ISsmParametersRepository, SsmParametersRepository>()
     .AddSingleton<IEnvironmentVariablesRepository, EnvironmentVariablesRepository>();

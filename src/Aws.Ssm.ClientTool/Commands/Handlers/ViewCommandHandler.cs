@@ -87,7 +87,7 @@ public class ViewCommandHandler : ICommandHandler
             resolvedSsmParameters,
             selectedProfileDo);
 
-        ConsoleUtils.WriteLineInfo($"DONE");
+        ConsoleUtils.WriteLineInfo($"DONE - Viewed profile [{selectedProfileName}]");
 
         return Task.CompletedTask;
     }

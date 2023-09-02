@@ -27,7 +27,7 @@ public class CommandHandlerProvider
             .ToDictionary(h => h.Name, h => h);
     }
     
-    public ICommandHandler Get(string? commandName)
+    public ICommandHandler Get(string commandName)
     {
         if (string.IsNullOrEmpty(commandName))
         {

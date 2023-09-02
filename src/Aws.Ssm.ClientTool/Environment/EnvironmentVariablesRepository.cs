@@ -22,9 +22,4 @@ public class EnvironmentVariablesRepository : IEnvironmentVariablesRepository
             .Select(x => x + "_*")
             .ToHashSet();
     }
-
-    // TODO: delete
-    public void DeleteEnvironmentVariables(IEnumerable<string> baseNames)
-    {
-    }
 }

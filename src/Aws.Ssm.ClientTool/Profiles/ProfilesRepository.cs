@@ -18,8 +18,8 @@ public class ProfilesRepository : IProfilesRepository
         return new HashSet<string>
         {
             "Default",
-            // "Profile1",
-            // "Profile2",
+            "Profile1",
+            "Profile2",
             // "Profile3WithAddedMissingSsmParameter",
             // "Profile4WithMissingSsmParameterOnly",
             // "UnavailableProfile",
@@ -68,6 +68,10 @@ public class ProfilesRepository : IProfilesRepository
     }
 
     public void Save(string name, ProfileDo data)
+    {
+    }
+
+    public void Delete(string name)
     {
     }
 }

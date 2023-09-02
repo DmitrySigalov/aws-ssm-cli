@@ -40,6 +40,8 @@ var serviceProvider = services.BuildServiceProvider();
 
 try
 {
+    Console.WriteLine(Figgle.FiggleFonts.Standard.Render("Aws-Ssm-Cli"));
+
     var commandName = args.FirstOrDefault();
 
     var cliHandler = serviceProvider

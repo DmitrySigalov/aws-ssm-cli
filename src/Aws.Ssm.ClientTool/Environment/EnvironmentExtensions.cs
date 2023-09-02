@@ -1,4 +1,5 @@
 using Aws.Ssm.ClientTool.Profiles;
+using Aws.Ssm.ClientTool.Utils;
 using ConsoleTables;
 
 namespace Aws.Ssm.ClientTool.Environment;
@@ -55,22 +56,43 @@ public static class EnvironmentExtensions
     }
     
     public static void PrintEnvironmentVariables(
-        this IDictionary<string, string> environmentVariables)
+        this IDictionary<string, string> environmentVariables,
+        ProfileDo profileDo)
     {
         if (environmentVariables.Any() == false)
         {
-            Utils.ConsoleUtils.WriteLineNotification("Environment variables list is empty");
-            
-            return;
+            ConsoleUtils.WriteLineWarn("Environment variables empty list");
         }
-        
-        var table = new ConsoleTable("environment-variable-name", "value");
-
-        foreach (var envVar in environmentVariables)
+        else
         {
-            table.AddRow(envVar.Key, envVar.Value);
+            var table = new ConsoleTable("environment-variable-name", "value");
+
+            foreach (var envVar in environmentVariables)
+            {
+                table.AddRow(envVar.Key, envVar.Value);
+            }
+        
+            table.Write(Format.Minimal);
         }
         
-        table.Write(Format.Minimal);
+        var invalidVariables = profileDo.SsmPaths
+            .Distinct()
+            .Select(x => EnvironmentVariableNameConverter.ConvertFromSsmPath(x, profileDo))
+            .Where(x => environmentVariables.Keys.All(y => !y.StartsWith(x)))
+            .ToArray();
+
+        if (invalidVariables.Any() == true)
+        {
+            ConsoleUtils.Warn(() =>
+            {
+                var table = new ConsoleTable("missing-environment-variable_name");
+                foreach (var envVar in invalidVariables.OrderBy(x => x))
+                {
+                    table.AddRow(envVar + "(*)");
+                }
+
+                table.Write(Format.Minimal);
+            });
+        }
     }
 }

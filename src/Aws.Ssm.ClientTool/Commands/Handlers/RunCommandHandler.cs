@@ -30,6 +30,9 @@ public class RunCommandHandler : ICommandHandler
     
     public Task Handle(CancellationToken cancellationToken)
     {
+        ConsoleUtils.WriteLineNotification($"Process [{Name}] command");
+        Console.WriteLine();
+
         var profileNames = SpinnerUtils.Run(
             _profilesRepository.GetNames,
             "Get profile names");
@@ -76,7 +79,7 @@ public class RunCommandHandler : ICommandHandler
                     () => _environmentVariablesRepository.DeleteEnvironmentVariables(lastActiveProfileDo),
                     "Delete environment variables");
                 
-                deletedEnvironmentVariables.PrintEnvironmentVariables();
+                deletedEnvironmentVariables.PrintEnvironmentVariables(lastActiveProfileDo);
             }
             else 
             {
@@ -91,15 +94,22 @@ public class RunCommandHandler : ICommandHandler
             () => _ssmParametersRepository.GetDictionaryBy(selectedProfileDo.SsmPaths),
             "Get ssm parameters from AWS System Manager");
         
-        ssmParameters.PrintSsmParameters(selectedProfileDo.SsmPaths);
-        
+        ssmParameters.PrintSsmParameters(selectedProfileDo);
+
+        if (ssmParameters.Any() == false)
+        {
+            ConsoleUtils.WriteLineError("NOT DONE");
+
+            return Task.CompletedTask;
+        }
+
         var appliedEnvironmentVariables = SpinnerUtils.Run(
             () => _environmentVariablesRepository.SetEnvironmentVariables(
                 ssmParameters,
                 selectedProfileDo),
             $"Apply environment variables");
         
-        appliedEnvironmentVariables.PrintEnvironmentVariables();
+        appliedEnvironmentVariables.PrintEnvironmentVariables(selectedProfileDo);
         
         ConsoleUtils.WriteLineInfo("DONE");
 

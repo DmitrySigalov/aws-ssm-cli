@@ -1,3 +1,4 @@
+using Aws.Ssm.ClientTool.Profiles;
 using Aws.Ssm.ClientTool.Utils;
 using ConsoleTables;
 
@@ -7,33 +8,39 @@ public static class SsmParametersExtensions
 {
     public static void PrintSsmParameters(
         this IDictionary<string, string> ssmParameters,
-        IEnumerable<string> ssmPaths)
+        ProfileDo profileDo)
     {
-        var table = new ConsoleTable("ssm-parameter-name", "value");
-        foreach (var ssmParam in ssmParameters.OrderBy(x => x.Key))
+        if (ssmParameters.Any() == false)
         {
-            table.AddRow(ssmParam.Key, ssmParam.Value);
+            ConsoleUtils.WriteLineWarn("Ssm parameters empty list");
         }
-        table.Write(Format.Minimal);
+        else
+        {
+            var table = new ConsoleTable("ssm-parameter-name", "value");
+            foreach (var ssmParam in ssmParameters.OrderBy(x => x.Key))
+            {
+                table.AddRow(ssmParam.Key, ssmParam.Value);
+            }
+            table.Write(Format.Minimal);
+        }
 
-        var invalidPaths = ssmPaths
+        var invalidPaths = profileDo.SsmPaths
             .Distinct()
             .Where(x => ssmParameters.Keys.All(y => !y.StartsWith(x)))
             .ToArray();
 
-        if (invalidPaths.Any() == false)
+        if (invalidPaths.Any() == true)
         {
-            return;
-        }
-
-        ConsoleUtils.HandleError(() =>
-        {
-            var table = new ConsoleTable("missing-ssm-path");
-            foreach (var ssmPath in invalidPaths.OrderBy(x => x))
+            ConsoleUtils.Warn(() =>
             {
-                table.AddRow(ssmPath);
-            }
-            table.Write(Format.Minimal);
-        });
+                var table = new ConsoleTable("missing-ssm-path");
+                foreach (var ssmPath in invalidPaths.OrderBy(x => x))
+                {
+                    table.AddRow(ssmPath);
+                }
+
+                table.Write(Format.Minimal);
+            });
+        }
     }
 }

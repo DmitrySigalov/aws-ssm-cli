@@ -5,21 +5,27 @@ namespace Aws.Ssm.ClientTool.Utils;
 public static class ConsoleUtils
 {
     public static void WriteLineInfo(string text) 
-        => HandleInfo(() => Console.WriteLine(text));
+        => Info(() => Console.WriteLine(text));
     
     public static void WriteLineError(string text) 
-        => HandleError(() => Console.WriteLine(text));
+        => Error(() => Console.WriteLine(text));
+    
+    public static void WriteLineWarn(string text) 
+        => Warn(() => Console.WriteLine(text));
     
     public static void WriteLineNotification(string text)
-        => HandleNotification(() => Console.WriteLine(text));
+        => Notification(() => Console.WriteLine(text));
     
-    public static void HandleInfo(Action action)
+    public static void Info(Action action)
         => Handle(action, ConsoleColor.Green);
     
-    public static void HandleError(Action action)
+    public static void Warn(Action action)
+        => Handle(action, ConsoleColor.Blue);
+    
+    public static void Error(Action action)
         => Handle(action, ConsoleColor.Red);
     
-    public static void HandleNotification(Action action)
+    public static void Notification(Action action)
         => Handle(action, ConsoleColor.Yellow);
     
     private static void Handle(Action action, ConsoleColor foregroundColor)

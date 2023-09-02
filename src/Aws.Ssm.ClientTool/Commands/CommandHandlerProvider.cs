@@ -26,7 +26,8 @@ public class CommandHandlerProvider
     {
         if (string.IsNullOrEmpty(commandName))
         {
-            ConsoleUtils.WriteLineError("Set command argument");
+            ConsoleUtils.WriteLineError("Undefined command argument");
+            Console.WriteLine();
             
             return _helpCommandHandler;
         }
@@ -34,12 +35,11 @@ public class CommandHandlerProvider
         if (!All.TryGetValue(commandName, out var handler))
         {
             ConsoleUtils.WriteLineError("Invalid command argument");
+            Console.WriteLine();
             
             return _helpCommandHandler;
         }
         
-        ConsoleUtils.WriteLineNotification($"Command [{commandName}]");
-
         return handler;
     }
 }

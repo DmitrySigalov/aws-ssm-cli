@@ -17,7 +17,7 @@ public class EnvironmentVariablesRepository : IEnvironmentVariablesRepository
 
     public ISet<string> GetNames(IEnumerable<string> baseNames)
     {
-        return baseNames.ToHashSet();
+        return baseNames.Skip(1).ToHashSet();
     }
 
     // TODO: delete

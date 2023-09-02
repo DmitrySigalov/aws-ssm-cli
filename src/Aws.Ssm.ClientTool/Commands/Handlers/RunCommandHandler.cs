@@ -80,7 +80,7 @@ public class RunCommandHandler : ICommandHandler
             if (lastActiveProfileDo != null)
             {
                 var deletedEnvironmentVariables = SpinnerUtils.Run(
-                    () => _environmentVariablesRepository.DeleteEnvironmentVariables(lastActiveProfileDo),
+                    () => _environmentVariablesRepository.DeleteAll(lastActiveProfileDo),
                     "Delete environment variables");
                 
                 deletedEnvironmentVariables.PrintEnvironmentVariables(lastActiveProfileDo);
@@ -108,7 +108,7 @@ public class RunCommandHandler : ICommandHandler
         }
 
         var appliedEnvironmentVariables = SpinnerUtils.Run(
-            () => _environmentVariablesRepository.SetEnvironmentVariables(
+            () => _environmentVariablesRepository.SetFromSsmParameters(
                 resolvedSsmParameters,
                 selectedProfileDo),
             $"Apply environment variables");

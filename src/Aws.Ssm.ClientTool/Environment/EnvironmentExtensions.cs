@@ -6,7 +6,7 @@ namespace Aws.Ssm.ClientTool.Environment;
 
 public static class EnvironmentExtensions
 {
-    public static IDictionary<string, string> SetEnvironmentVariables(
+    public static IDictionary<string, string> SetFromSsmParameters(
         this IEnvironmentVariablesRepository environmentVariablesRepository,
         IDictionary<string, string> ssmParameters,
         ProfileDo profileDo)
@@ -25,7 +25,35 @@ public static class EnvironmentExtensions
         return result;
     }
     
-    public static IDictionary<string, string> DeleteEnvironmentVariables(
+    public static IDictionary<string, string> GetAll(
+        this IEnvironmentVariablesRepository environmentVariablesRepository,
+        ProfileDo profileDo)
+    {
+        var result = new SortedDictionary<string, string>();
+        
+        var convertedEnvironmentVariableBaseNames = profileDo.SsmPaths
+            .Select(x => EnvironmentVariableNameConverter.ConvertFromSsmPath(x, profileDo))
+            .ToArray();
+
+        var environmentVariablesToGet = environmentVariablesRepository
+            .GetNames(convertedEnvironmentVariableBaseNames);
+
+        if (environmentVariablesToGet.Any() == false)
+        {
+            return result;
+        }
+
+        foreach (var envVarName in environmentVariablesToGet)
+        {
+            var envVarValue = environmentVariablesRepository.Get(envVarName);
+            
+            result.Add(envVarName, envVarValue);
+        }
+
+        return result;
+    }
+    
+    public static IDictionary<string, string> DeleteAll(
         this IEnvironmentVariablesRepository environmentVariablesRepository,
         ProfileDo profileDo)
     {

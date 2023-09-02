@@ -26,7 +26,7 @@ public static class ConsoleUtils
         => Handle(action, ConsoleColor.Red);
     
     public static void Notification(Action action)
-        => Handle(action, ConsoleColor.Yellow);
+        => Handle(action, ConsoleColor.DarkYellow);
     
     private static void Handle(Action action, ConsoleColor foregroundColor)
     {

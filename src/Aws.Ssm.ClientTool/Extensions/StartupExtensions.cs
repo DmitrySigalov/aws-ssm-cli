@@ -1,7 +1,8 @@
+using Aws.Ssm.ClientTool.Commands;
 using Aws.Ssm.ClientTool.Commands.Handlers;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Aws.Ssm.ClientTool.Commands;
+namespace Aws.Ssm.ClientTool.Extensions;
 
 public static class StartupExtensions
 {

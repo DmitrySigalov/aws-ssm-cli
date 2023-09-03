@@ -17,7 +17,7 @@ public class ProfilesRepository : IProfilesRepository
     {
         return new HashSet<string>
         {
-            // "Default",
+            "Default",
             // "Profile1",
             // "Profile2",
             "Profile3WithAddedMissingSsmParameter",
@@ -32,16 +32,15 @@ public class ProfilesRepository : IProfilesRepository
         
         var result = new ProfileDo();
 
-        result.EnvironmentVariablePrefix = "";
+        result.EnvironmentVariablePrefix = "SSM_";
         
         if (name.Contains( "Profile1"))
         {
-            result.EnvironmentVariablePrefix = "SSM_";
-        }
-
-        if (name.Contains( "Profile2"))
-        {
             result.EnvironmentVariablePrefix = "SSM-";
+        }
+        else if (name.Contains( "Profile2"))
+        {
+            result.EnvironmentVariablePrefix = "";
         }
 
         if (!name.Contains("WithMissingSsmParameterOnly"))

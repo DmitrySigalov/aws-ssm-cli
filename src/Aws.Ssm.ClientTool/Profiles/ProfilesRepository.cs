@@ -33,25 +33,15 @@ public class ProfilesRepository : IProfilesRepository
         var result = new ProfileDo();
 
         result.EnvironmentVariablePrefix = "";
-        result.EnvironmentVariableDelimeter = '_';
-        result.EnvironmentVariableNamingConvertType = ProfileDo.NamingConvertTypeEnum.UpperCase;
         
         if (name.Contains( "Profile1"))
         {
             result.EnvironmentVariablePrefix = "SSM_";
-            result.EnvironmentVariableDelimeter = '_';
         }
 
         if (name.Contains( "Profile2"))
         {
             result.EnvironmentVariablePrefix = "SSM-";
-            result.EnvironmentVariableDelimeter = '-';
-        }
-
-        if (name.Contains( "Profile3"))
-        {
-            result.EnvironmentVariablePrefix = "ssm_";
-            result.EnvironmentVariableNamingConvertType = ProfileDo.NamingConvertTypeEnum.LowerCase;
         }
 
         if (!name.Contains("WithMissingSsmParameterOnly"))
@@ -59,10 +49,16 @@ public class ProfilesRepository : IProfilesRepository
             result.SsmPaths.Add("/db/mysql/main");
             result.SsmPaths.Add("/message-broker/kafka/hermes");
         }
-        
-        if (name == "Profile2") result.SsmPaths.Add("/message-broker/kafka/cdc");
-        
-        if (name.Contains("MissingSsmParameter")) result.SsmPaths.Add("/missing/test");
+
+        if (name == "Profile2")
+        {
+            result.SsmPaths.Add("/message-broker/kafka/cdc");
+        }
+
+        if (name.Contains("MissingSsmParameter"))
+        {
+            result.SsmPaths.Add("/missing/test");
+        }
         
         return result;
     }

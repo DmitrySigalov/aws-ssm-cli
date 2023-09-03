@@ -94,8 +94,6 @@ public class ConfigCommandHandler : ICommandHandler
                 { $"Add into {nameof(profileDetails.ProfileDo.SsmPaths)}", AddSsmPath },
                 { removeSsmPathOperationName, RemoveSsmPaths },
                 { $"Set {nameof(profileDetails.ProfileDo.EnvironmentVariablePrefix)}", SetEnvironmentVariablePrefix },
-                { $"Set {nameof(profileDetails.ProfileDo.EnvironmentVariableDelimeter)}", SetEnvironmentVariableDelimeter },
-                { $"Set {nameof(profileDetails.ProfileDo.EnvironmentVariableNamingConvertType)}", SetEnvironmentVariableNamingConvertType },
            };
             if (profileDetails.ProfileDo.SsmPaths.Any() != true)
             {
@@ -255,26 +253,6 @@ public class ConfigCommandHandler : ICommandHandler
             {
                 (check) => EnvironmentVariableNameValidationRules.HandlerPrefix((string) check),
             }).Trim();
-
-        return false;
-    }
-    
-    private bool SetEnvironmentVariableDelimeter(ProfileDo profileDo)
-    {
-        profileDo.EnvironmentVariableDelimeter = Prompt.Select(
-            $"Set {nameof(profileDo.EnvironmentVariableDelimeter)}",
-            items: EnvironmentVariableNameValidationRules.ValidEnvVarNameDelimeters,
-            defaultValue: profileDo.EnvironmentVariableDelimeter);
-
-        return false;
-    }
-    
-    private bool SetEnvironmentVariableNamingConvertType(ProfileDo profileDo)
-    {
-        profileDo.EnvironmentVariableNamingConvertType = Prompt.Select(
-            $"Set {nameof(profileDo.EnvironmentVariableNamingConvertType)}",
-            new[] { ProfileDo.NamingConvertTypeEnum.None, ProfileDo.NamingConvertTypeEnum.UpperCase, ProfileDo.NamingConvertTypeEnum.LowerCase, },
-            defaultValue: profileDo.EnvironmentVariableNamingConvertType);
 
         return false;
     }

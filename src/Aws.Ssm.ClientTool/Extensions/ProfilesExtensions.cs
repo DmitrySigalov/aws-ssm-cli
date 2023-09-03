@@ -15,8 +15,6 @@ public static class ProfilesExtensions
         var table = new ConsoleTable("setting-name", "setting-value");
 
         table.AddRow(nameof(profileDo.EnvironmentVariablePrefix), profileDo.EnvironmentVariablePrefix);
-        table.AddRow(nameof(profileDo.EnvironmentVariableDelimeter), profileDo.EnvironmentVariableDelimeter);
-        table.AddRow(nameof(profileDo.EnvironmentVariableNamingConvertType), profileDo.EnvironmentVariableNamingConvertType);
 
         table.AddRow(nameof(profileDo.SsmPaths) + ".Count()", profileDo.SsmPaths?.Count ?? 0);
         if (profileDo.SsmPaths != null)

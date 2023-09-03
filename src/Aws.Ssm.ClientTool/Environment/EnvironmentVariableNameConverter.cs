@@ -4,32 +4,28 @@ namespace Aws.Ssm.ClientTool.Environment;
 
 public static class EnvironmentVariableNameConverter
 {
+    private static char SsmDelimeter => '/';
+    private static char EnvDelimeter => '_';
+    
     public static string ConvertFromSsmPath(
         string ssmPath,
         ProfileDo profileSettings)
     {
         var result = ssmPath;
         
-        if (result.StartsWith('/'))
+        if (result.StartsWith(SsmDelimeter))
         {
-            result = result.TrimStart('/');
+            result = result.TrimStart(SsmDelimeter);
         }
         
-        result = result.Replace('/', profileSettings.EnvironmentVariableDelimeter);
+        result = result.Replace(SsmDelimeter, EnvDelimeter);
 
         if (!string.IsNullOrEmpty(profileSettings.EnvironmentVariablePrefix))
         {
             result = profileSettings.EnvironmentVariablePrefix + result;
         }
 
-        if (profileSettings.EnvironmentVariableNamingConvertType == ProfileDo.NamingConvertTypeEnum.UpperCase)
-        {
-            result = result.ToUpper();
-        }
-        else if (profileSettings.EnvironmentVariableNamingConvertType == ProfileDo.NamingConvertTypeEnum.LowerCase)
-        {
-            result = result.ToLower();
-        }
+        result = result.ToUpper();
         
         return result;
     }

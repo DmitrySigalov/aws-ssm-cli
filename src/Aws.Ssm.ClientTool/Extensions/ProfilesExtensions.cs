@@ -1,6 +1,7 @@
+using Aws.Ssm.ClientTool.Profiles;
 using ConsoleTables;
 
-namespace Aws.Ssm.ClientTool.Profiles;
+namespace Aws.Ssm.ClientTool.Extensions;
 
 public static class ProfilesExtensions
 {

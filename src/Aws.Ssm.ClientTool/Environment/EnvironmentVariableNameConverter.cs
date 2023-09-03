@@ -16,11 +16,16 @@ public static class EnvironmentVariableNameConverter
             result = result.TrimStart(SsmParametersConsts.KeyDelimeter);
         }
         
-        result = result.Replace(SsmParametersConsts.KeyDelimeter, EnvironmentConsts.VariableNameDelimeter);
-
         if (!string.IsNullOrEmpty(profileSettings.EnvironmentVariablePrefix))
         {
             result = profileSettings.EnvironmentVariablePrefix + result;
+        }
+
+        result = result.Replace(SsmParametersConsts.KeyDelimeter, EnvironmentConsts.VariableNameDelimeter);
+
+        foreach (var invalidChar in EnvironmentConsts.InvalidVariableNameCharacters)
+        {
+            result = result.Replace(invalidChar, EnvironmentConsts.VariableNameDelimeter);
         }
 
         result = result.ToUpper();

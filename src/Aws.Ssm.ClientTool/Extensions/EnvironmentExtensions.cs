@@ -81,4 +81,14 @@ public static class EnvironmentExtensions
 
         return result;
     }
+    
+    private static ISet<string> GetNames(
+        this IEnvironmentVariablesRepository environmentVariablesRepository,
+        IEnumerable<string> baseNames)
+    {
+        return baseNames
+            .Select(environmentVariablesRepository.GetNames)
+            .SelectMany(x => x)
+            .ToHashSet();
+    }
 }

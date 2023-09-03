@@ -1,4 +1,4 @@
-using Aws.Ssm.ClientTool.Utils;
+using Aws.Ssm.ClientTool.Helpers;
 using ConsoleTables;
 
 namespace Aws.Ssm.ClientTool.Commands.Handlers;
@@ -20,9 +20,9 @@ public class HelpCommandHandler : ICommandHandler
 
     public Task Handle(string[] args, CancellationToken cancellationToken)
     {
-        ConsoleUtils.WriteLineNotification($"Process [{Name}] command");
+        ConsoleHelper.WriteLineNotification($"Process [{Name}] command");
 
-        ConsoleUtils.Notification(() =>
+        ConsoleHelper.Notification(() =>
         {
             var table = new ConsoleTable("command-name", "help");
             table.Options.EnableCount = false;

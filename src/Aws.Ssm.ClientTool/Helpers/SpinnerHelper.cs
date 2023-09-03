@@ -1,8 +1,8 @@
 using Kurukuru;
 
-namespace Aws.Ssm.ClientTool.Utils;
+namespace Aws.Ssm.ClientTool.Helpers;
 
-public static class SpinnerUtils
+public static class SpinnerHelper
 {
     public static void Run(
         Action callback,

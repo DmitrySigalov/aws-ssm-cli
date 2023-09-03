@@ -2,7 +2,7 @@ using Aws.Ssm.ClientTool.Environment;
 using Aws.Ssm.ClientTool.Extensions;
 using Aws.Ssm.ClientTool.Profiles;
 using Aws.Ssm.ClientTool.SsmParameters;
-using Aws.Ssm.ClientTool.Utils;
+using Aws.Ssm.ClientTool.Helpers;
 using Sharprompt;
 
 namespace Aws.Ssm.ClientTool.Commands.Handlers;
@@ -33,16 +33,16 @@ public class ViewCommandHandler : ICommandHandler
 
     public Task Handle(string[] args, CancellationToken cancellationToken)
     {
-        ConsoleUtils.WriteLineNotification($"Process [{Name}] command");
+        ConsoleHelper.WriteLineNotification($"Process [{Name}] command");
         Console.WriteLine();
 
-        var profileNames = SpinnerUtils.Run(
+        var profileNames = SpinnerHelper.Run(
             _profilesRepository.GetNames,
             "Get profile names");
 
         if (profileNames.Any() == false)
         {
-            ConsoleUtils.WriteLineError("Not configured any profile");
+            ConsoleHelper.WriteLineError("Not configured any profile");
 
             return Task.CompletedTask;
         }
@@ -50,7 +50,7 @@ public class ViewCommandHandler : ICommandHandler
         var lastActiveProfileName = _profilesRepository.ActiveName;
         if (!string.IsNullOrEmpty(lastActiveProfileName))
         {
-            ConsoleUtils.WriteLineNotification($"Current active profile is [{lastActiveProfileName}]");
+            ConsoleHelper.WriteLineNotification($"Current active profile is [{lastActiveProfileName}]");
         }
 
         var selectedProfileName = 
@@ -61,7 +61,7 @@ public class ViewCommandHandler : ICommandHandler
                 items: profileNames,
                 defaultValue: lastActiveProfileName);
 
-        var selectedProfileDo = SpinnerUtils.Run(
+        var selectedProfileDo = SpinnerHelper.Run(
             () => _profilesRepository.GetByName(selectedProfileName),
             $"Read profile [{selectedProfileName}]");
         
@@ -69,18 +69,18 @@ public class ViewCommandHandler : ICommandHandler
 
         if (selectedProfileDo?.SsmPaths?.Any() != true)
         {
-            ConsoleUtils.WriteLineError($"Not configured profile [{selectedProfileName}]");
+            ConsoleHelper.WriteLineError($"Not configured profile [{selectedProfileName}]");
 
             return Task.CompletedTask;
         }
         
-        var resolvedSsmParameters = SpinnerUtils.Run(
+        var resolvedSsmParameters = SpinnerHelper.Run(
             () => _ssmParametersRepository.GetDictionaryBy(selectedProfileDo.SsmPaths),
             "Get ssm parameters from AWS System Manager");
         
         resolvedSsmParameters.PrintSsmParameters(selectedProfileDo);
 
-        var actualEnvironmentVariables = SpinnerUtils.Run(
+        var actualEnvironmentVariables = SpinnerHelper.Run(
             () => _environmentVariablesRepository.GetAll(selectedProfileDo),
             "Get environment variables");
 
@@ -88,7 +88,7 @@ public class ViewCommandHandler : ICommandHandler
             resolvedSsmParameters,
             selectedProfileDo);
 
-        ConsoleUtils.WriteLineInfo($"DONE - Viewed profile [{selectedProfileName}]");
+        ConsoleHelper.WriteLineInfo($"DONE - Viewed profile [{selectedProfileName}]");
 
         return Task.CompletedTask;
     }

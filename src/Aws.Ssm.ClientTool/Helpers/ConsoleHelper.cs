@@ -1,8 +1,6 @@
-using System.Drawing;
+namespace Aws.Ssm.ClientTool.Helpers;
 
-namespace Aws.Ssm.ClientTool.Utils;
-
-public static class ConsoleUtils
+public static class ConsoleHelper
 {
     public static void WriteLineInfo(string text) 
         => Info(() => Console.WriteLine(text));

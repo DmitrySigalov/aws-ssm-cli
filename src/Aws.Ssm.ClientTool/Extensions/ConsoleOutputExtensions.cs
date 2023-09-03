@@ -1,6 +1,6 @@
 using Aws.Ssm.ClientTool.Environment;
 using Aws.Ssm.ClientTool.Profiles;
-using Aws.Ssm.ClientTool.Utils;
+using Aws.Ssm.ClientTool.Helpers;
 using ConsoleTables;
 
 namespace Aws.Ssm.ClientTool.Extensions;
@@ -39,7 +39,7 @@ public static class ConsoleOutputExtensions
     {
         if (ssmParameters.Any() == false)
         {
-            ConsoleUtils.WriteLineWarn("Ssm parameters empty list");
+            ConsoleHelper.WriteLineWarn("Ssm parameters empty list");
         }
         else
         {
@@ -58,7 +58,7 @@ public static class ConsoleOutputExtensions
 
         if (invalidPaths.Any() == true)
         {
-            ConsoleUtils.Warn(() =>
+            ConsoleHelper.Warn(() =>
             {
                 var table = new ConsoleTable("missing-ssm-path");
                 foreach (var ssmPath in invalidPaths.OrderBy(x => x))
@@ -108,7 +108,7 @@ public static class ConsoleOutputExtensions
 
         if (table.Rows.Any())
         {
-            ConsoleUtils.Warn(() => table.Write(Format.Minimal));
+            ConsoleHelper.Warn(() => table.Write(Format.Minimal));
         }
     }
 
@@ -126,7 +126,7 @@ public static class ConsoleOutputExtensions
 
         if (invalidVariables.Any() == true)
         {
-            ConsoleUtils.Warn(() =>
+            ConsoleHelper.Warn(() =>
             {
                 var table = new ConsoleTable("missing-environment-variable-name");
                 foreach (var envVar in invalidVariables.OrderBy(x => x))
@@ -144,7 +144,7 @@ public static class ConsoleOutputExtensions
     {
         if (environmentVariables.Any() == false)
         {
-            ConsoleUtils.WriteLineWarn("Environment variables empty list");
+            ConsoleHelper.WriteLineWarn("Environment variables empty list");
 
             return;
         }

@@ -1,5 +1,5 @@
 using Aws.Ssm.ClientTool.Commands.Handlers;
-using Aws.Ssm.ClientTool.Utils;
+using Aws.Ssm.ClientTool.Helpers;
 using Sharprompt;
 
 namespace Aws.Ssm.ClientTool.Commands;
@@ -39,7 +39,7 @@ public class CommandHandlerProvider
 
         if (!_allCommandHandlers.TryGetValue(commandName, out var handler))
         {
-            ConsoleUtils.WriteLineError("Invalid command argument");
+            ConsoleHelper.WriteLineError("Invalid command argument");
             Console.WriteLine();
             
             return _helpCommandHandler;

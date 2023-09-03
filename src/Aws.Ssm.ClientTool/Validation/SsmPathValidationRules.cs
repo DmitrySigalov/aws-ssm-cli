@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using Aws.Ssm.ClientTool.SsmParameters;
-using Aws.Ssm.ClientTool.Utils;
+using Aws.Ssm.ClientTool.Helpers;
 
 namespace Aws.Ssm.ClientTool.Validation;
 
@@ -37,7 +37,7 @@ public static class SsmPathValidationRules
             return new ValidationResult($"Duplicated child path - {firstFoundParameter} ");
         }
 
-        var ssmParameters = SpinnerUtils.Run(
+        var ssmParameters = SpinnerHelper.Run(
             () => ssmParametersRepository.GetDictionaryBy(new HashSet<string> { check, }),
             "Get ssm parameters from AWS System Manager to validate the ssm-path");
 

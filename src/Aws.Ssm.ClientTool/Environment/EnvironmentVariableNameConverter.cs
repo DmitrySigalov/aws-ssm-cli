@@ -1,24 +1,22 @@
 using Aws.Ssm.ClientTool.Profiles;
+using Aws.Ssm.ClientTool.SsmParameters;
 
 namespace Aws.Ssm.ClientTool.Environment;
 
 public static class EnvironmentVariableNameConverter
 {
-    private static char SsmDelimeter => '/';
-    private static char EnvDelimeter => '_';
-    
     public static string ConvertFromSsmPath(
         string ssmPath,
         ProfileDo profileSettings)
     {
         var result = ssmPath;
         
-        if (result.StartsWith(SsmDelimeter))
+        if (result.StartsWith(SsmParametersConsts.KeyDelimeter))
         {
-            result = result.TrimStart(SsmDelimeter);
+            result = result.TrimStart(SsmParametersConsts.KeyDelimeter);
         }
         
-        result = result.Replace(SsmDelimeter, EnvDelimeter);
+        result = result.Replace(SsmParametersConsts.KeyDelimeter, EnvironmentConsts.VariableNameDelimeter);
 
         if (!string.IsNullOrEmpty(profileSettings.EnvironmentVariablePrefix))
         {

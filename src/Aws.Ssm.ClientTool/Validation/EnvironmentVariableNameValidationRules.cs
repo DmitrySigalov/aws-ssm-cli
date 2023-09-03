@@ -27,6 +27,4 @@ public static class EnvironmentVariableNameValidationRules
 
         return ValidationResult.Success;
     }
-
-    public static char[] ValidEnvVarNameDelimeters => new[] { '_', '-', };
 }

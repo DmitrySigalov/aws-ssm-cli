@@ -20,8 +20,8 @@ public class ConfigCommandHandler : ICommandHandler
     private enum OperationEnum
     {
         Create,
-        Update,
         Delete,
+        Update,
     }
 
     public ConfigCommandHandler(
@@ -86,7 +86,7 @@ public class ConfigCommandHandler : ICommandHandler
 
         while (!allowToExit)
         {
-            var exitOperationName = "Exit and view profile configuration"; 
+            var exitOperationName = "Exit and view configured profile"; 
             var removeSsmPathOperationName = $"Remove from {nameof(profileDetails.ProfileDo.SsmPaths)}";
             var manageOperationsLookup = new Dictionary<string, Func<ProfileDo, bool>>
             {
@@ -165,7 +165,7 @@ public class ConfigCommandHandler : ICommandHandler
         {
             operation = Prompt.Select(
                 "Select profile operation",
-                items: new[] { OperationEnum.Create, OperationEnum.Update, OperationEnum.Delete },
+                items: new[] { OperationEnum.Update, OperationEnum.Create, OperationEnum.Delete },
                 defaultValue: OperationEnum.Update);
         }
 

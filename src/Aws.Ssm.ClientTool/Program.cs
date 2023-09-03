@@ -14,6 +14,7 @@ Console.CancelKeyPress += (s, e) =>
 };
 
 var configuration = new ConfigurationBuilder()
+    .AddEnvironmentVariables()
     //.SetBasePath(Directory.GetCurrentDirectory())
     .AddJsonFile("appsettings.json", false)
     .Build();

@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using Aws.Ssm.ClientTool.Environment;
 using Aws.Ssm.ClientTool.Profiles;
 
@@ -5,6 +6,26 @@ namespace Aws.Ssm.ClientTool.Extensions;
 
 public static class EnvironmentExtensions
 {
+    public static bool IsMacPlatform(this OperatingSystem osVersion)
+    {
+        if (osVersion.Platform == PlatformID.MacOSX)
+        {
+            return true;
+        }
+        
+        if (osVersion.Platform == PlatformID.Unix)
+        {
+            // Well, there are chances MacOSX is reported as Unix instead of MacOSX.
+            // Instead of platform check, we'll do a feature checks (Mac specific root folders)
+            return Directory.Exists("/Applications") &
+                   Directory.Exists("/System") &
+                   Directory.Exists("/Users") &
+                   Directory.Exists("/Volumes");
+        }
+
+        return false;
+    }
+    
     public static IDictionary<string, string> SetFromSsmParameters(
         this IEnvironmentVariablesRepository environmentVariablesRepository,
         IDictionary<string, string> ssmParameters,

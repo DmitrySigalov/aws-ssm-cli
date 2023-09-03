@@ -24,8 +24,16 @@ public static class StartupExtensions
     
     public static IServiceCollection AddEnvironmentBasedServices(this IServiceCollection serviceCollection)
     {
-        serviceCollection
-            .AddSingleton<IEnvironmentVariablesRepository, DefaultEnvironmentVariablesRepository>();
+        if (System.Environment.OSVersion.IsMacPlatform())
+        {
+            serviceCollection
+                .AddSingleton<IEnvironmentVariablesRepository, MacEnvironmentVariablesRepository>();
+        }
+        else
+        {
+            serviceCollection
+                .AddSingleton<IEnvironmentVariablesRepository, DefaultEnvironmentVariablesRepository>();
+        }
         
         return serviceCollection;
     }

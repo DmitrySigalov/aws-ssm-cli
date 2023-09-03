@@ -15,14 +15,19 @@ public static class SsmPathValidationRules
 
         configuredSsmPaths = configuredSsmPaths.ToArray();
         
-        if (string.IsNullOrWhiteSpace(check))
+        if (string.IsNullOrWhiteSpace(check) || check == SsmParametersConsts.KeyDelimeter.ToString())
         {
             return new ValidationResult("Invalid empty value");
         }
         
-        if (!check.StartsWith("/"))
+        if (!check.StartsWith(SsmParametersConsts.KeyDelimeter))
         {
-            return new ValidationResult("Invalid value - start from /");
+            return new ValidationResult($"Invalid value - start from {SsmParametersConsts.KeyDelimeter}");
+        }
+
+        if (check == "/")
+        {
+            return new ValidationResult("Invalid empty value");
         }
 
         var firstFoundParameter = configuredSsmPaths.FirstOrDefault(x => check.StartsWith(x, StringComparison.InvariantCultureIgnoreCase));

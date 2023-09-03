@@ -25,7 +25,7 @@ public static class StartupExtensions
     public static IServiceCollection AddEnvironmentBasedServices(this IServiceCollection serviceCollection)
     {
         serviceCollection
-            .AddSingleton<IEnvironmentVariablesRepository, DummyEnvironmentVariablesRepository>();
+            .AddSingleton<IEnvironmentVariablesRepository, DefaultEnvironmentVariablesRepository>();
         
         return serviceCollection;
     }

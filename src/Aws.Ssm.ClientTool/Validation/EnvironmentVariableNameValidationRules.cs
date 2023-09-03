@@ -4,7 +4,7 @@ namespace Aws.Ssm.ClientTool.Validation;
 
 public static class EnvironmentVariableNameValidationRules
 {
-    public static ValidationResult HandlerPrefix(string check)
+    public static ValidationResult HandlePrefix(string check)
     {
         check = check?.Trim();
         

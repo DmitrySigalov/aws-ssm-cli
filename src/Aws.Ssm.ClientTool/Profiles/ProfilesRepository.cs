@@ -17,28 +17,28 @@ public class ProfilesRepository : IProfilesRepository
     {
         return new HashSet<string>
         {
-            "Default",
-            // "Profile1",
-            // "Profile2",
-            "Profile3WithAddedMissingSsmParameter",
-            // "Profile4WithMissingSsmParameterOnly",
-            // "UnavailableProfile",
+            "default",
+            // "profile1",
+            // "profile2",
+            // "profile3WithAddedMissingSsmParameter",
+            // "profile4WithMissingSsmParameterOnly",
+            // "unavailableProfile",
         };
     }
 
     public ProfileDo GetByName(string name)
     {
-        if (name == "UnavailableProfile") return null;
+        if (name == "unavailableProfile") return null;
         
         var result = new ProfileDo();
 
         result.EnvironmentVariablePrefix = "SSM_";
         
-        if (name.Contains( "Profile1"))
+        if (name.Contains( "profile1"))
         {
             result.EnvironmentVariablePrefix = "SSM-";
         }
-        else if (name.Contains( "Profile2"))
+        else if (name.Contains( "profile2"))
         {
             result.EnvironmentVariablePrefix = "";
         }
@@ -49,7 +49,7 @@ public class ProfilesRepository : IProfilesRepository
             result.SsmPaths.Add("/message-broker/kafka/hermes");
         }
 
-        if (name == "Profile2")
+        if (name == "profile2")
         {
             result.SsmPaths.Add("/message-broker/kafka/cdc");
         }

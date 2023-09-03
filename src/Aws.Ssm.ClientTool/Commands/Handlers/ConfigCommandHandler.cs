@@ -158,7 +158,7 @@ public class ConfigCommandHandler : ICommandHandler
         }
 
         var operation = OperationEnum.Create;
-        var profileName = "Default";
+        var profileName = "default";
         var profileDo = new ProfileDo();
 
         if (profileNames.Any())
@@ -251,7 +251,7 @@ public class ConfigCommandHandler : ICommandHandler
             defaultValue: profileDo.EnvironmentVariablePrefix ?? " ",
             validators: new List<Func<object, ValidationResult>>
             {
-                (check) => EnvironmentVariableNameValidationRules.HandlerPrefix((string) check),
+                (check) => EnvironmentVariableNameValidationRules.HandlePrefix((string) check),
             }).Trim();
 
         return false;

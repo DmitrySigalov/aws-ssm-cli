@@ -2,7 +2,7 @@ namespace Aws.Ssm.ClientTool.Profiles.Rules;
 
 public static class ProfileFileNameResolver
 {
-    private const string ProfileFileExtension = ".profile";
+    private const string ProfileFileExtension = ".profile.json";
 
     public static string SearchFileNamePattern => $"*{ProfileFileExtension}";
 

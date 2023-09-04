@@ -1,8 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Aws.Ssm.ClientTool.EnvironmentVariables.NamingRules;
+namespace Aws.Ssm.ClientTool.EnvironmentVariables.Rules;
 
-public static class EnvironmentVariableNameValidationRules
+public static class EnvironmentVariableNameValidationRule
 {
     public static ValidationResult HandlePrefix(string check)
     {

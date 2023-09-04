@@ -1,11 +1,12 @@
 using System.ComponentModel.DataAnnotations;
 using Aws.Ssm.ClientTool.EnvironmentVariables;
 using Aws.Ssm.ClientTool.EnvironmentVariables.Extensions;
-using Aws.Ssm.ClientTool.EnvironmentVariables.NamingRules;
+using Aws.Ssm.ClientTool.EnvironmentVariables.Rules;
 using Aws.Ssm.ClientTool.Profiles;
 using Aws.Ssm.ClientTool.SsmParameters;
 using Aws.Ssm.ClientTool.Helpers;
 using Aws.Ssm.ClientTool.Profiles.Extensions;
+using Aws.Ssm.ClientTool.Profiles.Rules;
 using Aws.Ssm.ClientTool.Validation;
 using Sharprompt;
 
@@ -178,7 +179,7 @@ public class ConfigCommandHandler : ICommandHandler
                 defaultValue: profileName,
                 validators: new List<Func<object, ValidationResult>>
                 {
-                    (check) => ProfileNameValidationRules.Handle((string) check, profileNames),
+                    (check) => ProfileNameValidationRule.Handle((string) check, profileNames),
                 }).Trim();
             
             return (operation, profileName, profileDo);
@@ -253,7 +254,7 @@ public class ConfigCommandHandler : ICommandHandler
             defaultValue: profileConfig.EnvironmentVariablePrefix ?? " ",
             validators: new List<Func<object, ValidationResult>>
             {
-                (check) => EnvironmentVariableNameValidationRules.HandlePrefix((string) check),
+                (check) => EnvironmentVariableNameValidationRule.HandlePrefix((string) check),
             }).Trim();
 
         return false;

@@ -1,7 +1,7 @@
 using Aws.Ssm.ClientTool.Profiles;
 using Aws.Ssm.ClientTool.SsmParameters;
 
-namespace Aws.Ssm.ClientTool.EnvironmentVariables.NamingRules;
+namespace Aws.Ssm.ClientTool.EnvironmentVariables.Rules;
 
 public static class EnvironmentVariableNameConverter
 {

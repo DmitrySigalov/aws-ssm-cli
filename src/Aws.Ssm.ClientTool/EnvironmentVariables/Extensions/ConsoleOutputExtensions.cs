@@ -1,4 +1,4 @@
-using Aws.Ssm.ClientTool.EnvironmentVariables.NamingRules;
+using Aws.Ssm.ClientTool.EnvironmentVariables.Rules;
 using Aws.Ssm.ClientTool.Profiles;
 using Aws.Ssm.ClientTool.Helpers;
 using ConsoleTables;

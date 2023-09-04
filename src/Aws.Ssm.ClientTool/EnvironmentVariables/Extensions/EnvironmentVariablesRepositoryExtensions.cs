@@ -1,4 +1,4 @@
-using Aws.Ssm.ClientTool.EnvironmentVariables.NamingRules;
+using Aws.Ssm.ClientTool.EnvironmentVariables.Rules;
 using Aws.Ssm.ClientTool.Profiles;
 
 namespace Aws.Ssm.ClientTool.EnvironmentVariables.Extensions;

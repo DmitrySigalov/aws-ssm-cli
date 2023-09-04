@@ -1,3 +1,4 @@
+using Aws.Ssm.ClientTool.EnvironmentVariables;
 using Aws.Ssm.ClientTool.Helpers;
 using Aws.Ssm.ClientTool.Profiles.Rules;
 using Aws.Ssm.ClientTool.Runtime;
@@ -9,23 +10,26 @@ public class ProfileConfigProvider : IProfileConfigProvider
 {
     private readonly IUserFilesProvider _userFilesProvider;
 
+    private readonly IEnvironmentVariablesProvider _environmentVariablesProvider;
+
     private readonly ILogger<ProfileConfigProvider> _logger;
 
     public ProfileConfigProvider(
         IUserFilesProvider userFilesProvider,
+        IEnvironmentVariablesProvider environmentVariablesProvider,
         ILogger<ProfileConfigProvider> logger)
     {
         _userFilesProvider = userFilesProvider;
+
+        _environmentVariablesProvider = environmentVariablesProvider;
 
         _logger = logger;
     }
     
     public string ActiveName
     {
-        get => GetNames().FirstOrDefault();
-        set
-        {
-        }
+        get => _environmentVariablesProvider.Get(EnvironmentVariablesConsts.GetClientToolVariableName(nameof(ActiveName)));
+        set => _environmentVariablesProvider.Set(EnvironmentVariablesConsts.GetClientToolVariableName(nameof(ActiveName)), value);
     }
     
     public ISet<string> GetNames()

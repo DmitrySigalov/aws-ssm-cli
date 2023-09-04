@@ -16,15 +16,7 @@ Console.CancelKeyPress += (s, e) =>
     e.Cancel = true;
 };
 
-var runtimeParameters = new RuntimeParameters
-{
-    CommandName = args.FirstOrDefault(x => !x.StartsWith("-")),
-    IsDebug = args.Contains("--debug"),
-    Args = args,
-};
-
 var configuration = new ConfigurationBuilder()
-    //.SetBasePath(Directory.GetCurrentDirectory())
     .AddEnvironmentVariables()
     .AddJsonFile("appsettings.json", false)
     .Build();
@@ -38,7 +30,7 @@ services
         builder.AddConsole();
     })
     .AddSingleton<IConfiguration>(configuration)
-    .AddSingleton(runtimeParameters);
+    .AddRuntimeServices(args);
 
 services
     .AddCommandHandlers()
@@ -54,7 +46,7 @@ try
     
     var cliHandler = serviceProvider
         .GetRequiredService<CommandHandlerProvider>()
-        .Get(runtimeParameters.CommandName);
+        .Get();
 
     await cliHandler.Handle(cts.Token);
 }

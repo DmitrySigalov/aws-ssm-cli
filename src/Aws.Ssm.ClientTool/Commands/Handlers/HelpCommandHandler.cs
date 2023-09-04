@@ -20,7 +20,7 @@ public class HelpCommandHandler : ICommandHandler
 
     public Task Handle(string[] args, CancellationToken cancellationToken)
     {
-        ConsoleHelper.WriteLineNotification($"Process [{Name}] command");
+        ConsoleHelper.WriteLineNotification($"Supported commands");
 
         ConsoleHelper.Notification(() =>
         {

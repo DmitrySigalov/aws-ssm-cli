@@ -32,7 +32,7 @@ public class ViewCommandHandler : ICommandHandler
 
     public Task Handle(string[] args, CancellationToken cancellationToken)
     {
-        ConsoleHelper.WriteLineNotification($"Process [{Name}] command");
+        ConsoleHelper.WriteLineNotification(Help);
         Console.WriteLine();
 
         var profileNames = SpinnerHelper.Run(

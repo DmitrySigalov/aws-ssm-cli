@@ -6,7 +6,7 @@ using Sharprompt;
 
 namespace Aws.Ssm.ClientTool.Commands.Handlers;
 
-public class RunCommandHandler : ICommandHandler
+public class SetEnvCommandHandler : ICommandHandler
 {
     private readonly IProfilesRepository _profilesRepository;
 
@@ -14,7 +14,7 @@ public class RunCommandHandler : ICommandHandler
     
     private readonly ISsmParametersRepository _ssmParametersRepository;
 
-    public RunCommandHandler(
+    public SetEnvCommandHandler(
         IProfilesRepository profilesRepository,
         IEnvironmentVariablesRepository environmentVariablesRepository,
         ISsmParametersRepository ssmParametersRepository)
@@ -26,13 +26,13 @@ public class RunCommandHandler : ICommandHandler
         _ssmParametersRepository = ssmParametersRepository;
     }
     
-    public string Name => "run";
+    public string Name => "set-env";
     
-    public string Help => "Activate profile configuration";
+    public string Help => "Set environment variable(s) from profile configuration";
 
     public Task Handle(string[] args, CancellationToken cancellationToken)
     {
-        ConsoleHelper.WriteLineNotification($"Process [{Name}] command");
+        ConsoleHelper.WriteLineNotification(Help);
         Console.WriteLine();
 
         var profileNames = SpinnerHelper.Run(

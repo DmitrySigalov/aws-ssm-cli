@@ -5,6 +5,7 @@ using Aws.Ssm.ClientTool.Commands;
 using Aws.Ssm.ClientTool.EnvironmentVariables;
 using Aws.Ssm.ClientTool.Profiles;
 using Aws.Ssm.ClientTool.Profiles.Services;
+using Aws.Ssm.ClientTool.Runtime;
 using Aws.Ssm.ClientTool.SsmParameters;
 using Aws.Ssm.ClientTool.SsmParameters.Services;
 
@@ -13,6 +14,13 @@ Console.CancelKeyPress += (s, e) =>
 {
     cts.Cancel();
     e.Cancel = true;
+};
+
+var runtimeParameters = new RuntimeParameters
+{
+    CommandName = args.FirstOrDefault(x => !x.StartsWith("-")),
+    IsDebug = args.Contains("--debug"),
+    Args = args,
 };
 
 var configuration = new ConfigurationBuilder()
@@ -29,7 +37,8 @@ services
         builder.ClearProviders();
         builder.AddConsole();
     })
-    .AddSingleton<IConfiguration>(configuration);
+    .AddSingleton<IConfiguration>(configuration)
+    .AddSingleton(runtimeParameters);
 
 services
     .AddCommandHandlers()
@@ -43,11 +52,9 @@ try
 {
     Console.WriteLine(Figgle.FiggleFonts.Standard.Render("Aws-Ssm-Cli"));
     
-    var commandName = args.FirstOrDefault();
-
     var cliHandler = serviceProvider
         .GetRequiredService<CommandHandlerProvider>()
-        .Get(commandName);
+        .Get(runtimeParameters.CommandName);
 
     await cliHandler.Handle(cts.Token);
 }

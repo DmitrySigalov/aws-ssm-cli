@@ -29,7 +29,7 @@ public class CommandHandlerProvider
     
     public ICommandHandler Get(string commandName)
     {
-        if (string.IsNullOrEmpty(commandName))
+        if (string.IsNullOrEmpty(commandName) || commandName=="*")
         {
             commandName = Prompt.Select(
                 "Select command",

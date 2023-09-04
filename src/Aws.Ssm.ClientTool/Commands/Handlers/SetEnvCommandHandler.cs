@@ -1,4 +1,5 @@
-using Aws.Ssm.ClientTool.Environment;
+using Aws.Ssm.ClientTool.EnvironmentVariables;
+using Aws.Ssm.ClientTool.EnvironmentVariables.Extensions;
 using Aws.Ssm.ClientTool.Profiles;
 using Aws.Ssm.ClientTool.SsmParameters;
 using Aws.Ssm.ClientTool.Helpers;
@@ -10,18 +11,18 @@ public class SetEnvCommandHandler : ICommandHandler
 {
     private readonly IProfilesRepository _profilesRepository;
 
-    private readonly IEnvironmentVariablesRepository _environmentVariablesRepository;
+    private readonly IEnvironmentVariablesProvider _environmentVariablesProvider;
     
     private readonly ISsmParametersRepository _ssmParametersRepository;
 
     public SetEnvCommandHandler(
         IProfilesRepository profilesRepository,
-        IEnvironmentVariablesRepository environmentVariablesRepository,
+        IEnvironmentVariablesProvider environmentVariablesProvider,
         ISsmParametersRepository ssmParametersRepository)
     {
         _profilesRepository = profilesRepository;
 
-        _environmentVariablesRepository = environmentVariablesRepository;
+        _environmentVariablesProvider = environmentVariablesProvider;
 
         _ssmParametersRepository = ssmParametersRepository;
     }
@@ -87,7 +88,7 @@ public class SetEnvCommandHandler : ICommandHandler
             if (lastActiveProfileDo != null)
             {
                 var deletedEnvironmentVariables = SpinnerHelper.Run(
-                    () => _environmentVariablesRepository.DeleteAll(lastActiveProfileDo),
+                    () => _environmentVariablesProvider.DeleteAll(lastActiveProfileDo),
                     "Delete environment variables");
                 
                 deletedEnvironmentVariables.PrintEnvironmentVariablesWithProfileValidation(lastActiveProfileDo);
@@ -115,7 +116,7 @@ public class SetEnvCommandHandler : ICommandHandler
         }
 
         var appliedEnvironmentVariables = SpinnerHelper.Run(
-            () => _environmentVariablesRepository.SetFromSsmParameters(
+            () => _environmentVariablesProvider.SetFromSsmParameters(
                 resolvedSsmParameters,
                 selectedProfileDo),
             $"Apply environment variables");

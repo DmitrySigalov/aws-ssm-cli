@@ -1,8 +1,8 @@
 using System.Runtime.InteropServices;
-using Aws.Ssm.ClientTool.Environment.Repositories;
+using Aws.Ssm.ClientTool.EnvironmentVariables.Providers;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Aws.Ssm.ClientTool.Environment;
+namespace Aws.Ssm.ClientTool.EnvironmentVariables;
 
 public static class StartupExtensions
 {
@@ -11,13 +11,13 @@ public static class StartupExtensions
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
             serviceCollection
-                .AddSingleton<IEnvironmentVariablesRepository, DefaultEnvironmentVariablesRepository>();
+                .AddSingleton<IEnvironmentVariablesProvider, DefaultEnvironmentVariablesProvider>();
         }
         else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ||
                  RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
         {
             serviceCollection
-                .AddSingleton<IEnvironmentVariablesRepository, MacEnvironmentVariablesRepository>();
+                .AddSingleton<IEnvironmentVariablesProvider, MacEnvironmentVariablesProvider>();
         }
         else
         {

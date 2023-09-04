@@ -1,8 +1,9 @@
+using Aws.Ssm.ClientTool.EnvironmentVariables.NamingRules;
 using Aws.Ssm.ClientTool.Profiles;
 using Aws.Ssm.ClientTool.Helpers;
 using ConsoleTables;
 
-namespace Aws.Ssm.ClientTool.Environment;
+namespace Aws.Ssm.ClientTool.EnvironmentVariables.Extensions;
 
 public static class ConsoleOutputExtensions
 {

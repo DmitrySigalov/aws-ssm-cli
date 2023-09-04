@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Aws.Ssm.ClientTool.Validation;
+namespace Aws.Ssm.ClientTool.EnvironmentVariables.NamingRules;
 
 public static class EnvironmentVariableNameValidationRules
 {

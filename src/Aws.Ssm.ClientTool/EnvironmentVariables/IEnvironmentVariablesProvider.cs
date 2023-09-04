@@ -1,6 +1,6 @@
-namespace Aws.Ssm.ClientTool.Environment;
+namespace Aws.Ssm.ClientTool.EnvironmentVariables;
 
-public interface IEnvironmentVariablesRepository
+public interface IEnvironmentVariablesProvider
 {
     ISet<string> GetNames(string baseName = null);
 

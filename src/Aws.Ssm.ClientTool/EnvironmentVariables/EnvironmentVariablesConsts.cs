@@ -1,6 +1,6 @@
-namespace Aws.Ssm.ClientTool.Environment;
+namespace Aws.Ssm.ClientTool.EnvironmentVariables;
 
-public static class EnvironmentConsts
+public static class EnvironmentVariablesConsts
 {
     public static EnvironmentVariableTarget EnvironmentVariableTarget => EnvironmentVariableTarget.User; 
     

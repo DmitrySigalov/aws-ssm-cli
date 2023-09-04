@@ -1,5 +1,7 @@
 using System.ComponentModel.DataAnnotations;
-using Aws.Ssm.ClientTool.Environment;
+using Aws.Ssm.ClientTool.EnvironmentVariables;
+using Aws.Ssm.ClientTool.EnvironmentVariables.Extensions;
+using Aws.Ssm.ClientTool.EnvironmentVariables.NamingRules;
 using Aws.Ssm.ClientTool.Profiles;
 using Aws.Ssm.ClientTool.SsmParameters;
 using Aws.Ssm.ClientTool.Helpers;
@@ -12,7 +14,7 @@ public class ConfigCommandHandler : ICommandHandler
 {
     private readonly IProfilesRepository _profilesRepository;
 
-    private readonly IEnvironmentVariablesRepository _environmentVariablesRepository;
+    private readonly IEnvironmentVariablesProvider _environmentVariablesProvider;
     
     private readonly ISsmParametersRepository _ssmParametersRepository;
     
@@ -25,12 +27,12 @@ public class ConfigCommandHandler : ICommandHandler
 
     public ConfigCommandHandler(
         IProfilesRepository profilesRepository,
-        IEnvironmentVariablesRepository environmentVariablesRepository,
+        IEnvironmentVariablesProvider environmentVariablesProvider,
         ISsmParametersRepository ssmParametersRepository)
     {
         _profilesRepository = profilesRepository;
 
-        _environmentVariablesRepository = environmentVariablesRepository;
+        _environmentVariablesProvider = environmentVariablesProvider;
 
         _ssmParametersRepository = ssmParametersRepository;
     }
@@ -53,7 +55,7 @@ public class ConfigCommandHandler : ICommandHandler
             ConsoleHelper.WriteLineNotification($"Deactivate profile [{profileDetails.ProfileName}] before any configuration changes");
 
             var deletedEnvironmentVariables = SpinnerHelper.Run(
-                () => _environmentVariablesRepository.DeleteAll(profileDetails.ProfileDo),
+                () => _environmentVariablesProvider.DeleteAll(profileDetails.ProfileDo),
                 "Delete environment variables");
                 
             deletedEnvironmentVariables.PrintEnvironmentVariablesWithProfileValidation(profileDetails.ProfileDo);
@@ -132,7 +134,7 @@ public class ConfigCommandHandler : ICommandHandler
         resolvedSsmParameters.PrintSsmParameters(profileDetails.ProfileDo);
 
         var actualEnvironmentVariables = SpinnerHelper.Run(
-            () => _environmentVariablesRepository.GetAll(profileDetails.ProfileDo),
+            () => _environmentVariablesProvider.GetAll(profileDetails.ProfileDo),
             "Get environment variables");
 
         actualEnvironmentVariables.PrintEnvironmentVariablesWithSsmParametersValidation(

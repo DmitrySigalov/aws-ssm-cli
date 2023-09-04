@@ -1,7 +1,7 @@
 using Aws.Ssm.ClientTool.Profiles;
 using Aws.Ssm.ClientTool.SsmParameters;
 
-namespace Aws.Ssm.ClientTool.Environment;
+namespace Aws.Ssm.ClientTool.EnvironmentVariables.NamingRules;
 
 public static class EnvironmentVariableNameConverter
 {
@@ -21,11 +21,11 @@ public static class EnvironmentVariableNameConverter
             result = profileSettings.EnvironmentVariablePrefix + result;
         }
 
-        result = result.Replace(SsmParametersConsts.KeyDelimeter, EnvironmentConsts.VariableNameDelimeter);
+        result = result.Replace(SsmParametersConsts.KeyDelimeter, EnvironmentVariablesConsts.VariableNameDelimeter);
 
-        foreach (var invalidChar in EnvironmentConsts.InvalidVariableNameCharacters)
+        foreach (var invalidChar in EnvironmentVariablesConsts.InvalidVariableNameCharacters)
         {
-            result = result.Replace(invalidChar, EnvironmentConsts.VariableNameDelimeter);
+            result = result.Replace(invalidChar, EnvironmentVariablesConsts.VariableNameDelimeter);
         }
 
         result = result.ToUpper();

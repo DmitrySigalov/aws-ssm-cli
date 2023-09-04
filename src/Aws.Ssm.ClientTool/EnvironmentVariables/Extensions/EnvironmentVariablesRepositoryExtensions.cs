@@ -1,11 +1,12 @@
+using Aws.Ssm.ClientTool.EnvironmentVariables.NamingRules;
 using Aws.Ssm.ClientTool.Profiles;
 
-namespace Aws.Ssm.ClientTool.Environment;
+namespace Aws.Ssm.ClientTool.EnvironmentVariables.Extensions;
 
-public static class EnvironmentExtensions
+public static class EnvironmentVariablesRepositoryExtensions
 {
     public static IDictionary<string, string> SetFromSsmParameters(
-        this IEnvironmentVariablesRepository environmentVariablesRepository,
+        this IEnvironmentVariablesProvider environmentVariablesProvider,
         IDictionary<string, string> ssmParameters,
         ProfileDo profileDo)
     {
@@ -15,7 +16,7 @@ public static class EnvironmentExtensions
         {
             var envVarName = EnvironmentVariableNameConverter.ConvertFromSsmPath(ssmParam.Key, profileDo);
             
-            environmentVariablesRepository.Set(envVarName, ssmParam.Value);
+            environmentVariablesProvider.Set(envVarName, ssmParam.Value);
             
             result.Add(envVarName, ssmParam.Value);
         }
@@ -24,7 +25,7 @@ public static class EnvironmentExtensions
     }
     
     public static IDictionary<string, string> GetAll(
-        this IEnvironmentVariablesRepository environmentVariablesRepository,
+        this IEnvironmentVariablesProvider environmentVariablesProvider,
         ProfileDo profileDo)
     {
         var result = new SortedDictionary<string, string>();
@@ -33,7 +34,7 @@ public static class EnvironmentExtensions
             .Select(x => EnvironmentVariableNameConverter.ConvertFromSsmPath(x, profileDo))
             .ToArray();
 
-        var environmentVariablesToGet = environmentVariablesRepository
+        var environmentVariablesToGet = environmentVariablesProvider
             .GetNames(convertedEnvironmentVariableBaseNames);
 
         if (environmentVariablesToGet.Any() == false)
@@ -43,7 +44,7 @@ public static class EnvironmentExtensions
 
         foreach (var envVarName in environmentVariablesToGet)
         {
-            var envVarValue = environmentVariablesRepository.Get(envVarName);
+            var envVarValue = environmentVariablesProvider.Get(envVarName);
             
             result.Add(envVarName, envVarValue);
         }
@@ -52,7 +53,7 @@ public static class EnvironmentExtensions
     }
     
     public static IDictionary<string, string> DeleteAll(
-        this IEnvironmentVariablesRepository environmentVariablesRepository,
+        this IEnvironmentVariablesProvider environmentVariablesProvider,
         ProfileDo profileDo)
     {
         var result = new SortedDictionary<string, string>();
@@ -61,7 +62,7 @@ public static class EnvironmentExtensions
             .Select(x => EnvironmentVariableNameConverter.ConvertFromSsmPath(x, profileDo))
             .ToArray();
 
-        var environmentVariablesToDelete = environmentVariablesRepository
+        var environmentVariablesToDelete = environmentVariablesProvider
             .GetNames(convertedEnvironmentVariableBaseNames);
 
         if (environmentVariablesToDelete.Any() == false)
@@ -71,9 +72,9 @@ public static class EnvironmentExtensions
 
         foreach (var envVarName in environmentVariablesToDelete)
         {
-            var envVarValue = environmentVariablesRepository.Get(envVarName);
+            var envVarValue = environmentVariablesProvider.Get(envVarName);
             
-            environmentVariablesRepository.Delete(envVarName);
+            environmentVariablesProvider.Delete(envVarName);
             
             result.Add(envVarName, envVarValue);
         }
@@ -82,11 +83,11 @@ public static class EnvironmentExtensions
     }
     
     private static ISet<string> GetNames(
-        this IEnvironmentVariablesRepository environmentVariablesRepository,
+        this IEnvironmentVariablesProvider environmentVariablesProvider,
         IEnumerable<string> baseNames)
     {
         return baseNames
-            .Select(environmentVariablesRepository.GetNames)
+            .Select(environmentVariablesProvider.GetNames)
             .SelectMany(x => x)
             .ToHashSet();
     }

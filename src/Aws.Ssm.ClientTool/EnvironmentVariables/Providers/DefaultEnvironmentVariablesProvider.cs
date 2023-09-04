@@ -1,6 +1,6 @@
-namespace Aws.Ssm.ClientTool.Environment.Repositories;
+namespace Aws.Ssm.ClientTool.EnvironmentVariables.Providers;
 
-public class DefaultEnvironmentVariablesRepository : IEnvironmentVariablesRepository
+public class DefaultEnvironmentVariablesProvider : IEnvironmentVariablesProvider
 {
     public ISet<string> GetNames(string baseName = null)
     {
@@ -27,11 +27,11 @@ public class DefaultEnvironmentVariablesRepository : IEnvironmentVariablesReposi
 
     public virtual void Set(string name, string value)
     {
-        System.Environment.SetEnvironmentVariable(name, value, EnvironmentConsts.EnvironmentVariableTarget);
+        System.Environment.SetEnvironmentVariable(name, value, EnvironmentVariablesConsts.EnvironmentVariableTarget);
     }
 
     public virtual void Delete(string name)
     {
-        System.Environment.SetEnvironmentVariable(name, null, EnvironmentConsts.EnvironmentVariableTarget);
+        System.Environment.SetEnvironmentVariable(name, null, EnvironmentVariablesConsts.EnvironmentVariableTarget);
     }
 }

@@ -1,4 +1,5 @@
-using Aws.Ssm.ClientTool.Environment;
+using Aws.Ssm.ClientTool.EnvironmentVariables;
+using Aws.Ssm.ClientTool.EnvironmentVariables.Extensions;
 using Aws.Ssm.ClientTool.Profiles;
 using Aws.Ssm.ClientTool.SsmParameters;
 using Aws.Ssm.ClientTool.Helpers;
@@ -10,18 +11,18 @@ public class ViewCommandHandler : ICommandHandler
 {
     private readonly IProfilesRepository _profilesRepository;
 
-    private readonly IEnvironmentVariablesRepository _environmentVariablesRepository;
+    private readonly IEnvironmentVariablesProvider _environmentVariablesProvider;
     
     private readonly ISsmParametersRepository _ssmParametersRepository;
 
     public ViewCommandHandler(
         IProfilesRepository profilesRepository,
-        IEnvironmentVariablesRepository environmentVariablesRepository,
+        IEnvironmentVariablesProvider environmentVariablesProvider,
         ISsmParametersRepository ssmParametersRepository)
     {
         _profilesRepository = profilesRepository;
 
-        _environmentVariablesRepository = environmentVariablesRepository;
+        _environmentVariablesProvider = environmentVariablesProvider;
 
         _ssmParametersRepository = ssmParametersRepository;
     }
@@ -80,7 +81,7 @@ public class ViewCommandHandler : ICommandHandler
         resolvedSsmParameters.PrintSsmParameters(selectedProfileDo);
 
         var actualEnvironmentVariables = SpinnerHelper.Run(
-            () => _environmentVariablesRepository.GetAll(selectedProfileDo),
+            () => _environmentVariablesProvider.GetAll(selectedProfileDo),
             "Get environment variables");
 
         actualEnvironmentVariables.PrintEnvironmentVariablesWithSsmParametersValidation(

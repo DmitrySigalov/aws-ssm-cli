@@ -1,6 +1,6 @@
-namespace Aws.Ssm.ClientTool.Environment.Repositories;
+namespace Aws.Ssm.ClientTool.EnvironmentVariables.Providers;
 
-public class MacEnvironmentVariablesRepository : DefaultEnvironmentVariablesRepository
+public class MacEnvironmentVariablesProvider : DefaultEnvironmentVariablesProvider
 {
     public override void Set(string name, string value)
     {

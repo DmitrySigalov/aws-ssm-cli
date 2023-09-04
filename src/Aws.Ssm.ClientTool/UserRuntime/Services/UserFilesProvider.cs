@@ -1,14 +1,14 @@
 using System.Reflection;
 
-namespace Aws.Ssm.ClientTool.Runtime.Services;
+namespace Aws.Ssm.ClientTool.UserRuntime.Services;
 
 public class UserFilesProvider : IUserFilesProvider
 {
-    private readonly RuntimeParameters _runtimeParameters;
+    private readonly UserParameters _userParameters;
 
-    public UserFilesProvider(RuntimeParameters runtimeParameters)
+    public UserFilesProvider(UserParameters userParameters)
     {
-        _runtimeParameters = runtimeParameters;
+        _userParameters = userParameters;
     }
 
     public IEnumerable<string> GetFileNames(string searchPattern)
@@ -88,7 +88,7 @@ public class UserFilesProvider : IUserFilesProvider
     {
         var rootPath = Assembly.GetExecutingAssembly().Location;
 
-        if (_runtimeParameters.IsDebug)
+        if (_userParameters.IsDebug)
         {
             rootPath = Directory.GetCurrentDirectory();
         }

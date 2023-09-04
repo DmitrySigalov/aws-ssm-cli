@@ -1,6 +1,6 @@
-namespace Aws.Ssm.ClientTool.Runtime;
+namespace Aws.Ssm.ClientTool.UserRuntime;
 
-public class RuntimeParameters
+public class UserParameters
 {
     public string CommandName { get; set; }
     

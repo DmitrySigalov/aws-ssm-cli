@@ -1,7 +1,7 @@
 using Aws.Ssm.ClientTool.EnvironmentVariables;
 using Aws.Ssm.ClientTool.Helpers;
 using Aws.Ssm.ClientTool.Profiles.Rules;
-using Aws.Ssm.ClientTool.Runtime;
+using Aws.Ssm.ClientTool.UserRuntime;
 using Microsoft.Extensions.Logging;
 
 namespace Aws.Ssm.ClientTool.Profiles.Services;

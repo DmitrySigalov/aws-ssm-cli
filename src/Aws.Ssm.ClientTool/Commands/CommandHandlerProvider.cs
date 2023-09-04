@@ -1,13 +1,13 @@
 using Aws.Ssm.ClientTool.Commands.Handlers;
 using Aws.Ssm.ClientTool.Helpers;
-using Aws.Ssm.ClientTool.Runtime;
+using Aws.Ssm.ClientTool.UserRuntime;
 using Sharprompt;
 
 namespace Aws.Ssm.ClientTool.Commands;
 
 public class CommandHandlerProvider
 {
-    private readonly RuntimeParameters _runtimeParameters;
+    private readonly UserParameters _userParameters;
     
     private readonly HelpCommandHandler _helpCommandHandler;
 
@@ -16,11 +16,11 @@ public class CommandHandlerProvider
     private readonly IDictionary<string, ICommandHandler> _allCommandHandlers;
 
     public CommandHandlerProvider(
-        RuntimeParameters runtimeParameters,
+        UserParameters userParameters,
         IEnumerable<ICommandHandler> handlers,
         HelpCommandHandler helpCommandHandler)
     {
-        _runtimeParameters = runtimeParameters;
+        _userParameters = userParameters;
         
         handlers = handlers.ToArray();
 
@@ -35,7 +35,7 @@ public class CommandHandlerProvider
     
     public ICommandHandler Get()
     {
-        var commandName = _runtimeParameters.CommandName;
+        var commandName = _userParameters.CommandName;
         
         if (commandName=="*" || string.IsNullOrEmpty(commandName))
         {

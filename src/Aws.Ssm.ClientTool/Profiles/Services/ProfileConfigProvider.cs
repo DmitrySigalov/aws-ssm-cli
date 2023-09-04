@@ -1,6 +1,6 @@
-namespace Aws.Ssm.ClientTool.Profiles;
+namespace Aws.Ssm.ClientTool.Profiles.Services;
 
-public class ProfilesRepository : IProfilesRepository
+public class ProfileConfigProvider : IProfileConfigProvider
 {
     public string ActiveName
     {
@@ -26,11 +26,11 @@ public class ProfilesRepository : IProfilesRepository
         };
     }
 
-    public ProfileDo GetByName(string name)
+    public ProfileConfig GetByName(string name)
     {
         if (name == "unavailableProfile") return null;
         
-        var result = new ProfileDo();
+        var result = new ProfileConfig();
 
         result.EnvironmentVariablePrefix = "SSM_";
         
@@ -62,7 +62,7 @@ public class ProfilesRepository : IProfilesRepository
         return result;
     }
 
-    public void Save(string name, ProfileDo data)
+    public void Save(string name, ProfileConfig data)
     {
     }
 

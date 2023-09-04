@@ -7,7 +7,7 @@ public static class EnvironmentVariableNameConverter
 {
     public static string ConvertFromSsmPath(
         string ssmPath,
-        ProfileDo profileSettings)
+        ProfileConfig profileSettings)
     {
         var result = ssmPath;
         

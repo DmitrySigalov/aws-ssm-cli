@@ -3,24 +3,25 @@ using Aws.Ssm.ClientTool.EnvironmentVariables.Extensions;
 using Aws.Ssm.ClientTool.Profiles;
 using Aws.Ssm.ClientTool.SsmParameters;
 using Aws.Ssm.ClientTool.Helpers;
+using Aws.Ssm.ClientTool.Profiles.Extensions;
 using Sharprompt;
 
 namespace Aws.Ssm.ClientTool.Commands.Handlers;
 
 public class SetEnvCommandHandler : ICommandHandler
 {
-    private readonly IProfilesRepository _profilesRepository;
+    private readonly IProfileConfigProvider _profileConfigProvider;
 
     private readonly IEnvironmentVariablesProvider _environmentVariablesProvider;
     
     private readonly ISsmParametersRepository _ssmParametersRepository;
 
     public SetEnvCommandHandler(
-        IProfilesRepository profilesRepository,
+        IProfileConfigProvider profileConfigProvider,
         IEnvironmentVariablesProvider environmentVariablesProvider,
         ISsmParametersRepository ssmParametersRepository)
     {
-        _profilesRepository = profilesRepository;
+        _profileConfigProvider = profileConfigProvider;
 
         _environmentVariablesProvider = environmentVariablesProvider;
 
@@ -37,7 +38,7 @@ public class SetEnvCommandHandler : ICommandHandler
         Console.WriteLine();
 
         var profileNames = SpinnerHelper.Run(
-            _profilesRepository.GetNames,
+            _profileConfigProvider.GetNames,
             "Get profile names");
 
         if (profileNames.Any() == false)
@@ -47,7 +48,7 @@ public class SetEnvCommandHandler : ICommandHandler
             return Task.CompletedTask;
         }
 
-        var lastActiveProfileName = _profilesRepository.ActiveName;
+        var lastActiveProfileName = _profileConfigProvider.ActiveName;
         if (!string.IsNullOrEmpty(lastActiveProfileName))
         {
             ConsoleHelper.WriteLineNotification($"Current active profile is [{lastActiveProfileName}]");
@@ -62,7 +63,7 @@ public class SetEnvCommandHandler : ICommandHandler
                 defaultValue: lastActiveProfileName);
         
         var selectedProfileDo = SpinnerHelper.Run(
-            () => _profilesRepository.GetByName(selectedProfileName),
+            () => _profileConfigProvider.GetByName(selectedProfileName),
             $"Read profile [{selectedProfileName}]");
 
         selectedProfileDo?.PrintProfileSettings();
@@ -82,7 +83,7 @@ public class SetEnvCommandHandler : ICommandHandler
                 lastActiveProfileName == selectedProfileName
                 ? selectedProfileDo
                 : SpinnerHelper.Run(
-                    () => _profilesRepository.GetByName(lastActiveProfileName),
+                    () => _profileConfigProvider.GetByName(lastActiveProfileName),
                     $"Read profile [{lastActiveProfileName}]");
 
             if (lastActiveProfileDo != null)
@@ -99,7 +100,7 @@ public class SetEnvCommandHandler : ICommandHandler
             }
         }
 
-        _profilesRepository.ActiveName = selectedProfileName;
+        _profileConfigProvider.ActiveName = selectedProfileName;
         ConsoleHelper.WriteLineNotification($"Activate profile [{selectedProfileName}]");
         
         var resolvedSsmParameters = SpinnerHelper.Run(

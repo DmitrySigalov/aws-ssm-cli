@@ -1,14 +1,14 @@
 namespace Aws.Ssm.ClientTool.Profiles;
 
-public interface IProfilesRepository
+public interface IProfileConfigProvider
 {
     string ActiveName { get; set; }
 
     ISet<string> GetNames();
 
-    ProfileDo GetByName(string name);
+    ProfileConfig GetByName(string name);
 
-    void Save(string name, ProfileDo data);
+    void Save(string name, ProfileConfig data);
 
     void Delete(string name);
 }

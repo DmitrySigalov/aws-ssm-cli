@@ -8,7 +8,7 @@ public static class ConsoleOutputExtensions
 {
     public static void PrintSsmParameters(
         this IDictionary<string, string> ssmParameters,
-        ProfileDo profileDo)
+        ProfileConfig profileConfig)
     {
         if (ssmParameters.Any() == false)
         {
@@ -24,7 +24,7 @@ public static class ConsoleOutputExtensions
             table.Write(Format.Minimal);
         }
 
-        var invalidPaths = profileDo.SsmPaths
+        var invalidPaths = profileConfig.SsmPaths
             .Distinct()
             .Where(x => ssmParameters.Keys.All(y => !y.StartsWith(x)))
             .ToArray();

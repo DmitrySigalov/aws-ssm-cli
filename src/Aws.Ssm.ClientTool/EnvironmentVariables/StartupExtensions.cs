@@ -1,5 +1,5 @@
 using System.Runtime.InteropServices;
-using Aws.Ssm.ClientTool.EnvironmentVariables.Providers;
+using Aws.Ssm.ClientTool.EnvironmentVariables.Services;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Aws.Ssm.ClientTool.EnvironmentVariables;

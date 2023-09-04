@@ -1,4 +1,4 @@
-namespace Aws.Ssm.ClientTool.EnvironmentVariables.Providers;
+namespace Aws.Ssm.ClientTool.EnvironmentVariables.Services;
 
 public class MacEnvironmentVariablesProvider : DefaultEnvironmentVariablesProvider
 {

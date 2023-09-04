@@ -8,13 +8,13 @@ public static class EnvironmentVariablesRepositoryExtensions
     public static IDictionary<string, string> SetFromSsmParameters(
         this IEnvironmentVariablesProvider environmentVariablesProvider,
         IDictionary<string, string> ssmParameters,
-        ProfileDo profileDo)
+        ProfileConfig profileConfig)
     {
         var result = new SortedDictionary<string, string>();
 
         foreach (var ssmParam in ssmParameters)
         {
-            var envVarName = EnvironmentVariableNameConverter.ConvertFromSsmPath(ssmParam.Key, profileDo);
+            var envVarName = EnvironmentVariableNameConverter.ConvertFromSsmPath(ssmParam.Key, profileConfig);
             
             environmentVariablesProvider.Set(envVarName, ssmParam.Value);
             
@@ -26,12 +26,12 @@ public static class EnvironmentVariablesRepositoryExtensions
     
     public static IDictionary<string, string> GetAll(
         this IEnvironmentVariablesProvider environmentVariablesProvider,
-        ProfileDo profileDo)
+        ProfileConfig profileConfig)
     {
         var result = new SortedDictionary<string, string>();
         
-        var convertedEnvironmentVariableBaseNames = profileDo.SsmPaths
-            .Select(x => EnvironmentVariableNameConverter.ConvertFromSsmPath(x, profileDo))
+        var convertedEnvironmentVariableBaseNames = profileConfig.SsmPaths
+            .Select(x => EnvironmentVariableNameConverter.ConvertFromSsmPath(x, profileConfig))
             .ToArray();
 
         var environmentVariablesToGet = environmentVariablesProvider
@@ -54,12 +54,12 @@ public static class EnvironmentVariablesRepositoryExtensions
     
     public static IDictionary<string, string> DeleteAll(
         this IEnvironmentVariablesProvider environmentVariablesProvider,
-        ProfileDo profileDo)
+        ProfileConfig profileConfig)
     {
         var result = new SortedDictionary<string, string>();
         
-        var convertedEnvironmentVariableBaseNames = profileDo.SsmPaths
-            .Select(x => EnvironmentVariableNameConverter.ConvertFromSsmPath(x, profileDo))
+        var convertedEnvironmentVariableBaseNames = profileConfig.SsmPaths
+            .Select(x => EnvironmentVariableNameConverter.ConvertFromSsmPath(x, profileConfig))
             .ToArray();
 
         var environmentVariablesToDelete = environmentVariablesProvider

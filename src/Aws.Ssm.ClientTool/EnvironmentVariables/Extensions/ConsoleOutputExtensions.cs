@@ -10,14 +10,14 @@ public static class ConsoleOutputExtensions
     public static void PrintEnvironmentVariablesWithSsmParametersValidation(
         this IDictionary<string, string> environmentVariables,
         IDictionary<string, string> ssmParameters,
-        ProfileDo profileDo)
+        ProfileConfig profileConfig)
     {
         PrintEnvironmentVariables(environmentVariables);
         
         var ssmConvertedNamesValues = ssmParameters
             .Select(x => new
             {
-                Name = EnvironmentVariableNameConverter.ConvertFromSsmPath(x.Key, profileDo),
+                Name = EnvironmentVariableNameConverter.ConvertFromSsmPath(x.Key, profileConfig),
                 Value = x.Value,
             })
             .ToDictionary(
@@ -50,13 +50,13 @@ public static class ConsoleOutputExtensions
 
     public static void PrintEnvironmentVariablesWithProfileValidation(
         this IDictionary<string, string> environmentVariables,
-        ProfileDo profileDo)
+        ProfileConfig profileConfig)
     {
         PrintEnvironmentVariables(environmentVariables);
         
-        var invalidVariables = profileDo.SsmPaths
+        var invalidVariables = profileConfig.SsmPaths
             .Distinct()
-            .Select(x => EnvironmentVariableNameConverter.ConvertFromSsmPath(x, profileDo))
+            .Select(x => EnvironmentVariableNameConverter.ConvertFromSsmPath(x, profileConfig))
             .Where(x => environmentVariables.Keys.All(y => !y.StartsWith(x)))
             .ToArray();
 

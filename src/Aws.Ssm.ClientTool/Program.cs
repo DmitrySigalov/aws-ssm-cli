@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Aws.Ssm.ClientTool.Commands;
 using Aws.Ssm.ClientTool.EnvironmentVariables;
 using Aws.Ssm.ClientTool.Profiles;
+using Aws.Ssm.ClientTool.Profiles.Services;
 using Aws.Ssm.ClientTool.SsmParameters;
 
 var cts = new CancellationTokenSource();
@@ -32,7 +33,7 @@ services
 services
     .AddCommandHandlers()
     .AddEnvironmentBasedServices()
-    .AddSingleton<IProfilesRepository, ProfilesRepository>()
+    .AddSingleton<IProfileConfigProvider, ProfileConfigProvider>()
     .AddSingleton<ISsmParametersRepository, SsmParametersRepository>();
 
 var serviceProvider = services.BuildServiceProvider();

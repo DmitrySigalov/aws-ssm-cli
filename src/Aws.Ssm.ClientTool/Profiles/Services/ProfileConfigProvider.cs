@@ -1,5 +1,7 @@
+using Aws.Ssm.ClientTool.Helpers;
 using Aws.Ssm.ClientTool.Profiles.Rules;
 using Aws.Ssm.ClientTool.Runtime;
+using Microsoft.Extensions.Logging;
 
 namespace Aws.Ssm.ClientTool.Profiles.Services;
 
@@ -7,9 +9,15 @@ public class ProfileConfigProvider : IProfileConfigProvider
 {
     private readonly IUserFilesProvider _userFilesProvider;
 
-    public ProfileConfigProvider(IUserFilesProvider userFilesProvider)
+    private readonly ILogger<ProfileConfigProvider> _logger;
+
+    public ProfileConfigProvider(
+        IUserFilesProvider userFilesProvider,
+        ILogger<ProfileConfigProvider> logger)
     {
         _userFilesProvider = userFilesProvider;
+
+        _logger = logger;
     }
     
     public string ActiveName
@@ -32,61 +40,54 @@ public class ProfileConfigProvider : IProfileConfigProvider
     {
         var fileName = ProfileFileNameResolver.BuildFileName(name);
 
-        var fileText = _userFilesProvider
-            .ReadTextFileIfExist(fileName);
+        try
+        {
+            var fileText = _userFilesProvider
+                .ReadTextFileIfExist(fileName);
 
-        if (fileText == null)
-        {
-            throw new ArgumentException($"No found profile file named {fileName}");
+            return JsonSerializationHelper.Deserialize<ProfileConfig>(fileText);
         }
-        
-        if (name == "unavailableProfile") return null;
-        
-        var result = new ProfileConfig();
+        catch (Exception e)
+        {
+            _logger.LogError(
+                e,
+                "Error on attempt to read profile configuration. One of possible reasons - file was corrupted. Continue with default settings.");
 
-        result.EnvironmentVariablePrefix = "SSM_";
-        
-        if (name.Contains( "profile1"))
-        {
-            result.EnvironmentVariablePrefix = "SSM-";
+            return null;
         }
-        else if (name.Contains( "profile2"))
-        {
-            result.EnvironmentVariablePrefix = "";
-        }
-
-        if (!name.Contains("WithMissingSsmParameterOnly"))
-        {
-            result.SsmPaths.Add("/db/mysql/main");
-            result.SsmPaths.Add("/message-broker/kafka/hermes");
-        }
-
-        if (name == "profile2")
-        {
-            result.SsmPaths.Add("/message-broker/kafka/cdc");
-        }
-
-        if (name.Contains("MissingSsmParameter"))
-        {
-            result.SsmPaths.Add("/missing/test");
-        }
-        
-        return result;
     }
 
     public void Save(string name, ProfileConfig data)
     {
         var fileName = ProfileFileNameResolver.BuildFileName(name);
 
-        var fileText = $"Dummy #{DateTime.UtcNow}";
+        try
+        {
+            var fileText = JsonSerializationHelper.Serialize(data);
         
-        _userFilesProvider.WriteTextFile(fileName, fileText);
+            _userFilesProvider.WriteTextFile(fileName, fileText);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(
+                e,
+                "Error on attempt to save profile configuration. Continue with default settings.");
+        }
     }
 
     public void Delete(string name)
     {
         var fileName = ProfileFileNameResolver.BuildFileName(name);
-        
-        _userFilesProvider.DeleteFile(fileName);
+
+        try
+        {
+            _userFilesProvider.DeleteFile(fileName);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(
+                e,
+                "Error on attempt to delete profile file");
+        }
     }
 }

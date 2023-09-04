@@ -1,4 +1,3 @@
-using System.Runtime.InteropServices;
 using Aws.Ssm.ClientTool.Environment;
 using Aws.Ssm.ClientTool.Profiles;
 

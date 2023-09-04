@@ -15,7 +15,7 @@ public static class SsmPathValidationRules
 
         configuredSsmPaths = configuredSsmPaths.ToArray();
         
-        if (string.IsNullOrWhiteSpace(check) || check == SsmParametersConsts.KeyDelimeter.ToString())
+        if (string.IsNullOrWhiteSpace(check))
         {
             return new ValidationResult("Invalid empty value");
         }
@@ -23,11 +23,6 @@ public static class SsmPathValidationRules
         if (!check.StartsWith(SsmParametersConsts.KeyDelimeter))
         {
             return new ValidationResult($"Invalid value - start from {SsmParametersConsts.KeyDelimeter}");
-        }
-
-        if (check == "/")
-        {
-            return new ValidationResult("Invalid empty value");
         }
 
         var firstFoundParameter = configuredSsmPaths.FirstOrDefault(x => check.StartsWith(x, StringComparison.InvariantCultureIgnoreCase));

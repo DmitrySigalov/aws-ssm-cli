@@ -5,6 +5,7 @@ using Aws.Ssm.ClientTool.Commands;
 using Aws.Ssm.ClientTool.EnvironmentVariables;
 using Aws.Ssm.ClientTool.Profiles;
 using Aws.Ssm.ClientTool.Profiles.Services;
+using Aws.Ssm.ClientTool.Runtime;
 using Aws.Ssm.ClientTool.SsmParameters;
 using Aws.Ssm.ClientTool.SsmParameters.Services;
 
@@ -16,7 +17,6 @@ Console.CancelKeyPress += (s, e) =>
 };
 
 var configuration = new ConfigurationBuilder()
-    //.SetBasePath(Directory.GetCurrentDirectory())
     .AddEnvironmentVariables()
     .AddJsonFile("appsettings.json", false)
     .Build();
@@ -29,7 +29,8 @@ services
         builder.ClearProviders();
         builder.AddConsole();
     })
-    .AddSingleton<IConfiguration>(configuration);
+    .AddSingleton<IConfiguration>(configuration)
+    .AddRuntimeServices(args);
 
 services
     .AddCommandHandlers()
@@ -43,11 +44,9 @@ try
 {
     Console.WriteLine(Figgle.FiggleFonts.Standard.Render("Aws-Ssm-Cli"));
     
-    var commandName = args.FirstOrDefault();
-
     var cliHandler = serviceProvider
         .GetRequiredService<CommandHandlerProvider>()
-        .Get(commandName);
+        .Get();
 
     await cliHandler.Handle(cts.Token);
 }

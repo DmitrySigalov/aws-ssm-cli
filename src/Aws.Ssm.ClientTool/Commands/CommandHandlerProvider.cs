@@ -1,11 +1,14 @@
 using Aws.Ssm.ClientTool.Commands.Handlers;
 using Aws.Ssm.ClientTool.Helpers;
+using Aws.Ssm.ClientTool.Runtime;
 using Sharprompt;
 
 namespace Aws.Ssm.ClientTool.Commands;
 
 public class CommandHandlerProvider
 {
+    private readonly RuntimeParameters _runtimeParameters;
+    
     private readonly HelpCommandHandler _helpCommandHandler;
 
     private readonly ICommandHandler _defaultCommandHandler;
@@ -13,9 +16,12 @@ public class CommandHandlerProvider
     private readonly IDictionary<string, ICommandHandler> _allCommandHandlers;
 
     public CommandHandlerProvider(
+        RuntimeParameters runtimeParameters,
         IEnumerable<ICommandHandler> handlers,
         HelpCommandHandler helpCommandHandler)
     {
+        _runtimeParameters = runtimeParameters;
+        
         handlers = handlers.ToArray();
 
         _defaultCommandHandler = handlers.FirstOrDefault();
@@ -27,9 +33,11 @@ public class CommandHandlerProvider
             .ToDictionary(h => h.Name, h => h);
     }
     
-    public ICommandHandler Get(string commandName)
+    public ICommandHandler Get()
     {
-        if (string.IsNullOrEmpty(commandName))
+        var commandName = _runtimeParameters.CommandName;
+        
+        if (commandName=="*" || string.IsNullOrEmpty(commandName))
         {
             commandName = Prompt.Select(
                 "Select command",

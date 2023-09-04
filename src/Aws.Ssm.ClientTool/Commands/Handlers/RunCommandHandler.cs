@@ -1,5 +1,4 @@
 using Aws.Ssm.ClientTool.Environment;
-using Aws.Ssm.ClientTool.Extensions;
 using Aws.Ssm.ClientTool.Profiles;
 using Aws.Ssm.ClientTool.SsmParameters;
 using Aws.Ssm.ClientTool.Helpers;

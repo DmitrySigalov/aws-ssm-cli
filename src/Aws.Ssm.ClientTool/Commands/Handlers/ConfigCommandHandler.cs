@@ -7,7 +7,8 @@ using Aws.Ssm.ClientTool.SsmParameters;
 using Aws.Ssm.ClientTool.Helpers;
 using Aws.Ssm.ClientTool.Profiles.Extensions;
 using Aws.Ssm.ClientTool.Profiles.Rules;
-using Aws.Ssm.ClientTool.Validation;
+using Aws.Ssm.ClientTool.SsmParameters.Extensions;
+using Aws.Ssm.ClientTool.SsmParameters.Rules;
 using Sharprompt;
 
 namespace Aws.Ssm.ClientTool.Commands.Handlers;
@@ -18,7 +19,7 @@ public class ConfigCommandHandler : ICommandHandler
 
     private readonly IEnvironmentVariablesProvider _environmentVariablesProvider;
     
-    private readonly ISsmParametersRepository _ssmParametersRepository;
+    private readonly ISsmParametersProvider _ssmParametersProvider;
     
     private enum OperationEnum
     {
@@ -30,13 +31,13 @@ public class ConfigCommandHandler : ICommandHandler
     public ConfigCommandHandler(
         IProfileConfigProvider profileConfigProvider,
         IEnvironmentVariablesProvider environmentVariablesProvider,
-        ISsmParametersRepository ssmParametersRepository)
+        ISsmParametersProvider ssmParametersProvider)
     {
         _profileConfigProvider = profileConfigProvider;
 
         _environmentVariablesProvider = environmentVariablesProvider;
 
-        _ssmParametersRepository = ssmParametersRepository;
+        _ssmParametersProvider = ssmParametersProvider;
     }
 
     public string Name => "config";
@@ -130,7 +131,7 @@ public class ConfigCommandHandler : ICommandHandler
         Console.WriteLine();
 
         var resolvedSsmParameters = SpinnerHelper.Run(
-            () => _ssmParametersRepository.GetDictionaryBy(profileDetails.ProfileDo.SsmPaths),
+            () => _ssmParametersProvider.GetDictionaryBy(profileDetails.ProfileDo.SsmPaths),
             "Get ssm parameters from AWS System Manager");
         
         resolvedSsmParameters.PrintSsmParameters(profileDetails.ProfileDo);
@@ -217,7 +218,7 @@ public class ConfigCommandHandler : ICommandHandler
                     return SsmPathValidationRules.Handle(
                         (string)check,
                         profileConfig.SsmPaths,
-                        _ssmParametersRepository);
+                        _ssmParametersProvider);
                 },
             })?.Trim();
 

@@ -2,14 +2,14 @@ using System.ComponentModel.DataAnnotations;
 using Aws.Ssm.ClientTool.SsmParameters;
 using Aws.Ssm.ClientTool.Helpers;
 
-namespace Aws.Ssm.ClientTool.Validation;
+namespace Aws.Ssm.ClientTool.SsmParameters.Rules;
 
 public static class SsmPathValidationRules
 {
     public static ValidationResult Handle(
         string check, 
         IEnumerable<string> configuredSsmPaths,
-        ISsmParametersRepository ssmParametersRepository)
+        ISsmParametersProvider ssmParametersProvider)
     {
         check = check?.Trim();
 
@@ -38,7 +38,7 @@ public static class SsmPathValidationRules
         }
 
         var ssmParameters = SpinnerHelper.Run(
-            () => ssmParametersRepository.GetDictionaryBy(new HashSet<string> { check, }),
+            () => ssmParametersProvider.GetDictionaryBy(new HashSet<string> { check, }),
             "Get ssm parameters from AWS System Manager to validate the ssm-path");
 
         if (ssmParameters?.Any() != true)

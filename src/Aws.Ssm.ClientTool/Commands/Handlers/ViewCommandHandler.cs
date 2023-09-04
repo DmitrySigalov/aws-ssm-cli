@@ -4,6 +4,7 @@ using Aws.Ssm.ClientTool.Profiles;
 using Aws.Ssm.ClientTool.SsmParameters;
 using Aws.Ssm.ClientTool.Helpers;
 using Aws.Ssm.ClientTool.Profiles.Extensions;
+using Aws.Ssm.ClientTool.SsmParameters.Extensions;
 using Sharprompt;
 
 namespace Aws.Ssm.ClientTool.Commands.Handlers;
@@ -14,18 +15,18 @@ public class ViewCommandHandler : ICommandHandler
 
     private readonly IEnvironmentVariablesProvider _environmentVariablesProvider;
     
-    private readonly ISsmParametersRepository _ssmParametersRepository;
+    private readonly ISsmParametersProvider _ssmParametersProvider;
 
     public ViewCommandHandler(
         IProfileConfigProvider profileConfigProvider,
         IEnvironmentVariablesProvider environmentVariablesProvider,
-        ISsmParametersRepository ssmParametersRepository)
+        ISsmParametersProvider ssmParametersProvider)
     {
         _profileConfigProvider = profileConfigProvider;
 
         _environmentVariablesProvider = environmentVariablesProvider;
 
-        _ssmParametersRepository = ssmParametersRepository;
+        _ssmParametersProvider = ssmParametersProvider;
     }
     
     public string Name => "view";
@@ -76,7 +77,7 @@ public class ViewCommandHandler : ICommandHandler
         }
         
         var resolvedSsmParameters = SpinnerHelper.Run(
-            () => _ssmParametersRepository.GetDictionaryBy(selectedProfileDo.SsmPaths),
+            () => _ssmParametersProvider.GetDictionaryBy(selectedProfileDo.SsmPaths),
             "Get ssm parameters from AWS System Manager");
         
         resolvedSsmParameters.PrintSsmParameters(selectedProfileDo);

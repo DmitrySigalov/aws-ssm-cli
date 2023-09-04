@@ -6,7 +6,7 @@ namespace Aws.Ssm.ClientTool.EnvironmentVariables;
 
 public static class StartupExtensions
 {
-    public static IServiceCollection AddEnvironmentBasedServices(this IServiceCollection serviceCollection)
+    public static IServiceCollection AddEnvironmentVariablesServices(this IServiceCollection serviceCollection)
     {
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {

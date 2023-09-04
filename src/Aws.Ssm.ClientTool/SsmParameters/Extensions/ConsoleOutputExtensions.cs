@@ -2,7 +2,7 @@ using Aws.Ssm.ClientTool.Helpers;
 using Aws.Ssm.ClientTool.Profiles;
 using ConsoleTables;
 
-namespace Aws.Ssm.ClientTool.SsmParameters;
+namespace Aws.Ssm.ClientTool.SsmParameters.Extensions;
 
 public static class ConsoleOutputExtensions
 {

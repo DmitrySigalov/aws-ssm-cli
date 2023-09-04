@@ -2,11 +2,11 @@ namespace Aws.Ssm.ClientTool.Runtime;
 
 public interface IUserFilesProvider
 {
-    IEnumerable<string> GetFileNames(string fileMask);
+    IEnumerable<string> GetFileNames(string searchPattern);
 
-    string ReadFileIfExist(string name);
+    string ReadTextFileIfExist(string name);
     
-    void WriteFileWithBackup(string name, string text);
+    void WriteTextFile(string name, string text);
     
-    void DeleteFileWithBackup(string name);
+    void DeleteFile(string name);
 }

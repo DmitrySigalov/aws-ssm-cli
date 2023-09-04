@@ -11,33 +11,88 @@ public class UserFilesProvider : IUserFilesProvider
         _runtimeParameters = runtimeParameters;
     }
 
-    public IEnumerable<string> GetFileNames(string fileMask)
+    public IEnumerable<string> GetFileNames(string searchPattern)
     {
-        throw new NotImplementedException();
+        var rootFolderPath = GetUserRootFolder();
+
+        return Directory
+            .GetFiles(rootFolderPath, searchPattern)
+            .Select(x => new FileInfo(x))
+            .Select(x => x.Name)
+            .OrderBy(x => x)
+            .ToHashSet();
     }
 
-    public string ReadFileIfExist(string name)
+    public string ReadTextFileIfExist(string name)
     {
-        throw new NotImplementedException();
+        var fullFilePath = GetFullFilePath(name);
+
+        if (!File.Exists(fullFilePath))
+        {
+            return null;
+        }
+
+        using var fileStream = File.OpenText(fullFilePath);
+        
+        return fileStream.ReadToEnd();
     }
 
-    public void WriteFileWithBackup(string name, string text)
+    public void WriteTextFile(string name, string text)
     {
-        throw new NotImplementedException();
+        var fullFilePath = GetFullFilePath(name);
+
+        MoveFileToBackupIfExists(fullFilePath);
+
+        using var fileStream = File.CreateText(fullFilePath);
+        
+        fileStream.Write(text);
+        
+        fileStream.Flush();
     }
 
-    public void DeleteFileWithBackup(string name)
+    public void DeleteFile(string name)
     {
-        throw new NotImplementedException();
+        var fullFilePath = GetFullFilePath(name);
+
+        MoveFileToBackupIfExists(fullFilePath);
+    }
+
+    private void MoveFileToBackupIfExists(string fullFilePath)
+    {
+        var backupFullFilePath = fullFilePath + "backup";
+
+        if (File.Exists(backupFullFilePath))
+        {
+            File.Delete(backupFullFilePath);
+        }
+        
+        if (File.Exists(fullFilePath))
+        {
+            File.Move(fullFilePath, backupFullFilePath);
+        }
+    }
+    
+    private string GetFullFilePath(string fileName)
+    {
+        if (string.IsNullOrEmpty(fileName))
+        {
+            throw new ArgumentNullException(fileName);
+        }
+        
+        var rootFolderPath = GetUserRootFolder();
+
+        return Path.Combine(rootFolderPath, fileName);
     }
     
     private string GetUserRootFolder()
     {
+        var rootPath = Assembly.GetExecutingAssembly().Location;
+
         if (_runtimeParameters.IsDebug)
         {
-            return Directory.GetCurrentDirectory();
+            rootPath = Directory.GetCurrentDirectory();
         }
 
-        return Assembly.GetExecutingAssembly().Location;
+        return Path.GetFullPath(rootPath);
     }
 }

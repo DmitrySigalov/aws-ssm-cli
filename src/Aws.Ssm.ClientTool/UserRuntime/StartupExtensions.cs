@@ -12,7 +12,6 @@ public static class StartupExtensions
         var runtimeParameters = new UserParameters
         {
             CommandName = args.FirstOrDefault(x => !x.StartsWith("-")),
-            IsDebug = args.Contains("--debug"),
             Args = args,
         };
 

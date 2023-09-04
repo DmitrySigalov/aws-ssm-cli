@@ -4,13 +4,6 @@ namespace Aws.Ssm.ClientTool.UserRuntime.Services;
 
 public class UserFilesProvider : IUserFilesProvider
 {
-    private readonly UserParameters _userParameters;
-
-    public UserFilesProvider(UserParameters userParameters)
-    {
-        _userParameters = userParameters;
-    }
-
     public IEnumerable<string> GetFileNames(string searchPattern)
     {
         var rootFolderPath = GetUserRootFolder();
@@ -59,7 +52,7 @@ public class UserFilesProvider : IUserFilesProvider
 
     private void MoveFileToBackupIfExists(string fullFilePath)
     {
-        var backupFullFilePath = fullFilePath + "backup";
+        var backupFullFilePath = fullFilePath + ".backup";
 
         if (File.Exists(backupFullFilePath))
         {
@@ -87,11 +80,6 @@ public class UserFilesProvider : IUserFilesProvider
     private string GetUserRootFolder()
     {
         var rootPath = Assembly.GetExecutingAssembly().Location;
-
-        if (_userParameters.IsDebug)
-        {
-            rootPath = Directory.GetCurrentDirectory();
-        }
 
         return Path.GetFullPath(rootPath);
     }

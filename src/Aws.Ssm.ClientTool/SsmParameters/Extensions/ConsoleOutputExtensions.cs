@@ -1,18 +1,18 @@
+using Aws.Ssm.ClientTool.Helpers;
 using Aws.Ssm.ClientTool.Profiles;
-using Aws.Ssm.ClientTool.Utils;
 using ConsoleTables;
 
-namespace Aws.Ssm.ClientTool.SsmParameters;
+namespace Aws.Ssm.ClientTool.SsmParameters.Extensions;
 
-public static class SsmParametersExtensions
+public static class ConsoleOutputExtensions
 {
     public static void PrintSsmParameters(
         this IDictionary<string, string> ssmParameters,
-        ProfileDo profileDo)
+        ProfileConfig profileConfig)
     {
         if (ssmParameters.Any() == false)
         {
-            ConsoleUtils.WriteLineWarn("Ssm parameters empty list");
+            ConsoleHelper.WriteLineWarn("Ssm parameters empty list");
         }
         else
         {
@@ -24,14 +24,14 @@ public static class SsmParametersExtensions
             table.Write(Format.Minimal);
         }
 
-        var invalidPaths = profileDo.SsmPaths
+        var invalidPaths = profileConfig.SsmPaths
             .Distinct()
             .Where(x => ssmParameters.Keys.All(y => !y.StartsWith(x)))
             .ToArray();
 
         if (invalidPaths.Any() == true)
         {
-            ConsoleUtils.Warn(() =>
+            ConsoleHelper.Warn(() =>
             {
                 var table = new ConsoleTable("missing-ssm-path");
                 foreach (var ssmPath in invalidPaths.OrderBy(x => x))

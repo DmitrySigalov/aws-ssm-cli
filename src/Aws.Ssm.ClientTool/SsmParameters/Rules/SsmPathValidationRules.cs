@@ -1,15 +1,15 @@
 using System.ComponentModel.DataAnnotations;
 using Aws.Ssm.ClientTool.SsmParameters;
-using Aws.Ssm.ClientTool.Utils;
+using Aws.Ssm.ClientTool.Helpers;
 
-namespace Aws.Ssm.ClientTool.Validation;
+namespace Aws.Ssm.ClientTool.SsmParameters.Rules;
 
 public static class SsmPathValidationRules
 {
     public static ValidationResult Handle(
         string check, 
         IEnumerable<string> configuredSsmPaths,
-        ISsmParametersRepository ssmParametersRepository)
+        ISsmParametersProvider ssmParametersProvider)
     {
         check = check?.Trim();
 
@@ -20,9 +20,9 @@ public static class SsmPathValidationRules
             return new ValidationResult("Invalid empty value");
         }
         
-        if (!check.StartsWith("/"))
+        if (!check.StartsWith(SsmParametersConsts.KeyDelimeter))
         {
-            return new ValidationResult("Invalid value - start from /");
+            return new ValidationResult($"Invalid value - start from {SsmParametersConsts.KeyDelimeter}");
         }
 
         var firstFoundParameter = configuredSsmPaths.FirstOrDefault(x => check.StartsWith(x, StringComparison.InvariantCultureIgnoreCase));
@@ -37,8 +37,8 @@ public static class SsmPathValidationRules
             return new ValidationResult($"Duplicated child path - {firstFoundParameter} ");
         }
 
-        var ssmParameters = SpinnerUtils.Run(
-            () => ssmParametersRepository.GetDictionaryBy(new HashSet<string> { check, }),
+        var ssmParameters = SpinnerHelper.Run(
+            () => ssmParametersProvider.GetDictionaryBy(new HashSet<string> { check, }),
             "Get ssm parameters from AWS System Manager to validate the ssm-path");
 
         if (ssmParameters?.Any() != true)

@@ -1,8 +1,9 @@
+using Aws.Ssm.ClientTool.SsmParameters.Rules;
 using Microsoft.Extensions.Configuration;
 
-namespace Aws.Ssm.ClientTool.SsmParameters;
+namespace Aws.Ssm.ClientTool.SsmParameters.Services;
 
-public class SsmParametersRepository : ISsmParametersRepository
+public class SsmParametersProvider : ISsmParametersProvider
 {
     public IDictionary<string, string> GetDictionaryBy(ISet<string> paths)
     {

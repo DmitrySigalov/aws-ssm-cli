@@ -1,70 +1,75 @@
 using System.ComponentModel.DataAnnotations;
-using Aws.Ssm.ClientTool.Environment;
+using Aws.Ssm.ClientTool.EnvironmentVariables;
+using Aws.Ssm.ClientTool.EnvironmentVariables.Extensions;
+using Aws.Ssm.ClientTool.EnvironmentVariables.Rules;
 using Aws.Ssm.ClientTool.Profiles;
 using Aws.Ssm.ClientTool.SsmParameters;
-using Aws.Ssm.ClientTool.Utils;
-using Aws.Ssm.ClientTool.Validation;
+using Aws.Ssm.ClientTool.Helpers;
+using Aws.Ssm.ClientTool.Profiles.Extensions;
+using Aws.Ssm.ClientTool.Profiles.Rules;
+using Aws.Ssm.ClientTool.SsmParameters.Extensions;
+using Aws.Ssm.ClientTool.SsmParameters.Rules;
 using Sharprompt;
 
 namespace Aws.Ssm.ClientTool.Commands.Handlers;
 
 public class ConfigCommandHandler : ICommandHandler
 {
-    private readonly IProfilesRepository _profilesRepository;
+    private readonly IProfileConfigProvider _profileConfigProvider;
 
-    private readonly IEnvironmentVariablesRepository _environmentVariablesRepository;
+    private readonly IEnvironmentVariablesProvider _environmentVariablesProvider;
     
-    private readonly ISsmParametersRepository _ssmParametersRepository;
+    private readonly ISsmParametersProvider _ssmParametersProvider;
     
     private enum OperationEnum
     {
         Create,
-        Update,
         Delete,
+        Update,
     }
 
     public ConfigCommandHandler(
-        IProfilesRepository profilesRepository,
-        IEnvironmentVariablesRepository environmentVariablesRepository,
-        ISsmParametersRepository ssmParametersRepository)
+        IProfileConfigProvider profileConfigProvider,
+        IEnvironmentVariablesProvider environmentVariablesProvider,
+        ISsmParametersProvider ssmParametersProvider)
     {
-        _profilesRepository = profilesRepository;
+        _profileConfigProvider = profileConfigProvider;
 
-        _environmentVariablesRepository = environmentVariablesRepository;
+        _environmentVariablesProvider = environmentVariablesProvider;
 
-        _ssmParametersRepository = ssmParametersRepository;
+        _ssmParametersProvider = ssmParametersProvider;
     }
 
     public string Name => "config";
 
-    public string Help => "Create/update/delete profile configuration";
+    public string Description => "Profile(s) configuration";
 
-    public Task Handle(string[] args, CancellationToken cancellationToken)
+    public Task Handle(CancellationToken cancellationToken)
     {
-        ConsoleUtils.WriteLineNotification($"Process [{Name}] command");
+        ConsoleHelper.WriteLineNotification(Description);
         Console.WriteLine();
 
         var profileDetails = GetProfileDetailsForConfiguration();
 
         if (profileDetails.Operation != OperationEnum.Create &&
-            profileDetails.ProfileName == _profilesRepository.ActiveName &&
+            profileDetails.ProfileName == _profileConfigProvider.ActiveName &&
             profileDetails.ProfileDo.SsmPaths.Any() == true)
         {
-            ConsoleUtils.WriteLineNotification($"Deactivate profile [{profileDetails.ProfileName}] before any configuration changes");
+            ConsoleHelper.WriteLineNotification($"Deactivate profile [{profileDetails.ProfileName}] before any configuration changes");
 
-            var deletedEnvironmentVariables = SpinnerUtils.Run(
-                () => _environmentVariablesRepository.DeleteAll(profileDetails.ProfileDo),
+            var deletedEnvironmentVariables = SpinnerHelper.Run(
+                () => _environmentVariablesProvider.DeleteAll(profileDetails.ProfileDo),
                 "Delete environment variables");
                 
             deletedEnvironmentVariables.PrintEnvironmentVariablesWithProfileValidation(profileDetails.ProfileDo);
 
-            _profilesRepository.ActiveName = null;
+            _profileConfigProvider.ActiveName = null;
         }
 
         if (profileDetails.Operation == OperationEnum.Create)
         {
-            SpinnerUtils.Run(
-                () => _profilesRepository.Save(profileDetails.ProfileName, profileDetails.ProfileDo),
+            SpinnerHelper.Run(
+                () => _profileConfigProvider.Save(profileDetails.ProfileName, profileDetails.ProfileDo),
                 $"Save new profile [{profileDetails.ProfileName}] configuration with default settings");
         }
 
@@ -72,11 +77,11 @@ public class ConfigCommandHandler : ICommandHandler
 
         if (profileDetails.Operation == OperationEnum.Delete)
         {
-            SpinnerUtils.Run(
-                () => _profilesRepository.Delete(profileDetails.ProfileName),
+            SpinnerHelper.Run(
+                () => _profileConfigProvider.Delete(profileDetails.ProfileName),
                 $"Delete profile [{profileDetails.ProfileName}]");
             
-            ConsoleUtils.WriteLineInfo($"DONE - Deleted profile [{profileDetails.ProfileName}]");
+            ConsoleHelper.WriteLineInfo($"DONE - Deleted profile [{profileDetails.ProfileName}]");
 
             return Task.CompletedTask;
         }
@@ -85,16 +90,14 @@ public class ConfigCommandHandler : ICommandHandler
 
         while (!allowToExit)
         {
-            var exitOperationName = "Exit and view profile configuration"; 
+            var exitOperationName = "Exit and view configured profile"; 
             var removeSsmPathOperationName = $"Remove from {nameof(profileDetails.ProfileDo.SsmPaths)}";
-            var manageOperationsLookup = new Dictionary<string, Func<ProfileDo, bool>>
+            var manageOperationsLookup = new Dictionary<string, Func<ProfileConfig, bool>>
             {
                 { exitOperationName, Exit },
                 { $"Add into {nameof(profileDetails.ProfileDo.SsmPaths)}", AddSsmPath },
                 { removeSsmPathOperationName, RemoveSsmPaths },
                 { $"Set {nameof(profileDetails.ProfileDo.EnvironmentVariablePrefix)}", SetEnvironmentVariablePrefix },
-                { $"Set {nameof(profileDetails.ProfileDo.EnvironmentVariableDelimeter)}", SetEnvironmentVariableDelimeter },
-                { $"Set {nameof(profileDetails.ProfileDo.EnvironmentVariableNamingConvertType)}", SetEnvironmentVariableNamingConvertType },
            };
             if (profileDetails.ProfileDo.SsmPaths.Any() != true)
             {
@@ -113,60 +116,60 @@ public class ConfigCommandHandler : ICommandHandler
 
             if (!allowToExit)
             {
-                SpinnerUtils.Run(
-                    () => _profilesRepository.Save(profileDetails.ProfileName, profileDetails.ProfileDo),
+                SpinnerHelper.Run(
+                    () => _profileConfigProvider.Save(profileDetails.ProfileName, profileDetails.ProfileDo),
                     $"Save profile [{profileDetails.ProfileName}] configuration new settings");
             
                 profileDetails.ProfileDo.PrintProfileSettings();
             }
         }
 
-        ConsoleUtils.WriteLineInfo($"DONE - Configured profile [{profileDetails.ProfileName}]");
+        ConsoleHelper.WriteLineInfo($"DONE - Configured profile [{profileDetails.ProfileName}]");
         Console.WriteLine();
 
-        ConsoleUtils.WriteLineNotification($"View profile [{profileDetails.ProfileName}] configuration");
+        ConsoleHelper.WriteLineNotification($"View profile [{profileDetails.ProfileName}] configuration");
         Console.WriteLine();
 
-        var resolvedSsmParameters = SpinnerUtils.Run(
-            () => _ssmParametersRepository.GetDictionaryBy(profileDetails.ProfileDo.SsmPaths),
+        var resolvedSsmParameters = SpinnerHelper.Run(
+            () => _ssmParametersProvider.GetDictionaryBy(profileDetails.ProfileDo.SsmPaths),
             "Get ssm parameters from AWS System Manager");
         
         resolvedSsmParameters.PrintSsmParameters(profileDetails.ProfileDo);
 
-        var actualEnvironmentVariables = SpinnerUtils.Run(
-            () => _environmentVariablesRepository.GetAll(profileDetails.ProfileDo),
+        var actualEnvironmentVariables = SpinnerHelper.Run(
+            () => _environmentVariablesProvider.GetAll(profileDetails.ProfileDo),
             "Get environment variables");
 
         actualEnvironmentVariables.PrintEnvironmentVariablesWithSsmParametersValidation(
             resolvedSsmParameters,
             profileDetails.ProfileDo);
 
-        ConsoleUtils.WriteLineInfo($"DONE - Viewed profile [{profileDetails.ProfileName}]");
+        ConsoleHelper.WriteLineInfo($"DONE - Viewed profile [{profileDetails.ProfileName}]");
 
         return Task.CompletedTask;
     }
 
-    private (OperationEnum Operation, string ProfileName, ProfileDo ProfileDo) GetProfileDetailsForConfiguration()
+    private (OperationEnum Operation, string ProfileName, ProfileConfig ProfileDo) GetProfileDetailsForConfiguration()
     {
-        var profileNames = SpinnerUtils.Run(
-            _profilesRepository.GetNames,
+        var profileNames = SpinnerHelper.Run(
+            _profileConfigProvider.GetNames,
             "Get profile names");
 
-        var lastActiveProfileName = _profilesRepository.ActiveName;
+        var lastActiveProfileName = _profileConfigProvider.ActiveName;
         if (!string.IsNullOrEmpty(lastActiveProfileName))
         {
-            ConsoleUtils.WriteLineNotification($"Current active profile is [{lastActiveProfileName}]");
+            ConsoleHelper.WriteLineNotification($"Current active profile is [{lastActiveProfileName}]");
         }
 
         var operation = OperationEnum.Create;
-        var profileName = "Default";
-        var profileDo = new ProfileDo();
+        var profileName = "default";
+        var profileDo = new ProfileConfig();
 
         if (profileNames.Any())
         {
             operation = Prompt.Select(
                 "Select profile operation",
-                items: new[] { OperationEnum.Create, OperationEnum.Update, OperationEnum.Delete },
+                items: new[] { OperationEnum.Update, OperationEnum.Create, OperationEnum.Delete },
                 defaultValue: OperationEnum.Update);
         }
 
@@ -177,7 +180,7 @@ public class ConfigCommandHandler : ICommandHandler
                 defaultValue: profileName,
                 validators: new List<Func<object, ValidationResult>>
                 {
-                    (check) => ProfileNameValidationRules.Handle((string) check, profileNames),
+                    (check) => ProfileNameValidationRule.Handle((string) check, profileNames),
                 }).Trim();
             
             return (operation, profileName, profileDo);
@@ -192,17 +195,17 @@ public class ConfigCommandHandler : ICommandHandler
                     defaultValue: lastActiveProfileName);
 
         profileDo = 
-            SpinnerUtils.Run(
-                () => _profilesRepository.GetByName(profileName),
+            SpinnerHelper.Run(
+                () => _profileConfigProvider.GetByName(profileName),
                 $"Read profile [{profileName}]")
-            ?? new ProfileDo(); 
+            ?? new ProfileConfig(); 
 
         return (operation, profileName, profileDo);
     }
 
-    private bool Exit(ProfileDo profileDo) => true;
+    private bool Exit(ProfileConfig profileConfig) => true;
     
-    private bool AddSsmPath(ProfileDo profileDo)
+    private bool AddSsmPath(ProfileConfig profileConfig)
     {
         var newSsmPath = Prompt.Input<string>(
             "Enter new ssm-path (start from the /)",
@@ -214,15 +217,15 @@ public class ConfigCommandHandler : ICommandHandler
                     
                     return SsmPathValidationRules.Handle(
                         (string)check,
-                        profileDo.SsmPaths,
-                        _ssmParametersRepository);
+                        profileConfig.SsmPaths,
+                        _ssmParametersProvider);
                 },
             })?.Trim();
 
         if (!string.IsNullOrWhiteSpace(newSsmPath))
         {
-            profileDo.SsmPaths = new HashSet<string>(
-                profileDo.SsmPaths
+            profileConfig.SsmPaths = new HashSet<string>(
+                profileConfig.SsmPaths
                     .Union(new [] { newSsmPath })
                     .OrderBy(x => x));
         }
@@ -230,50 +233,30 @@ public class ConfigCommandHandler : ICommandHandler
         return false;
     }
     
-    private bool RemoveSsmPaths(ProfileDo profileDo)
+    private bool RemoveSsmPaths(ProfileConfig profileConfig)
     {
         var ssmPathsToDelete = Prompt
             .MultiSelect(
                 "- Select ssm-path(s) to delete",
-                profileDo.SsmPaths,
+                profileConfig.SsmPaths,
                 minimum: 0)
             .OrderBy(x => x)
             .ToArray();
         
-        profileDo.SsmPaths.ExceptWith(ssmPathsToDelete);
+        profileConfig.SsmPaths.ExceptWith(ssmPathsToDelete);
 
         return false;
     }
     
-    private bool SetEnvironmentVariablePrefix(ProfileDo profileDo)
+    private bool SetEnvironmentVariablePrefix(ProfileConfig profileConfig)
     {
-        profileDo.EnvironmentVariablePrefix = Prompt.Input<string>(
-            $"Set {nameof(profileDo.EnvironmentVariablePrefix)} (space is undefined)",
-            defaultValue: profileDo.EnvironmentVariablePrefix ?? " ",
+        profileConfig.EnvironmentVariablePrefix = Prompt.Input<string>(
+            $"Set {nameof(profileConfig.EnvironmentVariablePrefix)} (space is undefined)",
+            defaultValue: profileConfig.EnvironmentVariablePrefix ?? " ",
             validators: new List<Func<object, ValidationResult>>
             {
-                (check) => EnvironmentVariableNameValidationRules.HandlerPrefix((string) check),
+                (check) => EnvironmentVariableNameValidationRule.HandlePrefix((string) check),
             }).Trim();
-
-        return false;
-    }
-    
-    private bool SetEnvironmentVariableDelimeter(ProfileDo profileDo)
-    {
-        profileDo.EnvironmentVariableDelimeter = Prompt.Select(
-            $"Set {nameof(profileDo.EnvironmentVariableDelimeter)}",
-            items: EnvironmentVariableNameValidationRules.ValidEnvVarNameDelimeters,
-            defaultValue: profileDo.EnvironmentVariableDelimeter);
-
-        return false;
-    }
-    
-    private bool SetEnvironmentVariableNamingConvertType(ProfileDo profileDo)
-    {
-        profileDo.EnvironmentVariableNamingConvertType = Prompt.Select(
-            $"Set {nameof(profileDo.EnvironmentVariableNamingConvertType)}",
-            new[] { ProfileDo.NamingConvertTypeEnum.None, ProfileDo.NamingConvertTypeEnum.UpperCase, ProfileDo.NamingConvertTypeEnum.LowerCase, },
-            defaultValue: profileDo.EnvironmentVariableNamingConvertType);
 
         return false;
     }

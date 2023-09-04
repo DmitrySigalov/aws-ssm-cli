@@ -2,9 +2,11 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Aws.Ssm.ClientTool.Commands;
-using Aws.Ssm.ClientTool.Environment;
+using Aws.Ssm.ClientTool.EnvironmentVariables;
 using Aws.Ssm.ClientTool.Profiles;
+using Aws.Ssm.ClientTool.Profiles.Services;
 using Aws.Ssm.ClientTool.SsmParameters;
+using Aws.Ssm.ClientTool.SsmParameters.Services;
 
 var cts = new CancellationTokenSource();
 Console.CancelKeyPress += (s, e) =>
@@ -15,6 +17,7 @@ Console.CancelKeyPress += (s, e) =>
 
 var configuration = new ConfigurationBuilder()
     //.SetBasePath(Directory.GetCurrentDirectory())
+    .AddEnvironmentVariables()
     .AddJsonFile("appsettings.json", false)
     .Build();
 
@@ -30,25 +33,23 @@ services
 
 services
     .AddCommandHandlers()
-    .AddSingleton<IProfilesRepository, ProfilesRepository>()
-    .AddSingleton<ISsmParametersRepository, SsmParametersRepository>()
-    .AddSingleton<IEnvironmentVariablesRepository, EnvironmentVariablesRepository>();
+    .AddEnvironmentVariablesServices()
+    .AddSingleton<IProfileConfigProvider, ProfileConfigProvider>()
+    .AddSingleton<ISsmParametersProvider, SsmParametersProvider>();
 
 var serviceProvider = services.BuildServiceProvider();
 
 try
 {
     Console.WriteLine(Figgle.FiggleFonts.Standard.Render("Aws-Ssm-Cli"));
-
+    
     var commandName = args.FirstOrDefault();
 
     var cliHandler = serviceProvider
         .GetRequiredService<CommandHandlerProvider>()
         .Get(commandName);
 
-    await cliHandler.Handle(
-        args.Skip(1).ToArray(), 
-        cts.Token);
+    await cliHandler.Handle(cts.Token);
 }
 catch (Exception e)
 {

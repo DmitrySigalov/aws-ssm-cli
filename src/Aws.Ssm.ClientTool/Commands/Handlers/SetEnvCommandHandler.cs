@@ -9,7 +9,7 @@ using Sharprompt;
 
 namespace Aws.Ssm.ClientTool.Commands.Handlers;
 
-public class ViewCommandHandler : ICommandHandler
+public class SetEnvCommandHandler : ICommandHandler
 {
     private readonly IProfileConfigProvider _profileConfigProvider;
 
@@ -17,7 +17,7 @@ public class ViewCommandHandler : ICommandHandler
     
     private readonly ISsmParametersProvider _ssmParametersProvider;
 
-    public ViewCommandHandler(
+    public SetEnvCommandHandler(
         IProfileConfigProvider profileConfigProvider,
         IEnvironmentVariablesProvider environmentVariablesProvider,
         ISsmParametersProvider ssmParametersProvider)
@@ -29,9 +29,9 @@ public class ViewCommandHandler : ICommandHandler
         _ssmParametersProvider = ssmParametersProvider;
     }
     
-    public string Name => "view";
+    public string Name => "set-env";
     
-    public string Description => "View profile configuration and environment state";
+    public string Description => "Set environment variable(s) from profile configuration";
 
     public Task Handle(CancellationToken cancellationToken)
     {
@@ -59,14 +59,14 @@ public class ViewCommandHandler : ICommandHandler
             profileNames.Count == 1
             ? profileNames.Single()
             : Prompt.Select(
-                "Select profile to view",
+                "Select profile for the activation",
                 items: profileNames,
                 defaultValue: lastActiveProfileName);
-
+        
         var selectedProfileDo = SpinnerHelper.Run(
             () => _profileConfigProvider.GetByName(selectedProfileName),
             $"Read profile [{selectedProfileName}]");
-        
+
         selectedProfileDo?.PrintProfileSettings();
 
         if (selectedProfileDo?.SsmPaths?.Any() != true)
@@ -75,6 +75,34 @@ public class ViewCommandHandler : ICommandHandler
 
             return Task.CompletedTask;
         }
+
+        if (!string.IsNullOrEmpty(lastActiveProfileName))
+        {
+            ConsoleHelper.WriteLineNotification($"Deactivate profile [{lastActiveProfileName}] before new reactivation");
+
+            var lastActiveProfileDo = 
+                lastActiveProfileName == selectedProfileName
+                ? selectedProfileDo
+                : SpinnerHelper.Run(
+                    () => _profileConfigProvider.GetByName(lastActiveProfileName),
+                    $"Read profile [{lastActiveProfileName}]");
+
+            if (lastActiveProfileDo != null)
+            {
+                var deletedEnvironmentVariables = SpinnerHelper.Run(
+                    () => _environmentVariablesProvider.DeleteAll(lastActiveProfileDo),
+                    "Delete environment variables");
+                
+                deletedEnvironmentVariables.PrintEnvironmentVariablesWithProfileValidation(lastActiveProfileDo);
+            }
+            else 
+            {
+                ConsoleHelper.WriteLineError($"Not configured profile [{lastActiveProfileName}]");
+            }
+        }
+
+        _profileConfigProvider.ActiveName = selectedProfileName;
+        ConsoleHelper.WriteLineNotification($"Activate profile [{selectedProfileName}]");
         
         var resolvedSsmParameters = SpinnerHelper.Run(
             () => _ssmParametersProvider.GetDictionaryBy(selectedProfileDo.SsmPaths),
@@ -82,15 +110,24 @@ public class ViewCommandHandler : ICommandHandler
         
         resolvedSsmParameters.PrintSsmParameters(selectedProfileDo);
 
-        var actualEnvironmentVariables = SpinnerHelper.Run(
-            () => _environmentVariablesProvider.GetAll(selectedProfileDo),
-            "Get environment variables");
+        if (resolvedSsmParameters.Any() == false)
+        {
+            ConsoleHelper.WriteLineError("NOT DONE - Unavailable ssm parameters");
 
-        actualEnvironmentVariables.PrintEnvironmentVariablesWithSsmParametersValidation(
+            return Task.CompletedTask;
+        }
+
+        var appliedEnvironmentVariables = SpinnerHelper.Run(
+            () => _environmentVariablesProvider.SetFromSsmParameters(
+                resolvedSsmParameters,
+                selectedProfileDo),
+            $"Apply environment variables");
+        
+        appliedEnvironmentVariables.PrintEnvironmentVariablesWithSsmParametersValidation(
             resolvedSsmParameters,
             selectedProfileDo);
-
-        ConsoleHelper.WriteLineInfo($"DONE - Viewed profile [{selectedProfileName}]");
+        
+        ConsoleHelper.WriteLineInfo($"DONE - Activated profile [{selectedProfileName}]");
 
         return Task.CompletedTask;
     }

@@ -1,10 +1,10 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Aws.Ssm.ClientTool.Validation;
+namespace Aws.Ssm.ClientTool.EnvironmentVariables.Rules;
 
-public static class EnvironmentVariableNameValidationRules
+public static class EnvironmentVariableNameValidationRule
 {
-    public static ValidationResult HandlerPrefix(string check)
+    public static ValidationResult HandlePrefix(string check)
     {
         check = check?.Trim();
         
@@ -27,6 +27,4 @@ public static class EnvironmentVariableNameValidationRules
 
         return ValidationResult.Success;
     }
-
-    public static char[] ValidEnvVarNameDelimeters => new[] { '_', '-', };
 }

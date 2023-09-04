@@ -1,8 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Aws.Ssm.ClientTool.Validation;
+namespace Aws.Ssm.ClientTool.Profiles.Rules;
 
-public static class ProfileNameValidationRules
+public static class ProfileNameValidationRule
 {
     public static ValidationResult Handle(
         string check,

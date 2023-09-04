@@ -28,11 +28,11 @@ public class ViewCommandHandler : ICommandHandler
     
     public string Name => "view";
     
-    public string Help => "View profile configuration";
+    public string Description => "View profile configuration and environment state";
 
-    public Task Handle(string[] args, CancellationToken cancellationToken)
+    public Task Handle(CancellationToken cancellationToken)
     {
-        ConsoleHelper.WriteLineNotification(Help);
+        ConsoleHelper.WriteLineNotification(Description);
         Console.WriteLine();
 
         var profileNames = SpinnerHelper.Run(

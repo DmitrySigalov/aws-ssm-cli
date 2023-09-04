@@ -28,11 +28,11 @@ public class SetEnvCommandHandler : ICommandHandler
     
     public string Name => "set-env";
     
-    public string Help => "Set environment variable(s) from profile configuration";
+    public string Description => "Set environment variable(s) from profile configuration";
 
-    public Task Handle(string[] args, CancellationToken cancellationToken)
+    public Task Handle(CancellationToken cancellationToken)
     {
-        ConsoleHelper.WriteLineNotification(Help);
+        ConsoleHelper.WriteLineNotification(Description);
         Console.WriteLine();
 
         var profileNames = SpinnerHelper.Run(

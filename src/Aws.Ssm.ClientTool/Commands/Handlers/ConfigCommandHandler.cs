@@ -37,11 +37,11 @@ public class ConfigCommandHandler : ICommandHandler
 
     public string Name => "config";
 
-    public string Help => "Profile(s) configuration";
+    public string Description => "Profile(s) configuration";
 
-    public Task Handle(string[] args, CancellationToken cancellationToken)
+    public Task Handle(CancellationToken cancellationToken)
     {
-        ConsoleHelper.WriteLineNotification(Help);
+        ConsoleHelper.WriteLineNotification(Description);
         Console.WriteLine();
 
         var profileDetails = GetProfileDetailsForConfiguration();

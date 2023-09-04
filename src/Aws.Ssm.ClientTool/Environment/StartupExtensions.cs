@@ -1,5 +1,5 @@
+using System.Runtime.InteropServices;
 using Aws.Ssm.ClientTool.Environment.Repositories;
-using Aws.Ssm.ClientTool.Helpers;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Aws.Ssm.ClientTool.Environment;
@@ -8,15 +8,20 @@ public static class StartupExtensions
 {
     public static IServiceCollection AddEnvironmentBasedServices(this IServiceCollection serviceCollection)
     {
-        if (OperationSystemHelper.IsMacPlatform())
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            serviceCollection
+                .AddSingleton<IEnvironmentVariablesRepository, DefaultEnvironmentVariablesRepository>();
+        }
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ||
+                 RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
         {
             serviceCollection
                 .AddSingleton<IEnvironmentVariablesRepository, MacEnvironmentVariablesRepository>();
         }
         else
         {
-            serviceCollection
-                .AddSingleton<IEnvironmentVariablesRepository, DefaultEnvironmentVariablesRepository>();
+            throw new NotSupportedException("OS not supported");
         }
         
         return serviceCollection;

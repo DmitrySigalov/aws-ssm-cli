@@ -37,6 +37,7 @@ public class ProfileConfigProvider : IProfileConfigProvider
         return _userFilesProvider
             .GetFileNames(ProfileFileNameResolver.SearchFileNamePattern)
             .Select(ProfileFileNameResolver.ExtractProfileName)
+            .OrderBy(x => x)
             .ToHashSet();
     }
 

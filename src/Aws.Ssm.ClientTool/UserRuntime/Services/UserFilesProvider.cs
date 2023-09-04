@@ -6,7 +6,7 @@ public class UserFilesProvider : IUserFilesProvider
 {
     public IEnumerable<string> GetFileNames(string searchPattern)
     {
-        var rootFolderPath = GetUserRootFolder();
+        var rootFolderPath = GetRuntimeRootFolder();
 
         return Directory
             .GetFiles(rootFolderPath, searchPattern)
@@ -72,15 +72,19 @@ public class UserFilesProvider : IUserFilesProvider
             throw new ArgumentNullException(fileName);
         }
         
-        var rootFolderPath = GetUserRootFolder();
+        var rootFolderPath = GetRuntimeRootFolder();
 
         return Path.Combine(rootFolderPath, fileName);
     }
     
-    private string GetUserRootFolder()
+    private string GetRuntimeRootFolder()
     {
-        var rootPath = Assembly.GetExecutingAssembly().Location;
+        var runtimePath = Assembly.GetExecutingAssembly().Location;
 
-        return Path.GetFullPath(rootPath);
+        var fullPath = new FileInfo(runtimePath)
+            .Directory!
+            .FullName;
+
+        return Path.GetFullPath(fullPath);
     }
 }

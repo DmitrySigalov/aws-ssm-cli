@@ -14,20 +14,25 @@ public class HelpCommandHandler : ICommandHandler
             .ToHashSet();
     }
 
-    public string Name => "help";
+    public string BaseName => "help";
 
-    public string Description => "?";
+    public string ShortName => "?";
+
+    public string Description => "";
 
     public Task Handle(CancellationToken cancellationToken)
     {
         ConsoleHelper.WriteLineNotification($"Supported commands:");
 
-        var table = new ConsoleTable("command-name", "help");
+        var table = new ConsoleTable("command-name", "short-name", "description");
         table.Options.EnableCount = false;
 
         foreach (var commandHandler in _commandHandlers)
         {
-            table.AddRow(commandHandler.Name, commandHandler.Description);
+            table.AddRow(
+                commandHandler.BaseName,
+                commandHandler.ShortName,
+                commandHandler.Description);
         }
 
         table.Write(Format.Minimal);

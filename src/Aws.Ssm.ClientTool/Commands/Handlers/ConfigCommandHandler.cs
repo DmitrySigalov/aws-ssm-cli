@@ -40,7 +40,9 @@ public class ConfigCommandHandler : ICommandHandler
         _ssmParametersProvider = ssmParametersProvider;
     }
 
-    public string Name => "config";
+    public string BaseName => "config";
+
+    public string ShortName => "";
 
     public string Description => "Profile(s) configuration";
 
@@ -53,7 +55,7 @@ public class ConfigCommandHandler : ICommandHandler
 
         if (profileDetails.Operation != OperationEnum.Create &&
             profileDetails.ProfileName == _profileConfigProvider.ActiveName &&
-            profileDetails.ProfileDo.SsmPaths.Any() == true)
+            profileDetails.ProfileDo.SsmPaths.Any())
         {
             ConsoleHelper.WriteLineNotification($"Deactivate profile [{profileDetails.ProfileName}] before any configuration changes");
 
@@ -97,7 +99,7 @@ public class ConfigCommandHandler : ICommandHandler
                 { exitOperationName, Exit },
                 { $"Add into {nameof(profileDetails.ProfileDo.SsmPaths)}", AddSsmPath },
                 { removeSsmPathOperationName, RemoveSsmPaths },
-                { $"Set {nameof(profileDetails.ProfileDo.EnvironmentVariablePrefix)}", SetEnvironmentVariablePrefix },
+                { $"Configure {nameof(profileDetails.ProfileDo.EnvironmentVariablePrefix)}", SetEnvironmentVariablePrefix },
            };
             if (profileDetails.ProfileDo.SsmPaths.Any() != true)
             {

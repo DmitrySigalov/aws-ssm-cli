@@ -2,7 +2,9 @@ namespace Aws.Ssm.ClientTool.Commands;
 
 public interface ICommandHandler
 {
-    string Name { get; }
+    string BaseName { get; }
+
+    string ShortName { get; }
 
     string Description { get; }
 

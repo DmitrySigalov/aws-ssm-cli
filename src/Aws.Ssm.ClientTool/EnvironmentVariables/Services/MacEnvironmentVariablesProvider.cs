@@ -11,7 +11,7 @@ public class MacEnvironmentVariablesProvider : DefaultEnvironmentVariablesProvid
 
     private readonly ILogger<MacEnvironmentVariablesProvider> _logger;
 
-    private Dictionary<string, string> _loadedDescriptor = null;
+    private SortedDictionary<string, string> _loadedDescriptor = null;
 
     public MacEnvironmentVariablesProvider(
         IUserFilesProvider userFilesProvider,
@@ -40,7 +40,7 @@ public class MacEnvironmentVariablesProvider : DefaultEnvironmentVariablesProvid
         Environment.SetEnvironmentVariable(name, value, EnvironmentVariableTarget.Process);
     }
 
-    private Dictionary<string, string> LoadEnvironmentVariablesFromDescriptor()
+    private SortedDictionary<string, string> LoadEnvironmentVariablesFromDescriptor()
     {
         if (_loadedDescriptor != null)
         {
@@ -55,7 +55,7 @@ public class MacEnvironmentVariablesProvider : DefaultEnvironmentVariablesProvid
 
             if (!string.IsNullOrEmpty(fileDescriptorText))
             {
-                _loadedDescriptor = JsonSerializationHelper.Deserialize<Dictionary<string, string>>(fileDescriptorText);
+                _loadedDescriptor = JsonSerializationHelper.Deserialize<SortedDictionary<string, string>>(fileDescriptorText);
             }
         }
         catch (Exception e)
@@ -65,10 +65,10 @@ public class MacEnvironmentVariablesProvider : DefaultEnvironmentVariablesProvid
                 "Error on attempt to read descriptor file with list of active environment variables");
         }
 
-        return _loadedDescriptor ?? new Dictionary<string, string>();
+        return _loadedDescriptor ?? new SortedDictionary<string, string>();
     }
 
-    private void DumpEnvironmentVariables(Dictionary<string, string> environmentVariables)
+    private void DumpEnvironmentVariables(SortedDictionary<string, string> environmentVariables)
     {
         var fileDescriptorName = EnvironmentVariablesConsts.FileNames.Descriptor;
         var fileScriptName = EnvironmentVariablesConsts.FileNames.Script;

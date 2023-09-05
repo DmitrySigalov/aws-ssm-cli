@@ -18,7 +18,7 @@ public static class EnvironmentVariablesRepositoryExtensions
             
             environmentVariablesProvider.Set(envVarName, ssmParam.Value);
             
-            result.Add(envVarName, ssmParam.Value);
+            result[envVarName] = ssmParam.Value;
         }
         
         return result;
@@ -74,7 +74,7 @@ public static class EnvironmentVariablesRepositoryExtensions
         {
             var envVarValue = environmentVariablesProvider.Get(envVarName);
             
-            environmentVariablesProvider.Delete(envVarName);
+            environmentVariablesProvider.Set(envVarName, null);
             
             result.Add(envVarName, envVarValue);
         }
@@ -89,6 +89,7 @@ public static class EnvironmentVariablesRepositoryExtensions
         return baseNames
             .Select(environmentVariablesProvider.GetNames)
             .SelectMany(x => x)
+            .OrderBy(x => x)
             .ToHashSet();
     }
 }

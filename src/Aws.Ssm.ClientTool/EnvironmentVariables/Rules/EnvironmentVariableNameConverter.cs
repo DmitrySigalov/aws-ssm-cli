@@ -1,3 +1,4 @@
+using System.Text;
 using Aws.Ssm.ClientTool.Profiles;
 using Aws.Ssm.ClientTool.SsmParameters;
 
@@ -9,27 +10,27 @@ public static class EnvironmentVariableNameConverter
         string ssmPath,
         ProfileConfig profileSettings)
     {
-        var result = ssmPath;
+        var result = new StringBuilder();
+
+        result.Append(profileSettings.EnvironmentVariablePrefix);
         
-        if (result.StartsWith(SsmParametersConsts.KeyDelimeter))
+        if (ssmPath.StartsWith(SsmParametersConsts.KeyDelimeter))
         {
-            result = result.TrimStart(SsmParametersConsts.KeyDelimeter);
-        }
-        
-        if (!string.IsNullOrEmpty(profileSettings.EnvironmentVariablePrefix))
-        {
-            result = profileSettings.EnvironmentVariablePrefix + result;
+            ssmPath = ssmPath.TrimStart(SsmParametersConsts.KeyDelimeter);
         }
 
-        result = result.Replace(SsmParametersConsts.KeyDelimeter, EnvironmentVariablesConsts.VariableNameDelimeter);
-
-        foreach (var invalidChar in EnvironmentVariablesConsts.InvalidVariableNameCharacters)
+        foreach (var c in ssmPath)
         {
-            result = result.Replace(invalidChar, EnvironmentVariablesConsts.VariableNameDelimeter);
+            if (EnvironmentVariablesConsts.InvalidVariableNameCharacters.Contains(c))
+            {
+                result.Append(EnvironmentVariablesConsts.VariableNameDelimeter);
+
+                continue;
+            }
+
+            result.Append(c);
         }
 
-        result = result.ToUpper();
-        
-        return result;
+        return result.ToString().ToUpper();
     }
 }

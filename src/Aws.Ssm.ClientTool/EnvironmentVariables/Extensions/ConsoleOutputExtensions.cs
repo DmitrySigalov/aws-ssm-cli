@@ -18,21 +18,19 @@ public static class ConsoleOutputExtensions
             .Select(x => new
             {
                 Name = EnvironmentVariableNameConverter.ConvertFromSsmPath(x.Key, profileConfig),
-                Value = x.Value,
+                x.Value,
             })
-            .ToDictionary(
-                x => x.Name,
-                y => y.Value);
+            .ToArray();
         
         var notSynchronizedEnvVars = ssmConvertedNamesValues
-            .Where(x => environmentVariables.ContainsKey(x.Key))
-            .Where(x => x.Value != environmentVariables[x.Key])
-            .Select(x => x.Key)
+            .Where(x => environmentVariables.ContainsKey(x.Name))
+            .Where(x => x.Value != environmentVariables[x.Name])
+            .Select(x => x.Name)
             .ToHashSet();
 
         notSynchronizedEnvVars.UnionWith(
             ssmConvertedNamesValues
-                    .Keys
+                    .Select(x => x.Name)
                     .Where(x => !environmentVariables.ContainsKey(x)));
         
         var table = new ConsoleTable("not-synchronized-environment-variable_name");

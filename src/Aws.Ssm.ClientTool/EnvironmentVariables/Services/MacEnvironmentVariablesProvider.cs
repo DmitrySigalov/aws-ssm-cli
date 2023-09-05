@@ -26,22 +26,18 @@ public class MacEnvironmentVariablesProvider : DefaultEnvironmentVariablesProvid
     {
         var environmentVariables = LoadEnvironmentVariablesFromDescriptor();
 
-        environmentVariables[name] = value;
+        if (value == null)
+        {
+            environmentVariables.Remove(name);
+        }
+        else
+        {
+            environmentVariables[name] = value;
+        }
         
         DumpEnvironmentVariables(environmentVariables);
         
-        Environment.SetEnvironmentVariable(name, value);
-    }
-
-    public override void Delete(string name)
-    {
-        var environmentVariables = LoadEnvironmentVariablesFromDescriptor();
-
-        environmentVariables.Remove(name);
-        
-        DumpEnvironmentVariables(environmentVariables);
-
-        Environment.SetEnvironmentVariable(name, null);
+        Environment.SetEnvironmentVariable(name, value, EnvironmentVariableTarget.Process);
     }
 
     private Dictionary<string, string> LoadEnvironmentVariablesFromDescriptor()
@@ -66,7 +62,7 @@ public class MacEnvironmentVariablesProvider : DefaultEnvironmentVariablesProvid
         {
             _logger.LogError(
                 e,
-                "Error on attempt to read descriptor file with list of environment variables");
+                "Error on attempt to read descriptor file with list of active environment variables");
         }
 
         return _loadedDescriptor ?? new Dictionary<string, string>();
@@ -82,14 +78,14 @@ public class MacEnvironmentVariablesProvider : DefaultEnvironmentVariablesProvid
             var fileDescriptorText = JsonSerializationHelper.Serialize(environmentVariables);
             _userFilesProvider.WriteTextFile(fileDescriptorName, fileDescriptorText);
 
-            var fileScriptText = EnvironmentVariablesScriptBuilder.Build(environmentVariables);
+            var fileScriptText = EnvironmentVariablesScriptTextBuilder.Build(environmentVariables);
             _userFilesProvider.WriteTextFile(fileScriptName, fileScriptText);
         }
         catch (Exception e)
         {
             _logger.LogError(
                 e,
-                "Error on attempt to dump descriptor/script file(s) with list of environment variables");
+                "Error on attempt to dump descriptor/script file(s) with list of active environment variables");
         }
     }
 }

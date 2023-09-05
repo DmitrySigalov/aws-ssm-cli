@@ -2,7 +2,7 @@ using System.Text;
 
 namespace Aws.Ssm.ClientTool.EnvironmentVariables.Rules;
 
-public static class EnvironmentVariablesScriptBuilder
+public static class EnvironmentVariablesScriptTextBuilder
 {
     public static string Build(IDictionary<string, string> environmentVariables)
     {

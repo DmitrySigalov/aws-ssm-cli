@@ -91,8 +91,8 @@ public class ViewCommandHandler : ICommandHandler
         actualEnvironmentVariables.PrintEnvironmentVariablesWithSsmParametersValidation(
             resolvedSsmParameters,
             selectedProfileDo);
-
-        ConsoleHelper.WriteLineInfo($"DONE - Viewed profile [{selectedProfileName}]");
+        
+        ConsoleHelper.WriteLineInfo($"DONE - View profile [{selectedProfileName}] configuration");
 
         return Task.CompletedTask;
     }

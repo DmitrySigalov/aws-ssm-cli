@@ -1,4 +1,3 @@
-using Aws.Ssm.ClientTool.EnvironmentVariables.Rules;
 using Aws.Ssm.ClientTool.Profiles;
 using Aws.Ssm.ClientTool.Helpers;
 using ConsoleTables;
@@ -13,45 +12,13 @@ public static class ConsoleOutputExtensions
         ProfileConfig profileConfig)
     {
         PrintEnvironmentVariables(environmentVariables);
-        
-        var ssmConvertedNamesValues = ssmParameters
-            .Select(x => new
-            {
-                Name = EnvironmentVariableNameConverter.ConvertFromSsmPath(x.Key, profileConfig),
-                x.Value,
-            })
-            .ToArray();
 
-        var notSynchronizedEnvVars = ssmConvertedNamesValues
-            .Where(x => environmentVariables.ContainsKey(x.Name))
-            .Where(x => x.Value != environmentVariables[x.Name])
-            .Select(x => new
-            {
-                Name = x.Name,
-                Status = "NotEqual",
-            })
-            .ToHashSet();
-        
-        notSynchronizedEnvVars.UnionWith(
-            ssmConvertedNamesValues
-                    .Where(x => !environmentVariables.ContainsKey(x.Name))
-                    .Select(x => new
-                    {
-                        Name = x.Name,
-                        Status = "Unavailable",
-                    }));
+        var invalidData = environmentVariables
+            .GetNotSynchronizedNames(
+                ssmParameters,
+                profileConfig);
 
-        if (notSynchronizedEnvVars.Any())
-        {
-            var table = new ConsoleTable("environment-variable_name", "synchronization-status");
-
-            foreach (var invalidEnvVar in notSynchronizedEnvVars.OrderBy(x => x.Name))
-            {
-                table.AddRow(invalidEnvVar.Name, invalidEnvVar.Status);
-            }
-
-            ConsoleHelper.Warn(() => table.Write(Format.Minimal));
-        }
+        PrintInvalidEnvironmentVariables(invalidData);
     }
 
     public static void PrintEnvironmentVariablesWithProfileValidation(
@@ -60,25 +27,10 @@ public static class ConsoleOutputExtensions
     {
         PrintEnvironmentVariables(environmentVariables);
         
-        var invalidVariables = profileConfig.SsmPaths
-            .Distinct()
-            .Select(x => EnvironmentVariableNameConverter.ConvertFromSsmPath(x, profileConfig))
-            .Where(x => environmentVariables.Keys.All(y => !y.StartsWith(x)))
-            .ToArray();
+        var invalidData = environmentVariables
+            .GetNotSynchronizedNames(profileConfig);
 
-        if (invalidVariables.Any() == true)
-        {
-            ConsoleHelper.Warn(() =>
-            {
-                var table = new ConsoleTable("environment-variable-name", "synchronization-status");
-                foreach (var envVar in invalidVariables.OrderBy(x => x))
-                {
-                    table.AddRow(envVar + "(*)", "Unavailable");
-                }
-
-                table.Write(Format.Minimal);
-            });
-        }
+        PrintInvalidEnvironmentVariables(invalidData);
     }
 
     private static void PrintEnvironmentVariables(
@@ -99,5 +51,21 @@ public static class ConsoleOutputExtensions
         }
 
         table.Write(Format.Minimal);
+    }
+
+    private static void PrintInvalidEnvironmentVariables(IDictionary<string, string> invalidData)
+    {
+        if (invalidData.Any() == false)
+        {
+            ConsoleHelper.WriteLineWarn($"No not synchronized data");
+            return;
+        }
+        
+        var table = new ConsoleTable("environment-variable-name", "synchronization-status");
+        foreach (var envVar in invalidData.OrderBy(x => x.Key))
+        {
+            table.AddRow(envVar.Key, envVar.Value);
+        }
+        ConsoleHelper.Warn(() => table.Write(Format.Minimal));
     }
 }

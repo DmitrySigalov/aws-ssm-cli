@@ -13,6 +13,11 @@ public static class EnvironmentVariableNameValidationRule
             return ValidationResult.Success; //Valid values
         }
 
+        if (check.Length > 10)
+        {
+            return new ValidationResult("Invalid value - Too long value (exceeded 10 characters)");
+        }
+
         if (check.Contains(' ') ||
             check.Contains('/') ||
             check.Contains('\\') ||
@@ -20,6 +25,12 @@ public static class EnvironmentVariableNameValidationRule
             check.Contains('"') ||
             check.Contains('\'') ||
             check.Contains('$') ||
+            check.Contains('!') ||
+            check.Contains('`') ||
+            check.Contains('^') ||
+            check.Contains('&') ||
+            check.Contains('(') ||
+            check.Contains(')') ||
             check.Contains('@'))
         {
             return new ValidationResult("Invalid value - Contains invalid character");

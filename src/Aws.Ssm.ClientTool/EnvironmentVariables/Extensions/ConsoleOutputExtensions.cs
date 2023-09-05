@@ -18,32 +18,38 @@ public static class ConsoleOutputExtensions
             .Select(x => new
             {
                 Name = EnvironmentVariableNameConverter.ConvertFromSsmPath(x.Key, profileConfig),
-                Value = x.Value,
+                x.Value,
             })
-            .ToDictionary(
-                x => x.Name,
-                y => y.Value);
-        
-        var notSynchronizedEnvVars = ssmConvertedNamesValues
-            .Where(x => environmentVariables.ContainsKey(x.Key))
-            .Where(x => x.Value != environmentVariables[x.Key])
-            .Select(x => x.Key)
-            .ToHashSet();
+            .ToArray();
 
+        var notSynchronizedEnvVars = ssmConvertedNamesValues
+            .Where(x => environmentVariables.ContainsKey(x.Name))
+            .Where(x => x.Value != environmentVariables[x.Name])
+            .Select(x => new
+            {
+                Name = x.Name,
+                Status = "NotEqual",
+            })
+            .ToHashSet();
+        
         notSynchronizedEnvVars.UnionWith(
             ssmConvertedNamesValues
-                    .Keys
-                    .Where(x => !environmentVariables.ContainsKey(x)));
-        
-        var table = new ConsoleTable("not-synchronized-environment-variable_name");
+                    .Where(x => !environmentVariables.ContainsKey(x.Name))
+                    .Select(x => new
+                    {
+                        Name = x.Name,
+                        Status = "Unavailable",
+                    }));
 
-        foreach (var invalidEnvVar in notSynchronizedEnvVars.OrderBy(x => x))
+        if (notSynchronizedEnvVars.Any())
         {
-            table.AddRow(invalidEnvVar);
-        }
+            var table = new ConsoleTable("environment-variable_name", "synchronization-status");
 
-        if (table.Rows.Any())
-        {
+            foreach (var invalidEnvVar in notSynchronizedEnvVars.OrderBy(x => x.Name))
+            {
+                table.AddRow(invalidEnvVar.Name, invalidEnvVar.Status);
+            }
+
             ConsoleHelper.Warn(() => table.Write(Format.Minimal));
         }
     }
@@ -64,10 +70,10 @@ public static class ConsoleOutputExtensions
         {
             ConsoleHelper.Warn(() =>
             {
-                var table = new ConsoleTable("missing-environment-variable-name");
+                var table = new ConsoleTable("environment-variable-name", "synchronization-status");
                 foreach (var envVar in invalidVariables.OrderBy(x => x))
                 {
-                    table.AddRow(envVar + "(*)");
+                    table.AddRow(envVar + "(*)", "Unavailable");
                 }
 
                 table.Write(Format.Minimal);

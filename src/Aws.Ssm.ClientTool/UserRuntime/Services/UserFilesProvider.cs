@@ -1,19 +1,12 @@
 using System.Reflection;
 
-namespace Aws.Ssm.ClientTool.Runtime.Services;
+namespace Aws.Ssm.ClientTool.UserRuntime.Services;
 
 public class UserFilesProvider : IUserFilesProvider
 {
-    private readonly RuntimeParameters _runtimeParameters;
-
-    public UserFilesProvider(RuntimeParameters runtimeParameters)
-    {
-        _runtimeParameters = runtimeParameters;
-    }
-
     public IEnumerable<string> GetFileNames(string searchPattern)
     {
-        var rootFolderPath = GetUserRootFolder();
+        var rootFolderPath = GetRuntimeRootFolder();
 
         return Directory
             .GetFiles(rootFolderPath, searchPattern)
@@ -59,7 +52,7 @@ public class UserFilesProvider : IUserFilesProvider
 
     private void MoveFileToBackupIfExists(string fullFilePath)
     {
-        var backupFullFilePath = fullFilePath + "backup";
+        var backupFullFilePath = fullFilePath + ".backup";
 
         if (File.Exists(backupFullFilePath))
         {
@@ -79,20 +72,19 @@ public class UserFilesProvider : IUserFilesProvider
             throw new ArgumentNullException(fileName);
         }
         
-        var rootFolderPath = GetUserRootFolder();
+        var rootFolderPath = GetRuntimeRootFolder();
 
         return Path.Combine(rootFolderPath, fileName);
     }
     
-    private string GetUserRootFolder()
+    private string GetRuntimeRootFolder()
     {
-        var rootPath = Assembly.GetExecutingAssembly().Location;
+        var runtimePath = Assembly.GetExecutingAssembly().Location;
 
-        if (_runtimeParameters.IsDebug)
-        {
-            rootPath = Directory.GetCurrentDirectory();
-        }
+        var fullPath = new FileInfo(runtimePath)
+            .Directory!
+            .FullName;
 
-        return Path.GetFullPath(rootPath);
+        return Path.GetFullPath(fullPath);
     }
 }

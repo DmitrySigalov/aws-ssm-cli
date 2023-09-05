@@ -5,7 +5,7 @@ using Aws.Ssm.ClientTool.Commands;
 using Aws.Ssm.ClientTool.EnvironmentVariables;
 using Aws.Ssm.ClientTool.Profiles;
 using Aws.Ssm.ClientTool.Profiles.Services;
-using Aws.Ssm.ClientTool.Runtime;
+using Aws.Ssm.ClientTool.UserRuntime;
 using Aws.Ssm.ClientTool.SsmParameters;
 using Aws.Ssm.ClientTool.SsmParameters.Services;
 
@@ -43,7 +43,7 @@ var serviceProvider = services.BuildServiceProvider();
 try
 {
     Console.WriteLine(Figgle.FiggleFonts.Standard.Render("Aws-Ssm-Cli"));
-    
+
     var cliHandler = serviceProvider
         .GetRequiredService<CommandHandlerProvider>()
         .Get();
@@ -55,4 +55,8 @@ catch (Exception e)
     serviceProvider
         .GetRequiredService<ILogger<Program>>()
         .LogError(e, "An error has occurred");
+}
+finally
+{
+    Console.WriteLine(Figgle.FiggleFonts.Standard.Render("Goodbye"));
 }

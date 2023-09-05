@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using Aws.Ssm.ClientTool.SsmParameters;
 using Aws.Ssm.ClientTool.Helpers;
 
 namespace Aws.Ssm.ClientTool.SsmParameters.Rules;
@@ -28,13 +27,13 @@ public static class SsmPathValidationRules
         var firstFoundParameter = configuredSsmPaths.FirstOrDefault(x => check.StartsWith(x, StringComparison.InvariantCultureIgnoreCase));
         if (firstFoundParameter != null)
         {
-            return new ValidationResult($"Duplicated parent path - {firstFoundParameter} ");
+            return new ValidationResult($"Duplicated parent ssm path - {firstFoundParameter} ");
         }
 
         firstFoundParameter = configuredSsmPaths.FirstOrDefault(x => x.StartsWith(check, StringComparison.InvariantCultureIgnoreCase));
         if (firstFoundParameter != null)
         {
-            return new ValidationResult($"Duplicated child path - {firstFoundParameter} ");
+            return new ValidationResult($"Duplicated child ssm path - {firstFoundParameter} ");
         }
 
         var ssmParameters = SpinnerHelper.Run(

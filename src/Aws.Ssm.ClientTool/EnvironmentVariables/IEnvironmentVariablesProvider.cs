@@ -7,6 +7,4 @@ public interface IEnvironmentVariablesProvider
     string Get(string name);
 
     void Set(string name, string value);
-
-    void Delete(string name);
 }

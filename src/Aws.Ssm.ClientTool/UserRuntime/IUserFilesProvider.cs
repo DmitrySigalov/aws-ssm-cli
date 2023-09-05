@@ -1,4 +1,4 @@
-namespace Aws.Ssm.ClientTool.Runtime;
+namespace Aws.Ssm.ClientTool.UserRuntime;
 
 public interface IUserFilesProvider
 {

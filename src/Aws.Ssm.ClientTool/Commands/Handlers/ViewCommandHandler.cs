@@ -29,8 +29,10 @@ public class ViewCommandHandler : ICommandHandler
         _ssmParametersProvider = ssmParametersProvider;
     }
     
-    public string Name => "view";
+    public string BaseName => "view";
     
+    public string ShortName => "";
+
     public string Description => "View profile configuration and environment state";
 
     public Task Handle(CancellationToken cancellationToken)

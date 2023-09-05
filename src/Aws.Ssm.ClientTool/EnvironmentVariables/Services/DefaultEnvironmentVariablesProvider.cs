@@ -27,11 +27,6 @@ public class DefaultEnvironmentVariablesProvider : IEnvironmentVariablesProvider
 
     public virtual void Set(string name, string value)
     {
-        System.Environment.SetEnvironmentVariable(name, value, EnvironmentVariablesConsts.EnvironmentVariableTarget);
-    }
-
-    public virtual void Delete(string name)
-    {
-        System.Environment.SetEnvironmentVariable(name, null, EnvironmentVariablesConsts.EnvironmentVariableTarget);
+        Environment.SetEnvironmentVariable(name, value, EnvironmentVariableTarget.User);
     }
 }

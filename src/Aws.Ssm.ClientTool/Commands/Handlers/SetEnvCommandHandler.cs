@@ -29,8 +29,10 @@ public class SetEnvCommandHandler : ICommandHandler
         _ssmParametersProvider = ssmParametersProvider;
     }
     
-    public string Name => "set-env";
+    public string BaseName => "set-env";
     
+    public string ShortName => "se";
+
     public string Description => "Set environment variable(s) from profile configuration";
 
     public Task Handle(CancellationToken cancellationToken)

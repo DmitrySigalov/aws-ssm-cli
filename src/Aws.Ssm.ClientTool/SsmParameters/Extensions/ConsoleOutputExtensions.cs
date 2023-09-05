@@ -33,10 +33,10 @@ public static class ConsoleOutputExtensions
         {
             ConsoleHelper.Warn(() =>
             {
-                var table = new ConsoleTable("missing-ssm-path");
+                var table = new ConsoleTable("ssm-path", "status");
                 foreach (var ssmPath in invalidPaths.OrderBy(x => x))
                 {
-                    table.AddRow(ssmPath);
+                    table.AddRow(ssmPath, "Unavailable");
                 }
 
                 table.Write(Format.Minimal);

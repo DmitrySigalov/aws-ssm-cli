@@ -8,8 +8,6 @@ public static class EnvironmentVariablesConsts
     
     public static char VariableNameDelimeter => '_';
     
-    public static char[] InvalidVariableNameCharacters => new [] { '/', '\\', ':', '-', };
-
     public static class FileNames
     {
         private static string Base => "environment-variables";

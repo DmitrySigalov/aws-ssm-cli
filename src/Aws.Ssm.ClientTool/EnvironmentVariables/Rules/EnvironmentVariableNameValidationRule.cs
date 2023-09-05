@@ -15,7 +15,7 @@ public static class EnvironmentVariableNameValidationRule
 
         if (check.Length > 10)
         {
-            return new ValidationResult("Invalid value - Too long value");
+            return new ValidationResult("Invalid value - Too long value (exceeded 10 characters)");
         }
 
         if (check.Contains(' ') ||

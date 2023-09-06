@@ -12,9 +12,9 @@ public static class StartupExtensions
 
         serviceCollection
             .AddSingleton<HelpCommandHandler>()
+            .AddSingleton<ICommandHandler, JsonCommandHandler>() // First is default
+            .AddSingleton<ICommandHandler, GetEnvCommandHandler>()
             .AddSingleton<ICommandHandler, SetEnvCommandHandler>()
-            .AddSingleton<ICommandHandler, JsonCommandHandler>()
-            .AddSingleton<ICommandHandler, ViewCommandHandler>()
             .AddSingleton<ICommandHandler, ConfigCommandHandler>();
 
         return serviceCollection;

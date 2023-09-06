@@ -48,7 +48,7 @@ public class ConfigCommandHandler : ICommandHandler
 
     public Task Handle(CancellationToken cancellationToken)
     {
-        ConsoleHelper.WriteLineNotification(Description);
+        ConsoleHelper.WriteLineNotification($"START - {Description}");
         Console.WriteLine();
 
         var profileDetails = GetProfileDetailsForConfiguration();
@@ -127,7 +127,7 @@ public class ConfigCommandHandler : ICommandHandler
         ConsoleHelper.WriteLineInfo($"DONE - Configured profile [{profileDetails.ProfileName}] configuration");
         Console.WriteLine();
 
-        ConsoleHelper.WriteLineNotification($"Start - View with profile [{profileDetails.ProfileName}] configuration");
+        ConsoleHelper.WriteLineNotification($"START - Get environment variables with profile [{profileDetails.ProfileName}] configuration");
         Console.WriteLine();
 
         var resolvedSsmParameters = SpinnerHelper.Run(
@@ -144,7 +144,7 @@ public class ConfigCommandHandler : ICommandHandler
             resolvedSsmParameters,
             profileDetails.ProfileDo);
 
-        ConsoleHelper.WriteLineInfo($"DONE - View with profile [{profileDetails.ProfileName}] configuration");
+        ConsoleHelper.WriteLineInfo($"DONE - Get environment variables with profile [{profileDetails.ProfileName}] configuration");
 
         return Task.CompletedTask;
     }

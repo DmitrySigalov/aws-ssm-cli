@@ -33,7 +33,7 @@ public class SetEnvCommandHandler : ICommandHandler
     
     public string ShortName => "se";
 
-    public string Description => "Set environment variable(s) from profile configuration";
+    public string Description => "Set environment variables";
 
     public Task Handle(CancellationToken cancellationToken)
     {
@@ -120,7 +120,7 @@ public class SetEnvCommandHandler : ICommandHandler
             resolvedSsmParameters,
             selectedProfileDo);
         
-        ConsoleHelper.WriteLineInfo($"DONE - Activated profile [{selectedProfileName}]");
+        ConsoleHelper.WriteLineInfo($"DONE - {Description} with profile [{selectedProfileName}] configuration");
 
         return Task.CompletedTask;
     }

@@ -33,11 +33,11 @@ public class JsonCommandHandler : ICommandHandler
     
     public string ShortName => "";
 
-    public string Description => "View environment variable(s) in json format";
+    public string Description => "Format environment variables (json format)";
     
     public Task Handle(CancellationToken cancellationToken)
     {
-        ConsoleHelper.WriteLineNotification(Description);
+        ConsoleHelper.WriteLineNotification($"START - {Description}");
         Console.WriteLine();
 
         var profileNames = SpinnerHelper.Run(
@@ -93,7 +93,7 @@ public class JsonCommandHandler : ICommandHandler
                 x => x.Key,
                 x => x.Last().Value);
 
-        ConsoleHelper.WriteLineNotification("Result json:");
+        ConsoleHelper.WriteLineNotification("Formatted environment variables json:");
         Console.WriteLine(JsonSerializationHelper.Serialize(convertedEnvironmentVariables));
         Console.WriteLine();
 

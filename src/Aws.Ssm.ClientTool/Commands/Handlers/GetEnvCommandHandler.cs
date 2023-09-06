@@ -9,7 +9,7 @@ using Sharprompt;
 
 namespace Aws.Ssm.ClientTool.Commands.Handlers;
 
-public class ViewCommandHandler : ICommandHandler
+public class GetEnvCommandHandler : ICommandHandler
 {
     private readonly IProfileConfigProvider _profileConfigProvider;
 
@@ -17,7 +17,7 @@ public class ViewCommandHandler : ICommandHandler
     
     private readonly ISsmParametersProvider _ssmParametersProvider;
 
-    public ViewCommandHandler(
+    public GetEnvCommandHandler(
         IProfileConfigProvider profileConfigProvider,
         IEnvironmentVariablesProvider environmentVariablesProvider,
         ISsmParametersProvider ssmParametersProvider)
@@ -29,15 +29,15 @@ public class ViewCommandHandler : ICommandHandler
         _ssmParametersProvider = ssmParametersProvider;
     }
     
-    public string BaseName => "view";
+    public string BaseName => "get-env";
     
-    public string ShortName => "";
+    public string ShortName => "ge";
 
-    public string Description => "View profile configuration and current environment state";
+    public string Description => "Get environment variables";
 
     public Task Handle(CancellationToken cancellationToken)
     {
-        ConsoleHelper.WriteLineNotification(Description);
+        ConsoleHelper.WriteLineNotification($"START - {Description}");
         Console.WriteLine();
 
         var profileNames = SpinnerHelper.Run(
@@ -61,7 +61,7 @@ public class ViewCommandHandler : ICommandHandler
             profileNames.Count == 1
             ? profileNames.Single()
             : Prompt.Select(
-                "Select profile to view",
+                "Select profile",
                 items: profileNames,
                 defaultValue: lastActiveProfileName);
 
@@ -92,7 +92,7 @@ public class ViewCommandHandler : ICommandHandler
             resolvedSsmParameters,
             selectedProfileDo);
         
-        ConsoleHelper.WriteLineInfo($"DONE - View with profile [{selectedProfileName}] configuration");
+        ConsoleHelper.WriteLineInfo($"DONE - {Description} with profile [{selectedProfileName}] configuration");
 
         return Task.CompletedTask;
     }

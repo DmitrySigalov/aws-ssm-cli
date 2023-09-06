@@ -31,7 +31,7 @@ public static class ConsoleOutputExtensions
 
         if (invalidPaths.Any() == true)
         {
-            ConsoleHelper.Warn(() =>
+            ConsoleHelper.Error(() =>
             {
                 var table = new ConsoleTable("ssm-path", "status");
                 foreach (var ssmPath in invalidPaths.OrderBy(x => x))

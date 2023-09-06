@@ -5,7 +5,7 @@ namespace Aws.Ssm.ClientTool.EnvironmentVariables.Extensions;
 
 public static class EnvironmentVariablesSynchronizationExtensions
 {
-    public static IDictionary<string, string> GetNotSynchronizedNames(
+    public static IDictionary<string, string> GetEnvironmentVariablesWithInvalidSynchronizationStatus(
         this IDictionary<string, string> environmentVariables,
         IDictionary<string, string> ssmParameters,
         ProfileConfig profileConfig)
@@ -13,46 +13,56 @@ public static class EnvironmentVariablesSynchronizationExtensions
         var ssmConvertedNamesValues = ssmParameters
             .Select(x => new
             {
-                Name = EnvironmentVariableNameConverter.ConvertFromSsmPath(x.Key, profileConfig),
+                SsmParameterName = x.Key,
+                EnvironmentVariableName = EnvironmentVariableNameConverter.ConvertFromSsmPath(x.Key, profileConfig),
                 x.Value,
             })
             .ToArray();
 
         var result = ssmConvertedNamesValues
-            .Where(x => environmentVariables.ContainsKey(x.Name))
-            .Where(x => x.Value != environmentVariables[x.Name])
+            .Where(x => environmentVariables.ContainsKey(x.EnvironmentVariableName))
+            .Where(x => x.Value != environmentVariables[x.EnvironmentVariableName])
             .Select(x => new
             {
-                Name = x.Name,
+                Name = x.EnvironmentVariableName,
                 Status = "NotEqual",
             })
             .ToHashSet();
         
         result.UnionWith(
             ssmConvertedNamesValues
-                .Where(x => !environmentVariables.ContainsKey(x.Name))
+                .Where(x => !environmentVariables.ContainsKey(x.EnvironmentVariableName))
                 .Select(x => new
                 {
-                    Name = x.Name,
+                    Name = x.EnvironmentVariableName,
                     Status = "Unavailable",
                 }));
-
+        
+        result.UnionWith(
+            profileConfig.SsmPaths
+                .Distinct()
+                .Select(x => EnvironmentVariableNameConverter.ConvertFromSsmPath(x, profileConfig))
+                .Where(x => environmentVariables.Keys.All(y => !y.StartsWith(x)))
+                .Select(x => new
+                {
+                    Name = x + "(*)",
+                    Status = "MissingSsmParameters",
+                }));
+        
+        result.UnionWith(
+            ssmConvertedNamesValues
+                .GroupBy(x => x.EnvironmentVariableName)
+                .Where(x => x.Count() > 1)
+                .Select(x => new
+                {
+                    Name = x.Key,
+                    Status = $"Mapped to {x.Count()} ssm parameters",
+                }));
+        
         return result
+            .GroupBy(x => x.Name)
             .ToDictionary(
-                x => x.Name,
-                y => y.Status);
-    }
-
-    public static IDictionary<string, string> GetNotSynchronizedNames(
-        this IDictionary<string, string> environmentVariables,
-        ProfileConfig profileConfig)
-    {
-        return profileConfig.SsmPaths
-            .Distinct()
-            .Select(x => EnvironmentVariableNameConverter.ConvertFromSsmPath(x, profileConfig))
-            .Where(x => environmentVariables.Keys.All(y => !y.StartsWith(x)))
-            .ToDictionary(
-                x => x + "(*)",
-                _ => "MissingSsmPath");
+                x => x.Key,
+                y => string.Join(",", y.Select(x => x.Status)));
     }
 }

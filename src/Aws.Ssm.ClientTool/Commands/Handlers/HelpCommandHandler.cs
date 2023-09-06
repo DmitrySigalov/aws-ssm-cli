@@ -24,7 +24,7 @@ public class HelpCommandHandler : ICommandHandler
     {
         ConsoleHelper.WriteLineNotification($"Supported commands:");
 
-        var table = new ConsoleTable("command-name", "short-name", "description");
+        var table = new ConsoleTable("full-command-name", "short-command-name", "description");
         table.Options.EnableCount = false;
 
         foreach (var commandHandler in _commandHandlers)
@@ -35,7 +35,7 @@ public class HelpCommandHandler : ICommandHandler
                 commandHandler.Description);
         }
 
-        table.Write(Format.Minimal);
+        ConsoleHelper.Warn(() => table.Write(Format.Minimal));
 
         return Task.CompletedTask;
     }

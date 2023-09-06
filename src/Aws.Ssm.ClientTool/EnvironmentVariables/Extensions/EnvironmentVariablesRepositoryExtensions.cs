@@ -29,6 +29,11 @@ public static class EnvironmentVariablesRepositoryExtensions
         ProfileConfig profileConfig)
     {
         var result = new SortedDictionary<string, string>();
+
+        if (profileConfig?.IsValid != true)
+        {
+            return result;
+        }
         
         var convertedEnvironmentVariableBaseNames = profileConfig.SsmPaths
             .Select(x => EnvironmentVariableNameConverter.ConvertFromSsmPath(x, profileConfig))

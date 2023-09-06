@@ -6,29 +6,27 @@ namespace Aws.Ssm.ClientTool.EnvironmentVariables.Extensions;
 
 public static class ConsoleOutputExtensions
 {
-    public static void PrintEnvironmentVariablesWithSsmParametersValidation(
+    public static void PrintEnvironmentVariablesAndValidatedSynchronizationSsmParametersStatus(
         this IDictionary<string, string> environmentVariables,
         IDictionary<string, string> ssmParameters,
         ProfileConfig profileConfig)
     {
-        PrintEnvironmentVariables(environmentVariables);
+        environmentVariables.PrintEnvironmentVariables();
 
-        var invalidData = environmentVariables
-            .GetNotSynchronizedNames(
-                ssmParameters,
-                profileConfig);
-
-        PrintInvalidEnvironmentVariables(invalidData);
+        environmentVariables.PrintInvalidEnvironmentVariables(
+            ssmParameters,
+            profileConfig);
     }
 
-    public static void PrintEnvironmentVariablesWithProfileValidation(
+    public static void PrintInvalidEnvironmentVariables(
         this IDictionary<string, string> environmentVariables,
+        IDictionary<string, string> ssmParameters,
         ProfileConfig profileConfig)
     {
-        PrintEnvironmentVariables(environmentVariables);
-        
         var invalidData = environmentVariables
-            .GetNotSynchronizedNames(profileConfig);
+            .GetEnvironmentVariablesWithInvalidSynchronizationStatus(
+                ssmParameters,
+                profileConfig);
 
         PrintInvalidEnvironmentVariables(invalidData);
     }
@@ -57,7 +55,8 @@ public static class ConsoleOutputExtensions
     {
         if (invalidData.Any() == false)
         {
-            ConsoleHelper.WriteLineWarn($"No not synchronized data");
+            ConsoleHelper.WriteLineWarn($"Fully valid synchronized data");
+            Console.WriteLine();
             return;
         }
         
@@ -66,6 +65,6 @@ public static class ConsoleOutputExtensions
         {
             table.AddRow(envVar.Key, envVar.Value);
         }
-        ConsoleHelper.Warn(() => table.Write(Format.Minimal));
+        ConsoleHelper.Error(() => table.Write(Format.Minimal));
     }
 }

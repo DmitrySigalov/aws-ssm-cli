@@ -48,22 +48,20 @@ public class ConfigCommandHandler : ICommandHandler
 
     public Task Handle(CancellationToken cancellationToken)
     {
-        ConsoleHelper.WriteLineNotification(Description);
+        ConsoleHelper.WriteLineNotification($"START - {Description}");
         Console.WriteLine();
 
         var profileDetails = GetProfileDetailsForConfiguration();
 
         if (profileDetails.Operation != OperationEnum.Create &&
             profileDetails.ProfileName == _profileConfigProvider.ActiveName &&
-            profileDetails.ProfileDo.SsmPaths.Any())
+            profileDetails.ProfileDo.IsValid)
         {
             ConsoleHelper.WriteLineNotification($"Deactivate profile [{profileDetails.ProfileName}] before any configuration changes");
 
-            var deletedEnvironmentVariables = SpinnerHelper.Run(
+            SpinnerHelper.Run(
                 () => _environmentVariablesProvider.DeleteAll(profileDetails.ProfileDo),
-                "Delete environment variables");
-                
-            deletedEnvironmentVariables.PrintEnvironmentVariablesWithProfileValidation(profileDetails.ProfileDo);
+                "Delete active environment variables");
 
             _profileConfigProvider.ActiveName = null;
         }
@@ -126,10 +124,10 @@ public class ConfigCommandHandler : ICommandHandler
             }
         }
 
-        ConsoleHelper.WriteLineInfo($"DONE - Profile [{profileDetails.ProfileName}] configuration");
+        ConsoleHelper.WriteLineInfo($"DONE - Configured profile [{profileDetails.ProfileName}] configuration");
         Console.WriteLine();
 
-        ConsoleHelper.WriteLineNotification($"Start - View profile [{profileDetails.ProfileName}] configuration");
+        ConsoleHelper.WriteLineNotification($"START - Get environment variables with profile [{profileDetails.ProfileName}] configuration");
         Console.WriteLine();
 
         var resolvedSsmParameters = SpinnerHelper.Run(
@@ -142,11 +140,11 @@ public class ConfigCommandHandler : ICommandHandler
             () => _environmentVariablesProvider.GetAll(profileDetails.ProfileDo),
             "Get environment variables");
 
-        actualEnvironmentVariables.PrintEnvironmentVariablesWithSsmParametersValidation(
+        actualEnvironmentVariables.PrintEnvironmentVariablesAndValidatedSynchronizationSsmParametersStatus(
             resolvedSsmParameters,
             profileDetails.ProfileDo);
 
-        ConsoleHelper.WriteLineInfo($"DONE - View profile [{profileDetails.ProfileName}]");
+        ConsoleHelper.WriteLineInfo($"DONE - Get environment variables with profile [{profileDetails.ProfileName}] configuration");
 
         return Task.CompletedTask;
     }

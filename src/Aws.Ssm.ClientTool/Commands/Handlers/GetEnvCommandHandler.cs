@@ -9,7 +9,7 @@ using Sharprompt;
 
 namespace Aws.Ssm.ClientTool.Commands.Handlers;
 
-public class SetEnvCommandHandler : ICommandHandler
+public class GetEnvCommandHandler : ICommandHandler
 {
     private readonly IProfileConfigProvider _profileConfigProvider;
 
@@ -17,7 +17,7 @@ public class SetEnvCommandHandler : ICommandHandler
     
     private readonly ISsmParametersProvider _ssmParametersProvider;
 
-    public SetEnvCommandHandler(
+    public GetEnvCommandHandler(
         IProfileConfigProvider profileConfigProvider,
         IEnvironmentVariablesProvider environmentVariablesProvider,
         ISsmParametersProvider ssmParametersProvider)
@@ -29,15 +29,15 @@ public class SetEnvCommandHandler : ICommandHandler
         _ssmParametersProvider = ssmParametersProvider;
     }
     
-    public string BaseName => "set-env";
+    public string BaseName => "get-env";
     
-    public string ShortName => "se";
+    public string ShortName => "ge";
 
-    public string Description => "Set environment variables";
+    public string Description => "Get environment variables";
 
     public Task Handle(CancellationToken cancellationToken)
     {
-        ConsoleHelper.WriteLineNotification(Description);
+        ConsoleHelper.WriteLineNotification($"START - {Description}");
         Console.WriteLine();
 
         var profileNames = SpinnerHelper.Run(
@@ -61,13 +61,15 @@ public class SetEnvCommandHandler : ICommandHandler
             profileNames.Count == 1
             ? profileNames.Single()
             : Prompt.Select(
-                "Select profile for the activation",
+                "Select profile",
                 items: profileNames,
                 defaultValue: lastActiveProfileName);
-        
+
         var selectedProfileDo = SpinnerHelper.Run(
             () => _profileConfigProvider.GetByName(selectedProfileName),
             $"Read profile [{selectedProfileName}]");
+        
+        selectedProfileDo?.PrintProfileSettings();
 
         if (selectedProfileDo?.IsValid != true)
         {
@@ -75,48 +77,18 @@ public class SetEnvCommandHandler : ICommandHandler
 
             return Task.CompletedTask;
         }
-
-        selectedProfileDo.PrintProfileSettings();
-
+        
         var resolvedSsmParameters = SpinnerHelper.Run(
             () => _ssmParametersProvider.GetDictionaryBy(selectedProfileDo.SsmPaths),
             "Get ssm parameters from AWS System Manager");
         
         resolvedSsmParameters.PrintSsmParameters(selectedProfileDo);
 
-        if (resolvedSsmParameters.Any() == false)
-        {
-            ConsoleHelper.WriteLineError("NOT DONE - Unavailable ssm parameters");
+        var actualEnvironmentVariables = SpinnerHelper.Run(
+            () => _environmentVariablesProvider.GetAll(selectedProfileDo),
+            "Get environment variables");
 
-            return Task.CompletedTask;
-        }
-
-        if (!string.IsNullOrEmpty(lastActiveProfileName))
-        {
-            var lastActiveProfileDo = 
-                lastActiveProfileName == selectedProfileName
-                    ? selectedProfileDo
-                    : SpinnerHelper.Run(
-                        () => _profileConfigProvider.GetByName(lastActiveProfileName),
-                        $"Read current active profile [{lastActiveProfileName}]");
-
-            if (lastActiveProfileDo?.IsValid == true)
-            {
-                SpinnerHelper.Run(
-                    () => _environmentVariablesProvider.DeleteAll(lastActiveProfileDo),
-                    "Delete current active environment variables");
-            }
-        }
-
-        _profileConfigProvider.ActiveName = selectedProfileName;
-        
-        var appliedEnvironmentVariables = SpinnerHelper.Run(
-            () => _environmentVariablesProvider.SetFromSsmParameters(
-                resolvedSsmParameters,
-                selectedProfileDo),
-            $"Apply new environment variables");
-        
-        appliedEnvironmentVariables.PrintEnvironmentVariablesAndValidatedSynchronizationSsmParametersStatus(
+        actualEnvironmentVariables.PrintEnvironmentVariablesAndValidatedSynchronizationSsmParametersStatus(
             resolvedSsmParameters,
             selectedProfileDo);
         

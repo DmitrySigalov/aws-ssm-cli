@@ -1,15 +1,15 @@
 using Aws.Ssm.ClientTool.EnvironmentVariables;
 using Aws.Ssm.ClientTool.EnvironmentVariables.Extensions;
-using Aws.Ssm.ClientTool.Profiles;
-using Aws.Ssm.ClientTool.SsmParameters;
+using Aws.Ssm.ClientTool.EnvironmentVariables.Rules;
 using Aws.Ssm.ClientTool.Helpers;
+using Aws.Ssm.ClientTool.Profiles;
 using Aws.Ssm.ClientTool.Profiles.Extensions;
-using Aws.Ssm.ClientTool.SsmParameters.Extensions;
+using Aws.Ssm.ClientTool.SsmParameters;
 using Sharprompt;
 
 namespace Aws.Ssm.ClientTool.Commands.Handlers;
 
-public class ViewCommandHandler : ICommandHandler
+public class JsonCommandHandler : ICommandHandler
 {
     private readonly IProfileConfigProvider _profileConfigProvider;
 
@@ -17,7 +17,7 @@ public class ViewCommandHandler : ICommandHandler
     
     private readonly ISsmParametersProvider _ssmParametersProvider;
 
-    public ViewCommandHandler(
+    public JsonCommandHandler(
         IProfileConfigProvider profileConfigProvider,
         IEnvironmentVariablesProvider environmentVariablesProvider,
         ISsmParametersProvider ssmParametersProvider)
@@ -29,15 +29,15 @@ public class ViewCommandHandler : ICommandHandler
         _ssmParametersProvider = ssmParametersProvider;
     }
     
-    public string BaseName => "view";
+    public string BaseName => "json";
     
     public string ShortName => "";
 
-    public string Description => "View profile configuration and environment state";
-
+    public string Description => "Format environment variables (json format)";
+    
     public Task Handle(CancellationToken cancellationToken)
     {
-        ConsoleHelper.WriteLineNotification(Description);
+        ConsoleHelper.WriteLineNotification($"START - {Description}");
         Console.WriteLine();
 
         var profileNames = SpinnerHelper.Run(
@@ -61,7 +61,7 @@ public class ViewCommandHandler : ICommandHandler
             profileNames.Count == 1
             ? profileNames.Single()
             : Prompt.Select(
-                "Select profile to view",
+                "Select profile",
                 items: profileNames,
                 defaultValue: lastActiveProfileName);
 
@@ -71,7 +71,7 @@ public class ViewCommandHandler : ICommandHandler
         
         selectedProfileDo?.PrintProfileSettings();
 
-        if (selectedProfileDo?.SsmPaths?.Any() != true)
+        if (selectedProfileDo?.IsValid != true)
         {
             ConsoleHelper.WriteLineError($"Not configured profile [{selectedProfileName}]");
 
@@ -81,18 +81,27 @@ public class ViewCommandHandler : ICommandHandler
         var resolvedSsmParameters = SpinnerHelper.Run(
             () => _ssmParametersProvider.GetDictionaryBy(selectedProfileDo.SsmPaths),
             "Get ssm parameters from AWS System Manager");
-        
-        resolvedSsmParameters.PrintSsmParameters(selectedProfileDo);
 
-        var actualEnvironmentVariables = SpinnerHelper.Run(
-            () => _environmentVariablesProvider.GetAll(selectedProfileDo),
-            "Get environment variables");
+        var convertedEnvironmentVariables = resolvedSsmParameters
+            .Select(x => new
+            {
+                Name = EnvironmentVariableNameConverter.ConvertFromSsmPath(x.Key, selectedProfileDo),
+                Value = x.Value,
+            })
+            .GroupBy(x => x.Name)
+            .ToDictionary(
+                x => x.Key,
+                x => x.Last().Value);
 
-        actualEnvironmentVariables.PrintEnvironmentVariablesWithSsmParametersValidation(
+        ConsoleHelper.WriteLineNotification("Formatted environment variables json:");
+        Console.WriteLine(JsonSerializationHelper.Serialize(convertedEnvironmentVariables));
+        Console.WriteLine();
+
+        convertedEnvironmentVariables.PrintInvalidEnvironmentVariables(
             resolvedSsmParameters,
             selectedProfileDo);
-        
-        ConsoleHelper.WriteLineInfo($"DONE - View profile [{selectedProfileName}] configuration");
+
+        ConsoleHelper.WriteLineInfo($"DONE - {Description} with profile [{selectedProfileName}] configuration");
 
         return Task.CompletedTask;
     }

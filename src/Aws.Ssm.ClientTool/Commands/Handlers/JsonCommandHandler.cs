@@ -5,12 +5,11 @@ using Aws.Ssm.ClientTool.Helpers;
 using Aws.Ssm.ClientTool.Profiles;
 using Aws.Ssm.ClientTool.Profiles.Extensions;
 using Aws.Ssm.ClientTool.SsmParameters;
-using Aws.Ssm.ClientTool.SsmParameters.Extensions;
 using Sharprompt;
 
 namespace Aws.Ssm.ClientTool.Commands.Handlers;
 
-public class LaunchSettingsCommandHandler : ICommandHandler
+public class JsonCommandHandler : ICommandHandler
 {
     private readonly IProfileConfigProvider _profileConfigProvider;
 
@@ -18,7 +17,7 @@ public class LaunchSettingsCommandHandler : ICommandHandler
     
     private readonly ISsmParametersProvider _ssmParametersProvider;
 
-    public LaunchSettingsCommandHandler(
+    public JsonCommandHandler(
         IProfileConfigProvider profileConfigProvider,
         IEnvironmentVariablesProvider environmentVariablesProvider,
         ISsmParametersProvider ssmParametersProvider)
@@ -30,11 +29,11 @@ public class LaunchSettingsCommandHandler : ICommandHandler
         _ssmParametersProvider = ssmParametersProvider;
     }
     
-    public string BaseName => "launch-settings";
+    public string BaseName => "json";
     
-    public string ShortName => "ls";
+    public string ShortName => "";
 
-    public string Description => "Generate launchSettings.json";
+    public string Description => "View environment variable(s) in json format";
     
     public Task Handle(CancellationToken cancellationToken)
     {
@@ -94,7 +93,7 @@ public class LaunchSettingsCommandHandler : ICommandHandler
                 x => x.Key,
                 x => x.Last().Value);
 
-        ConsoleHelper.WriteLineNotification("View launchSettings.json:");
+        ConsoleHelper.WriteLineNotification("Result json:");
         Console.WriteLine(JsonSerializationHelper.Serialize(convertedEnvironmentVariables));
         Console.WriteLine();
 
@@ -102,7 +101,7 @@ public class LaunchSettingsCommandHandler : ICommandHandler
             resolvedSsmParameters,
             selectedProfileDo);
 
-        ConsoleHelper.WriteLineInfo($"DONE - Generated launchSettings.json with profile [{selectedProfileName}] configuration");
+        ConsoleHelper.WriteLineInfo($"DONE - {Description} with profile [{selectedProfileName}] configuration");
 
         return Task.CompletedTask;
     }

@@ -13,7 +13,7 @@ public static class StartupExtensions
         serviceCollection
             .AddSingleton<HelpCommandHandler>()
             .AddSingleton<ICommandHandler, SetEnvCommandHandler>()
-            .AddSingleton<ICommandHandler, LaunchSettingsCommandHandler>()
+            .AddSingleton<ICommandHandler, JsonCommandHandler>()
             .AddSingleton<ICommandHandler, ViewCommandHandler>()
             .AddSingleton<ICommandHandler, ConfigCommandHandler>();
 

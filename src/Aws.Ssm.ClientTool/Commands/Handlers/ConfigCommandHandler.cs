@@ -124,10 +124,10 @@ public class ConfigCommandHandler : ICommandHandler
             }
         }
 
-        ConsoleHelper.WriteLineInfo($"DONE - Profile [{profileDetails.ProfileName}] configuration");
+        ConsoleHelper.WriteLineInfo($"DONE - Configured profile [{profileDetails.ProfileName}] configuration");
         Console.WriteLine();
 
-        ConsoleHelper.WriteLineNotification($"Start - View profile [{profileDetails.ProfileName}] configuration");
+        ConsoleHelper.WriteLineNotification($"Start - View with profile [{profileDetails.ProfileName}] configuration");
         Console.WriteLine();
 
         var resolvedSsmParameters = SpinnerHelper.Run(
@@ -144,7 +144,7 @@ public class ConfigCommandHandler : ICommandHandler
             resolvedSsmParameters,
             profileDetails.ProfileDo);
 
-        ConsoleHelper.WriteLineInfo($"DONE - View profile [{profileDetails.ProfileName}]");
+        ConsoleHelper.WriteLineInfo($"DONE - View with profile [{profileDetails.ProfileName}] configuration");
 
         return Task.CompletedTask;
     }

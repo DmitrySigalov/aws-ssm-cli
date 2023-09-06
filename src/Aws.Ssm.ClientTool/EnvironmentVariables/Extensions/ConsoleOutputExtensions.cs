@@ -56,6 +56,7 @@ public static class ConsoleOutputExtensions
         if (invalidData.Any() == false)
         {
             ConsoleHelper.WriteLineWarn($"Fully valid synchronized data");
+            Console.WriteLine();
             return;
         }
         

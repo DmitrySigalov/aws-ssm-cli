@@ -92,7 +92,7 @@ public class ViewCommandHandler : ICommandHandler
             resolvedSsmParameters,
             selectedProfileDo);
         
-        ConsoleHelper.WriteLineInfo($"DONE - View profile [{selectedProfileName}] configuration");
+        ConsoleHelper.WriteLineInfo($"DONE - View with profile [{selectedProfileName}] configuration");
 
         return Task.CompletedTask;
     }

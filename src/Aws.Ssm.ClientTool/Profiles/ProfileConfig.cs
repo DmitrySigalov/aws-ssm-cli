@@ -6,5 +6,7 @@ public class ProfileConfig
 
     public string EnvironmentVariablePrefix { get; set; } = "SSM_";
 
+    public bool IsValid => SsmPaths?.Any() == true;
+
     public ProfileConfig Clone() => (ProfileConfig) this.MemberwiseClone();
 }

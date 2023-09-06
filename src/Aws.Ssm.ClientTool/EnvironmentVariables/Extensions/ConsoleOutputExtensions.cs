@@ -21,18 +21,6 @@ public static class ConsoleOutputExtensions
         PrintInvalidEnvironmentVariables(invalidData);
     }
 
-    public static void PrintEnvironmentVariablesWithProfileValidation(
-        this IDictionary<string, string> environmentVariables,
-        ProfileConfig profileConfig)
-    {
-        PrintEnvironmentVariables(environmentVariables);
-        
-        var invalidData = environmentVariables
-            .GetEnvironmentVariablesWithMissingSsmParameters(profileConfig);
-
-        PrintInvalidEnvironmentVariables(invalidData);
-    }
-
     private static void PrintEnvironmentVariables(
         this IDictionary<string, string> environmentVariables)
     {

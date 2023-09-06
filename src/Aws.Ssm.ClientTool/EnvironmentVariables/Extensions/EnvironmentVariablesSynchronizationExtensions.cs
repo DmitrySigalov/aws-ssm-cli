@@ -38,29 +38,19 @@ public static class EnvironmentVariablesSynchronizationExtensions
                 }));
         
         result.UnionWith(
-            environmentVariables.GetEnvironmentVariablesWithMissingSsmParameters(profileConfig)
+            profileConfig.SsmPaths
+                .Distinct()
+                .Select(x => EnvironmentVariableNameConverter.ConvertFromSsmPath(x, profileConfig))
+                .Where(x => environmentVariables.Keys.All(y => !y.StartsWith(x)))
                 .Select(x => new
                 {
-                    Name = x.Key,
-                    Status = x.Value,
+                    Name = x + "(*)",
+                    Status = "MissingSsmParameters",
                 }));
         
         return result
             .ToDictionary(
                 x => x.Name,
                 y => y.Status);
-    }
-
-    public static IDictionary<string, string> GetEnvironmentVariablesWithMissingSsmParameters(
-        this IDictionary<string, string> environmentVariables,
-        ProfileConfig profileConfig)
-    {
-        return profileConfig.SsmPaths
-            .Distinct()
-            .Select(x => EnvironmentVariableNameConverter.ConvertFromSsmPath(x, profileConfig))
-            .Where(x => environmentVariables.Keys.All(y => !y.StartsWith(x)))
-            .ToDictionary(
-                x => x + "(*)",
-                _ => "MissingSsmParameters");
     }
 }

@@ -55,15 +55,13 @@ public class ConfigCommandHandler : ICommandHandler
 
         if (profileDetails.Operation != OperationEnum.Create &&
             profileDetails.ProfileName == _profileConfigProvider.ActiveName &&
-            profileDetails.ProfileDo.SsmPaths.Any())
+            profileDetails.ProfileDo.IsValid)
         {
             ConsoleHelper.WriteLineNotification($"Deactivate profile [{profileDetails.ProfileName}] before any configuration changes");
 
-            var deletedEnvironmentVariables = SpinnerHelper.Run(
+            SpinnerHelper.Run(
                 () => _environmentVariablesProvider.DeleteAll(profileDetails.ProfileDo),
-                "Delete environment variables");
-                
-            deletedEnvironmentVariables.PrintEnvironmentVariablesWithProfileValidation(profileDetails.ProfileDo);
+                "Delete active environment variables");
 
             _profileConfigProvider.ActiveName = null;
         }

@@ -69,43 +69,15 @@ public class SetEnvCommandHandler : ICommandHandler
             () => _profileConfigProvider.GetByName(selectedProfileName),
             $"Read profile [{selectedProfileName}]");
 
-        selectedProfileDo?.PrintProfileSettings();
-
-        if (selectedProfileDo?.SsmPaths?.Any() != true)
+        if (selectedProfileDo?.IsValid != true)
         {
             ConsoleHelper.WriteLineError($"Not configured profile [{selectedProfileName}]");
 
             return Task.CompletedTask;
         }
 
-        if (!string.IsNullOrEmpty(lastActiveProfileName))
-        {
-            ConsoleHelper.WriteLineNotification($"Deactivate profile [{lastActiveProfileName}] before new reactivation");
+        selectedProfileDo.PrintProfileSettings();
 
-            var lastActiveProfileDo = 
-                lastActiveProfileName == selectedProfileName
-                ? selectedProfileDo
-                : SpinnerHelper.Run(
-                    () => _profileConfigProvider.GetByName(lastActiveProfileName),
-                    $"Read profile [{lastActiveProfileName}]");
-
-            if (lastActiveProfileDo != null)
-            {
-                var deletedEnvironmentVariables = SpinnerHelper.Run(
-                    () => _environmentVariablesProvider.DeleteAll(lastActiveProfileDo),
-                    "Delete environment variables");
-                
-                deletedEnvironmentVariables.PrintEnvironmentVariablesWithProfileValidation(lastActiveProfileDo);
-            }
-            else 
-            {
-                ConsoleHelper.WriteLineError($"Not configured profile [{lastActiveProfileName}]");
-            }
-        }
-
-        _profileConfigProvider.ActiveName = selectedProfileName;
-        ConsoleHelper.WriteLineNotification($"Activate profile [{selectedProfileName}]");
-        
         var resolvedSsmParameters = SpinnerHelper.Run(
             () => _ssmParametersProvider.GetDictionaryBy(selectedProfileDo.SsmPaths),
             "Get ssm parameters from AWS System Manager");
@@ -119,11 +91,30 @@ public class SetEnvCommandHandler : ICommandHandler
             return Task.CompletedTask;
         }
 
+        if (!string.IsNullOrEmpty(lastActiveProfileName))
+        {
+            var lastActiveProfileDo = 
+                lastActiveProfileName == selectedProfileName
+                    ? selectedProfileDo
+                    : SpinnerHelper.Run(
+                        () => _profileConfigProvider.GetByName(lastActiveProfileName),
+                        $"Read current active profile [{lastActiveProfileName}]");
+
+            if (lastActiveProfileDo?.IsValid == true)
+            {
+                SpinnerHelper.Run(
+                    () => _environmentVariablesProvider.DeleteAll(lastActiveProfileDo),
+                    "Delete current active environment variables");
+            }
+        }
+
+        _profileConfigProvider.ActiveName = selectedProfileName;
+        
         var appliedEnvironmentVariables = SpinnerHelper.Run(
             () => _environmentVariablesProvider.SetFromSsmParameters(
                 resolvedSsmParameters,
                 selectedProfileDo),
-            $"Apply environment variables");
+            $"Apply new environment variables");
         
         appliedEnvironmentVariables.PrintEnvironmentVariablesWithSsmParametersValidation(
             resolvedSsmParameters,

@@ -5,7 +5,7 @@ namespace Aws.Ssm.ClientTool.EnvironmentVariables.Extensions;
 
 public static class EnvironmentVariablesSynchronizationExtensions
 {
-    public static IDictionary<string, string> GetNotSynchronizedNames(
+    public static IDictionary<string, string> GetEnvironmentVariablesWithInvalidSynchronizationStatus(
         this IDictionary<string, string> environmentVariables,
         IDictionary<string, string> ssmParameters,
         ProfileConfig profileConfig)
@@ -36,14 +36,22 @@ public static class EnvironmentVariablesSynchronizationExtensions
                     Name = x.Name,
                     Status = "Unavailable",
                 }));
-
+        
+        result.UnionWith(
+            environmentVariables.GetEnvironmentVariablesWithMissingSsmParameters(profileConfig)
+                .Select(x => new
+                {
+                    Name = x.Key,
+                    Status = x.Value,
+                }));
+        
         return result
             .ToDictionary(
                 x => x.Name,
                 y => y.Status);
     }
 
-    public static IDictionary<string, string> GetNotSynchronizedNames(
+    public static IDictionary<string, string> GetEnvironmentVariablesWithMissingSsmParameters(
         this IDictionary<string, string> environmentVariables,
         ProfileConfig profileConfig)
     {
@@ -53,6 +61,6 @@ public static class EnvironmentVariablesSynchronizationExtensions
             .Where(x => environmentVariables.Keys.All(y => !y.StartsWith(x)))
             .ToDictionary(
                 x => x + "(*)",
-                _ => "MissingSsmPath");
+                _ => "MissingSsmParameters");
     }
 }

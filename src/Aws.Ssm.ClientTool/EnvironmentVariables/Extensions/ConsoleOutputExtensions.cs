@@ -14,7 +14,7 @@ public static class ConsoleOutputExtensions
         PrintEnvironmentVariables(environmentVariables);
 
         var invalidData = environmentVariables
-            .GetNotSynchronizedNames(
+            .GetEnvironmentVariablesWithInvalidSynchronizationStatus(
                 ssmParameters,
                 profileConfig);
 
@@ -28,7 +28,7 @@ public static class ConsoleOutputExtensions
         PrintEnvironmentVariables(environmentVariables);
         
         var invalidData = environmentVariables
-            .GetNotSynchronizedNames(profileConfig);
+            .GetEnvironmentVariablesWithMissingSsmParameters(profileConfig);
 
         PrintInvalidEnvironmentVariables(invalidData);
     }
@@ -57,7 +57,7 @@ public static class ConsoleOutputExtensions
     {
         if (invalidData.Any() == false)
         {
-            ConsoleHelper.WriteLineWarn($"No not synchronized data");
+            ConsoleHelper.WriteLineWarn($"Fully synchronized data");
             return;
         }
         

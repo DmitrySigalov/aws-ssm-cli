@@ -1,15 +1,16 @@
 using Aws.Ssm.ClientTool.EnvironmentVariables;
 using Aws.Ssm.ClientTool.EnvironmentVariables.Extensions;
-using Aws.Ssm.ClientTool.Profiles;
-using Aws.Ssm.ClientTool.SsmParameters;
+using Aws.Ssm.ClientTool.EnvironmentVariables.Rules;
 using Aws.Ssm.ClientTool.Helpers;
+using Aws.Ssm.ClientTool.Profiles;
 using Aws.Ssm.ClientTool.Profiles.Extensions;
+using Aws.Ssm.ClientTool.SsmParameters;
 using Aws.Ssm.ClientTool.SsmParameters.Extensions;
 using Sharprompt;
 
 namespace Aws.Ssm.ClientTool.Commands.Handlers;
 
-public class ViewCommandHandler : ICommandHandler
+public class LaunchSettingsCommandHandler : ICommandHandler
 {
     private readonly IProfileConfigProvider _profileConfigProvider;
 
@@ -17,7 +18,7 @@ public class ViewCommandHandler : ICommandHandler
     
     private readonly ISsmParametersProvider _ssmParametersProvider;
 
-    public ViewCommandHandler(
+    public LaunchSettingsCommandHandler(
         IProfileConfigProvider profileConfigProvider,
         IEnvironmentVariablesProvider environmentVariablesProvider,
         ISsmParametersProvider ssmParametersProvider)
@@ -29,12 +30,12 @@ public class ViewCommandHandler : ICommandHandler
         _ssmParametersProvider = ssmParametersProvider;
     }
     
-    public string BaseName => "view";
+    public string BaseName => "launch-settings";
     
-    public string ShortName => "";
+    public string ShortName => "ls";
 
-    public string Description => "View profile configuration and current environment state";
-
+    public string Description => "Generate launchSettings.json";
+    
     public Task Handle(CancellationToken cancellationToken)
     {
         ConsoleHelper.WriteLineNotification(Description);
@@ -61,7 +62,7 @@ public class ViewCommandHandler : ICommandHandler
             profileNames.Count == 1
             ? profileNames.Single()
             : Prompt.Select(
-                "Select profile to view",
+                "Select profile",
                 items: profileNames,
                 defaultValue: lastActiveProfileName);
 
@@ -81,18 +82,27 @@ public class ViewCommandHandler : ICommandHandler
         var resolvedSsmParameters = SpinnerHelper.Run(
             () => _ssmParametersProvider.GetDictionaryBy(selectedProfileDo.SsmPaths),
             "Get ssm parameters from AWS System Manager");
-        
-        resolvedSsmParameters.PrintSsmParameters(selectedProfileDo);
 
-        var actualEnvironmentVariables = SpinnerHelper.Run(
-            () => _environmentVariablesProvider.GetAll(selectedProfileDo),
-            "Get environment variables");
+        var convertedEnvironmentVariables = resolvedSsmParameters
+            .Select(x => new
+            {
+                Name = EnvironmentVariableNameConverter.ConvertFromSsmPath(x.Key, selectedProfileDo),
+                Value = x.Value,
+            })
+            .GroupBy(x => x.Name)
+            .ToDictionary(
+                x => x.Key,
+                x => x.Last().Value);
 
-        actualEnvironmentVariables.PrintEnvironmentVariablesAndValidatedSynchronizationSsmParametersStatus(
+        ConsoleHelper.WriteLineNotification("View launchSettings.json:");
+        Console.WriteLine(JsonSerializationHelper.Serialize(convertedEnvironmentVariables));
+        Console.WriteLine();
+
+        convertedEnvironmentVariables.PrintInvalidEnvironmentVariables(
             resolvedSsmParameters,
             selectedProfileDo);
-        
-        ConsoleHelper.WriteLineInfo($"DONE - View profile [{selectedProfileName}] configuration");
+
+        ConsoleHelper.WriteLineInfo($"DONE - Generated launchSettings.json with profile [{selectedProfileName}] configuration");
 
         return Task.CompletedTask;
     }

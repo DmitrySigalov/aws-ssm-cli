@@ -11,8 +11,18 @@ public static class ConsoleOutputExtensions
         IDictionary<string, string> ssmParameters,
         ProfileConfig profileConfig)
     {
-        PrintEnvironmentVariables(environmentVariables);
+        environmentVariables.PrintEnvironmentVariables();
 
+        environmentVariables.PrintInvalidEnvironmentVariables(
+            ssmParameters,
+            profileConfig);
+    }
+
+    public static void PrintInvalidEnvironmentVariables(
+        this IDictionary<string, string> environmentVariables,
+        IDictionary<string, string> ssmParameters,
+        ProfileConfig profileConfig)
+    {
         var invalidData = environmentVariables
             .GetEnvironmentVariablesWithInvalidSynchronizationStatus(
                 ssmParameters,

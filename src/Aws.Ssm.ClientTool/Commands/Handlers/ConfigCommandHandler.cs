@@ -140,7 +140,7 @@ public class ConfigCommandHandler : ICommandHandler
             () => _environmentVariablesProvider.GetAll(profileDetails.ProfileDo),
             "Get environment variables");
 
-        actualEnvironmentVariables.PrintEnvironmentVariablesWithSsmParametersValidation(
+        actualEnvironmentVariables.PrintEnvironmentVariablesAndValidatedSynchronizationSsmParametersStatus(
             resolvedSsmParameters,
             profileDetails.ProfileDo);
 

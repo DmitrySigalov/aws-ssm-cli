@@ -116,7 +116,7 @@ public class SetEnvCommandHandler : ICommandHandler
                 selectedProfileDo),
             $"Apply new environment variables");
         
-        appliedEnvironmentVariables.PrintEnvironmentVariablesWithSsmParametersValidation(
+        appliedEnvironmentVariables.PrintEnvironmentVariablesAndValidatedSynchronizationSsmParametersStatus(
             resolvedSsmParameters,
             selectedProfileDo);
         

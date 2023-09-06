@@ -6,7 +6,7 @@ namespace Aws.Ssm.ClientTool.EnvironmentVariables.Extensions;
 
 public static class ConsoleOutputExtensions
 {
-    public static void PrintEnvironmentVariablesWithSsmParametersValidation(
+    public static void PrintEnvironmentVariablesAndValidatedSynchronizationSsmParametersStatus(
         this IDictionary<string, string> environmentVariables,
         IDictionary<string, string> ssmParameters,
         ProfileConfig profileConfig)
@@ -45,7 +45,7 @@ public static class ConsoleOutputExtensions
     {
         if (invalidData.Any() == false)
         {
-            ConsoleHelper.WriteLineWarn($"Fully synchronized data");
+            ConsoleHelper.WriteLineWarn($"Fully valid synchronized data");
             return;
         }
         
@@ -54,6 +54,6 @@ public static class ConsoleOutputExtensions
         {
             table.AddRow(envVar.Key, envVar.Value);
         }
-        ConsoleHelper.Warn(() => table.Write(Format.Minimal));
+        ConsoleHelper.Error(() => table.Write(Format.Minimal));
     }
 }

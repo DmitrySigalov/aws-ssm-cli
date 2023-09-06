@@ -33,7 +33,7 @@ public class ViewCommandHandler : ICommandHandler
     
     public string ShortName => "";
 
-    public string Description => "View profile configuration and environment state";
+    public string Description => "View profile configuration and current environment state";
 
     public Task Handle(CancellationToken cancellationToken)
     {
@@ -88,7 +88,7 @@ public class ViewCommandHandler : ICommandHandler
             () => _environmentVariablesProvider.GetAll(selectedProfileDo),
             "Get environment variables");
 
-        actualEnvironmentVariables.PrintEnvironmentVariablesWithSsmParametersValidation(
+        actualEnvironmentVariables.PrintEnvironmentVariablesAndValidatedSynchronizationSsmParametersStatus(
             resolvedSsmParameters,
             selectedProfileDo);
         

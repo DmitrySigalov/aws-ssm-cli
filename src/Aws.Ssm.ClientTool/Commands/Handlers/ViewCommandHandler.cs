@@ -34,7 +34,7 @@ public class ViewCommandHandler : ICommandHandler
     
     public string ShortName => "";
 
-    public string Description => "View configuration";
+    public string Description => "View environment variables configuration";
     
     public Task Handle(CancellationToken cancellationToken)
     {
@@ -83,7 +83,7 @@ public class ViewCommandHandler : ICommandHandler
             () => _ssmParametersProvider.GetDictionaryBy(selectedProfileDo.SsmPaths),
             "Get ssm parameters from AWS System Manager");
 
-        resolvedSsmParameters.PrintSsmParameters(selectedProfileDo);
+        resolvedSsmParameters.PrintInvalidSsmParameters(selectedProfileDo);
         
         resolvedSsmParameters.PrintSsmParameterToEnvironmentVariableNamesMapping(
             selectedProfileDo);
@@ -99,7 +99,7 @@ public class ViewCommandHandler : ICommandHandler
                 x => x.Key,
                 x => x.Last().Value);
 
-        ConsoleHelper.WriteLineNotification("Launch settings json:");
+
         Console.WriteLine(JsonSerializationHelper.Serialize(
             new
             {

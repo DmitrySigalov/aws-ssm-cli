@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using Aws.Ssm.ClientTool.EnvironmentVariables.Extensions;
 using Aws.Ssm.ClientTool.EnvironmentVariables.Rules;
 using Aws.Ssm.ClientTool.Helpers;
@@ -25,7 +26,15 @@ public static class ConsoleOutputExtensions
             }
             table.Write(Format.Minimal);
         }
+        
+        ssmParameters.PrintInvalidSsmParameters(
+            profileConfig);
+    }
 
+    public static void PrintInvalidSsmParameters(
+        this IDictionary<string, string> ssmParameters,
+        ProfileConfig profileConfig)
+    {
         var invalidPaths = profileConfig.SsmPaths
             .Distinct()
             .Where(x => ssmParameters.Keys.All(y => !y.StartsWith(x)))
@@ -64,15 +73,22 @@ public static class ConsoleOutputExtensions
         {
             return;
         }
-
-        var table = new ConsoleTable("ssm-parameter-name", "environment-variable-name");
-
+        
+        Console.WriteLine("env:");
         foreach (var envVar in mapping)
         {
-            table.AddRow(envVar.Key, envVar.Value);
+            Console.WriteLine($"\t{envVar.Value}: '{{{{ssm \"{envVar.Key}\" \"region=eu-west-1\"}}}}'");
         }
-
-        table.Write(Format.Minimal);
+        Console.WriteLine();
+        
+        // var table = new ConsoleTable("ssm-parameter-name", "environment-variable-name");
+        //
+        // foreach (var envVar in mapping)
+        // {
+        //     table.AddRow(envVar.Key, envVar.Value);
+        // }
+        //
+        // table.Write(Format.Minimal);
     }
 
     private static IDictionary<string, string> GetSsmParameterNameToEnvironmentVariableNameMapping(

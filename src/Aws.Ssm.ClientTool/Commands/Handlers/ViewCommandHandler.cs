@@ -10,7 +10,7 @@ using Sharprompt;
 
 namespace Aws.Ssm.ClientTool.Commands.Handlers;
 
-public class JsonCommandHandler : ICommandHandler
+public class ViewCommandHandler : ICommandHandler
 {
     private readonly IProfileConfigProvider _profileConfigProvider;
 
@@ -18,7 +18,7 @@ public class JsonCommandHandler : ICommandHandler
     
     private readonly ISsmParametersProvider _ssmParametersProvider;
 
-    public JsonCommandHandler(
+    public ViewCommandHandler(
         IProfileConfigProvider profileConfigProvider,
         IEnvironmentVariablesProvider environmentVariablesProvider,
         ISsmParametersProvider ssmParametersProvider)
@@ -30,11 +30,11 @@ public class JsonCommandHandler : ICommandHandler
         _ssmParametersProvider = ssmParametersProvider;
     }
     
-    public string BaseName => "json";
+    public string BaseName => "view";
     
     public string ShortName => "";
 
-    public string Description => "Format environment variables (json format)";
+    public string Description => "View configuration";
     
     public Task Handle(CancellationToken cancellationToken)
     {
@@ -87,7 +87,7 @@ public class JsonCommandHandler : ICommandHandler
         
         resolvedSsmParameters.PrintSsmParameterToEnvironmentVariableNamesMapping(
             selectedProfileDo);
-
+        
         var convertedEnvironmentVariables = resolvedSsmParameters
             .Select(x => new
             {
@@ -99,8 +99,18 @@ public class JsonCommandHandler : ICommandHandler
                 x => x.Key,
                 x => x.Last().Value);
 
-        ConsoleHelper.WriteLineNotification("Formatted environment variables json:");
-        Console.WriteLine(JsonSerializationHelper.Serialize(convertedEnvironmentVariables));
+        ConsoleHelper.WriteLineNotification("Launch settings json:");
+        Console.WriteLine(JsonSerializationHelper.Serialize(
+            new
+            {
+                profiles = new
+                {
+                    profileName = new
+                    {
+                        environmentVariables = convertedEnvironmentVariables,
+                    }
+                }
+            }));
         Console.WriteLine();
 
         convertedEnvironmentVariables.PrintInvalidEnvironmentVariables(

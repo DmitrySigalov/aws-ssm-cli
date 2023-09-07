@@ -82,6 +82,8 @@ public class JsonCommandHandler : ICommandHandler
         var resolvedSsmParameters = SpinnerHelper.Run(
             () => _ssmParametersProvider.GetDictionaryBy(selectedProfileDo.SsmPaths),
             "Get ssm parameters from AWS System Manager");
+
+        resolvedSsmParameters.PrintSsmParameters(selectedProfileDo);
         
         resolvedSsmParameters.PrintSsmParameterToEnvironmentVariableNamesMapping(
             selectedProfileDo);

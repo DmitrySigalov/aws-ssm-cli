@@ -136,6 +136,9 @@ public class ConfigCommandHandler : ICommandHandler
         
         resolvedSsmParameters.PrintSsmParameters(profileDetails.ProfileDo);
 
+        resolvedSsmParameters.PrintSsmParameterToEnvironmentVariableNamesMapping(
+            profileDetails.ProfileDo);
+
         var actualEnvironmentVariables = SpinnerHelper.Run(
             () => _environmentVariablesProvider.GetAll(profileDetails.ProfileDo),
             "Get environment variables");

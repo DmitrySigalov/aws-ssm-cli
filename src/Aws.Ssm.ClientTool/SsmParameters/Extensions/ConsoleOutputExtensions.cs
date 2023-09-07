@@ -24,9 +24,6 @@ public static class ConsoleOutputExtensions
                 table.AddRow(ssmParam.Key, ssmParam.Value);
             }
             table.Write(Format.Minimal);
-
-            ssmParameters.PrintSsmParameterToEnvironmentVariableNamesMapping(
-                profileConfig);
         }
 
         var invalidPaths = profileConfig.SsmPaths

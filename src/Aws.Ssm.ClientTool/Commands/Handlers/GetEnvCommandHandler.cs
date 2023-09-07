@@ -84,11 +84,14 @@ public class GetEnvCommandHandler : ICommandHandler
         
         resolvedSsmParameters.PrintSsmParameters(selectedProfileDo);
 
+        resolvedSsmParameters.PrintSsmParameterToEnvironmentVariableNamesMapping(
+            selectedProfileDo);
+        
         var actualEnvironmentVariables = SpinnerHelper.Run(
             () => _environmentVariablesProvider.GetAll(selectedProfileDo),
             "Get environment variables");
 
-        actualEnvironmentVariables.PrintEnvironmentVariablesAndValidatedSynchronizationSsmParametersStatus(
+        actualEnvironmentVariables.PrintEnvironmentVariablesWithSsmParametersValidationStatus(
             resolvedSsmParameters,
             selectedProfileDo);
         

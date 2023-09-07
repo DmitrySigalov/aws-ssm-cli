@@ -5,11 +5,12 @@ using Aws.Ssm.ClientTool.Helpers;
 using Aws.Ssm.ClientTool.Profiles;
 using Aws.Ssm.ClientTool.Profiles.Extensions;
 using Aws.Ssm.ClientTool.SsmParameters;
+using Aws.Ssm.ClientTool.SsmParameters.Extensions;
 using Sharprompt;
 
 namespace Aws.Ssm.ClientTool.Commands.Handlers;
 
-public class JsonCommandHandler : ICommandHandler
+public class ViewCommandHandler : ICommandHandler
 {
     private readonly IProfileConfigProvider _profileConfigProvider;
 
@@ -17,7 +18,7 @@ public class JsonCommandHandler : ICommandHandler
     
     private readonly ISsmParametersProvider _ssmParametersProvider;
 
-    public JsonCommandHandler(
+    public ViewCommandHandler(
         IProfileConfigProvider profileConfigProvider,
         IEnvironmentVariablesProvider environmentVariablesProvider,
         ISsmParametersProvider ssmParametersProvider)
@@ -29,11 +30,11 @@ public class JsonCommandHandler : ICommandHandler
         _ssmParametersProvider = ssmParametersProvider;
     }
     
-    public string BaseName => "json";
+    public string BaseName => "view";
     
     public string ShortName => "";
 
-    public string Description => "Format environment variables (json format)";
+    public string Description => "View environment variables configuration";
     
     public Task Handle(CancellationToken cancellationToken)
     {
@@ -82,6 +83,11 @@ public class JsonCommandHandler : ICommandHandler
             () => _ssmParametersProvider.GetDictionaryBy(selectedProfileDo.SsmPaths),
             "Get ssm parameters from AWS System Manager");
 
+        resolvedSsmParameters.PrintInvalidSsmParameters(selectedProfileDo);
+        
+        resolvedSsmParameters.PrintSsmParameterToEnvironmentVariableNamesMapping(
+            selectedProfileDo);
+        
         var convertedEnvironmentVariables = resolvedSsmParameters
             .Select(x => new
             {
@@ -93,8 +99,18 @@ public class JsonCommandHandler : ICommandHandler
                 x => x.Key,
                 x => x.Last().Value);
 
-        ConsoleHelper.WriteLineNotification("Formatted environment variables json:");
-        Console.WriteLine(JsonSerializationHelper.Serialize(convertedEnvironmentVariables));
+
+        Console.WriteLine(JsonSerializationHelper.Serialize(
+            new
+            {
+                profiles = new
+                {
+                    profileName = new
+                    {
+                        environmentVariables = convertedEnvironmentVariables,
+                    }
+                }
+            }));
         Console.WriteLine();
 
         convertedEnvironmentVariables.PrintInvalidEnvironmentVariables(

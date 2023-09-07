@@ -6,7 +6,7 @@ namespace Aws.Ssm.ClientTool.EnvironmentVariables.Extensions;
 
 public static class ConsoleOutputExtensions
 {
-    public static void PrintEnvironmentVariablesAndValidatedSynchronizationSsmParametersStatus(
+    public static void PrintEnvironmentVariablesWithSsmParametersValidationStatus(
         this IDictionary<string, string> environmentVariables,
         IDictionary<string, string> ssmParameters,
         ProfileConfig profileConfig)
@@ -30,7 +30,7 @@ public static class ConsoleOutputExtensions
 
         PrintInvalidEnvironmentVariables(invalidData);
     }
-
+    
     private static void PrintEnvironmentVariables(
         this IDictionary<string, string> environmentVariables)
     {

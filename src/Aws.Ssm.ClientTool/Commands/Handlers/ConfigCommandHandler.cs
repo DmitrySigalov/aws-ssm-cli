@@ -90,7 +90,7 @@ public class ConfigCommandHandler : ICommandHandler
 
         while (!allowToExit)
         {
-            var exitOperationName = "Exit and view configured profile"; 
+            var exitOperationName = "Exit and Get environment variables"; 
             var removeSsmPathOperationName = $"Remove from {nameof(profileDetails.ProfileDo.SsmPaths)}";
             var manageOperationsLookup = new Dictionary<string, Func<ProfileConfig, bool>>
             {
@@ -124,7 +124,7 @@ public class ConfigCommandHandler : ICommandHandler
             }
         }
 
-        ConsoleHelper.WriteLineInfo($"DONE - Configured profile [{profileDetails.ProfileName}] configuration");
+        ConsoleHelper.WriteLineInfo($"DONE - Profile [{profileDetails.ProfileName}] configuration");
         Console.WriteLine();
 
         ConsoleHelper.WriteLineNotification($"START - Get environment variables with profile [{profileDetails.ProfileName}] configuration");
@@ -136,11 +136,14 @@ public class ConfigCommandHandler : ICommandHandler
         
         resolvedSsmParameters.PrintSsmParameters(profileDetails.ProfileDo);
 
+        resolvedSsmParameters.PrintSsmParameterToEnvironmentVariableNamesMapping(
+            profileDetails.ProfileDo);
+
         var actualEnvironmentVariables = SpinnerHelper.Run(
             () => _environmentVariablesProvider.GetAll(profileDetails.ProfileDo),
             "Get environment variables");
 
-        actualEnvironmentVariables.PrintEnvironmentVariablesAndValidatedSynchronizationSsmParametersStatus(
+        actualEnvironmentVariables.PrintEnvironmentVariablesWithSsmParametersValidationStatus(
             resolvedSsmParameters,
             profileDetails.ProfileDo);
 

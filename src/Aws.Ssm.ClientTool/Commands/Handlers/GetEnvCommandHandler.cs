@@ -82,13 +82,14 @@ public class GetEnvCommandHandler : ICommandHandler
             () => _ssmParametersProvider.GetDictionaryBy(selectedProfileDo.SsmPaths),
             "Get ssm parameters from AWS System Manager");
         
-        resolvedSsmParameters.PrintSsmParameters(selectedProfileDo);
-
+        resolvedSsmParameters.PrintSsmParameterToEnvironmentVariableNamesMapping(
+            selectedProfileDo);
+        
         var actualEnvironmentVariables = SpinnerHelper.Run(
             () => _environmentVariablesProvider.GetAll(selectedProfileDo),
             "Get environment variables");
 
-        actualEnvironmentVariables.PrintEnvironmentVariablesAndValidatedSynchronizationSsmParametersStatus(
+        actualEnvironmentVariables.PrintEnvironmentVariablesWithSsmParametersValidationStatus(
             resolvedSsmParameters,
             selectedProfileDo);
         

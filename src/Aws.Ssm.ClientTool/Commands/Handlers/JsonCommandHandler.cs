@@ -5,6 +5,7 @@ using Aws.Ssm.ClientTool.Helpers;
 using Aws.Ssm.ClientTool.Profiles;
 using Aws.Ssm.ClientTool.Profiles.Extensions;
 using Aws.Ssm.ClientTool.SsmParameters;
+using Aws.Ssm.ClientTool.SsmParameters.Extensions;
 using Sharprompt;
 
 namespace Aws.Ssm.ClientTool.Commands.Handlers;
@@ -81,6 +82,9 @@ public class JsonCommandHandler : ICommandHandler
         var resolvedSsmParameters = SpinnerHelper.Run(
             () => _ssmParametersProvider.GetDictionaryBy(selectedProfileDo.SsmPaths),
             "Get ssm parameters from AWS System Manager");
+        
+        resolvedSsmParameters.PrintSsmParameterToEnvironmentVariableNamesMapping(
+            selectedProfileDo);
 
         var convertedEnvironmentVariables = resolvedSsmParameters
             .Select(x => new

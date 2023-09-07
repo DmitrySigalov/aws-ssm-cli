@@ -1,3 +1,5 @@
+using Aws.Ssm.ClientTool.EnvironmentVariables.Extensions;
+using Aws.Ssm.ClientTool.EnvironmentVariables.Rules;
 using Aws.Ssm.ClientTool.Helpers;
 using Aws.Ssm.ClientTool.Profiles;
 using ConsoleTables;
@@ -22,6 +24,9 @@ public static class ConsoleOutputExtensions
                 table.AddRow(ssmParam.Key, ssmParam.Value);
             }
             table.Write(Format.Minimal);
+
+            ssmParameters.PrintSsmParameterToEnvironmentVariableNamesMapping(
+                profileConfig);
         }
 
         var invalidPaths = profileConfig.SsmPaths
@@ -42,5 +47,49 @@ public static class ConsoleOutputExtensions
                 table.Write(Format.Minimal);
             });
         }
+    }
+    
+    public static void PrintSsmParameterToEnvironmentVariableNamesMapping(
+        this IDictionary<string, string> ssmParameters,
+        ProfileConfig profileConfig)
+    {
+        var mapping = ssmParameters
+            .Select(x => new
+            {
+                SsmParameterName = x.Key,
+                EnvironmentVariableName = EnvironmentVariableNameConverter.ConvertFromSsmPath(x.Key, profileConfig),
+            })
+            .ToDictionary(
+                x => x.SsmParameterName,
+                y => y.EnvironmentVariableName);;
+
+        if (mapping.Any() == false)
+        {
+            return;
+        }
+
+        var table = new ConsoleTable("ssm-parameter-name", "environment-variable-name");
+
+        foreach (var envVar in mapping)
+        {
+            table.AddRow(envVar.Key, envVar.Value);
+        }
+
+        table.Write(Format.Minimal);
+    }
+
+    private static IDictionary<string, string> GetSsmParameterNameToEnvironmentVariableNameMapping(
+        this IDictionary<string, string> ssmParameters,
+        ProfileConfig profileConfig)
+    {
+        return ssmParameters
+            .Select(x => new
+            {
+                SsmParameterName = x.Key,
+                EnvironmentVariableName = EnvironmentVariableNameConverter.ConvertFromSsmPath(x.Key, profileConfig),
+            })
+            .ToDictionary(
+                x => x.SsmParameterName,
+                y => y.EnvironmentVariableName);
     }
 }

@@ -90,7 +90,7 @@ public class ConfigCommandHandler : ICommandHandler
 
         while (!allowToExit)
         {
-            var exitOperationName = "Exit and Get environment variables"; 
+            var exitOperationName = "Exit and get environment variables"; 
             var removeSsmPathOperationName = $"Remove from {nameof(profileDetails.ProfileDo.SsmPaths)}";
             var manageOperationsLookup = new Dictionary<string, Func<ProfileConfig, bool>>
             {

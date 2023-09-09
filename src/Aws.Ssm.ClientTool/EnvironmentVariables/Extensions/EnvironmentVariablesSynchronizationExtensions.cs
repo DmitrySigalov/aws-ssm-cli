@@ -42,7 +42,7 @@ public static class EnvironmentVariablesSynchronizationExtensions
             profileConfig.SsmPaths
                 .Distinct()
                 .Select(x => EnvironmentVariableNameConverter.ConvertFromSsmPath(x, profileConfig))
-                .Where(x => environmentVariables.Keys.All(y => !y.StartsWith(x)))
+                .Where(x => ssmConvertedNamesValues.All(y => !y.EnvironmentVariableName.StartsWith(x)))
                 .Select(x => new
                 {
                     Name = x + "(*)",

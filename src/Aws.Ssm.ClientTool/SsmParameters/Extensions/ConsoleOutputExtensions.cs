@@ -77,7 +77,7 @@ public static class ConsoleOutputExtensions
         Console.WriteLine("env:");
         foreach (var envVar in mapping)
         {
-            Console.WriteLine($"\t{envVar.Value}: '{{{{ssm \"{envVar.Key}\" \"region=eu-west-1\"}}}}'");
+            Console.WriteLine($"  {envVar.Value}: '{{{{ssm \"{envVar.Key}\" \"region=eu-west-1\"}}}}'");
         }
         Console.WriteLine();
         

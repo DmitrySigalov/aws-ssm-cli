@@ -103,13 +103,7 @@ public class ViewCommandHandler : ICommandHandler
         Console.WriteLine(JsonSerializationHelper.Serialize(
             new
             {
-                profiles = new
-                {
-                    profileName = new
-                    {
-                        environmentVariables = convertedEnvironmentVariables,
-                    }
-                }
+                environmentVariables = convertedEnvironmentVariables,
             }));
         Console.WriteLine();
 

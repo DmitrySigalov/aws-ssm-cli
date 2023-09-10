@@ -81,6 +81,9 @@ public class ViewProfileHandler : ICommandHandler
             () => _ssmParametersProvider.GetDictionaryBy(selectedProfileDo.SsmPaths),
             "Get ssm parameters from AWS System Manager");
 
+        resolvedSsmParameters.PrintSsmParameterToEnvironmentVariableNamesMapping(
+            selectedProfileDo);
+        
         resolvedSsmParameters.PrintSsmParametersToEnvironmentVariables(
             selectedProfileDo);
         

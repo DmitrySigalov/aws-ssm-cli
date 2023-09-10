@@ -6,7 +6,11 @@ namespace Aws.Ssm.Cli.EnvironmentVariables.Rules;
 
 public static class EnvironmentVariableNameConverter
 {
-    private static char[] ReplaceVariableNameCharacters => new [] { SsmParametersConsts.KeyDelimeter, '/', '\\', ':', '-', '.', ',', '\'', '"', '`' };
+    private static char[] ReplaceVariableNameCharacters => new []
+    {
+        SsmParametersConsts.KeyDelimeter, 
+        '/', '\\', ':', '-', '.', ',', '\'', '"', '`', '{', '}', '[', ']', '$', ';', '(', ')',
+    };
 
     public static string ConvertFromSsmPath(
         string ssmPath,

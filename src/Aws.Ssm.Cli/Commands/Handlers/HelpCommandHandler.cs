@@ -14,9 +14,7 @@ public class HelpCommandHandler : ICommandHandler
             .ToHashSet();
     }
 
-    public string BaseName => "help";
-
-    public string ShortName => "?";
+    public string CommandName => "help";
 
     public string Description => "";
 
@@ -24,14 +22,13 @@ public class HelpCommandHandler : ICommandHandler
     {
         ConsoleHelper.WriteLineNotification($"Supported commands:");
 
-        var table = new ConsoleTable("full-command-name", "short-command-name", "description");
+        var table = new ConsoleTable("command-name", "description");
         table.Options.EnableCount = false;
 
         foreach (var commandHandler in _commandHandlers)
         {
             table.AddRow(
-                commandHandler.BaseName,
-                commandHandler.ShortName,
+                commandHandler.CommandName,
                 commandHandler.Description);
         }
 

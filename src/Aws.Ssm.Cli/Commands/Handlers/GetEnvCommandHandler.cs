@@ -29,10 +29,8 @@ public class GetEnvCommandHandler : ICommandHandler
         _ssmParametersProvider = ssmParametersProvider;
     }
     
-    public string BaseName => "get-env";
+    public string CommandName => "get-env";
     
-    public string ShortName => "ge";
-
     public string Description => "Get environment variables";
 
     public Task Handle(CancellationToken cancellationToken)
@@ -95,7 +93,7 @@ public class GetEnvCommandHandler : ICommandHandler
             resolvedSsmParameters,
             selectedProfileDo);
         
-        ConsoleHelper.WriteLineInfo($"DONE - {Description} with profile [{selectedProfileName}] configuration");
+        ConsoleHelper.WriteLineInfo($"DONE - {Description} with profile [{selectedProfileName}]");
 
         return Task.CompletedTask;
     }

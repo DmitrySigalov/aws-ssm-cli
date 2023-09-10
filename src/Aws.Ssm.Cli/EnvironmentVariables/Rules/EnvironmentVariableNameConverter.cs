@@ -6,8 +6,6 @@ namespace Aws.Ssm.Cli.EnvironmentVariables.Rules;
 
 public static class EnvironmentVariableNameConverter
 {
-    private static char[] ReplaceVariableNameCharacters => new [] { SsmParametersConsts.KeyDelimeter, '/', '\\', ':', '-', '.', ',', '\'', '"', '`' };
-
     public static string ConvertFromSsmPath(
         string ssmPath,
         ProfileConfig profileSettings)
@@ -23,7 +21,7 @@ public static class EnvironmentVariableNameConverter
 
         foreach (var c in ssmPath)
         {
-            if (ReplaceVariableNameCharacters.Contains(c))
+            if (EnvironmentVariableNameValidationRule.InvalidVariableNameCharacters.Contains(c))
             {
                 result.Append(EnvironmentVariablesConsts.VariableNameDelimeter);
 

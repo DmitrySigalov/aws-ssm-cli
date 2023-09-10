@@ -1,8 +1,11 @@
 {
   "profiles": {
-    "Aws.Ssm.ClientTool": {
+    "Aws.Ssm.Cli": {
       "commandName": "Project",
-      "commandLineArgs": ""
+      "commandLineArgs": "",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      }
     }
   }
 }

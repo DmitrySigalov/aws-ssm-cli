@@ -10,7 +10,7 @@ public static class EnvironmentVariablesConsts
     
     public static class FileNames
     {
-        private static string Base => "environment-variables";
+        private static string Base => "export-list";
 
         public static string Descriptor => $"{Base}.json";
     

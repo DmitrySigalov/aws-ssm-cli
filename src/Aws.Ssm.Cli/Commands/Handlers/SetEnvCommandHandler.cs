@@ -29,9 +29,9 @@ public class SetEnvCommandHandler : ICommandHandler
         _ssmParametersProvider = ssmParametersProvider;
     }
     
-    public string BaseName => "set-env";
+    public string CommandName => "set-env";
     
-    public string ShortName => "se";
+    public string ShortName => "";
 
     public string Description => "Set environment variables";
 
@@ -83,7 +83,6 @@ public class SetEnvCommandHandler : ICommandHandler
             "Get ssm parameters from AWS System Manager");
         
         resolvedSsmParameters.PrintSsmParameters(selectedProfileDo);
-
         if (resolvedSsmParameters.Any() == false)
         {
             ConsoleHelper.WriteLineError("NOT DONE - Unavailable ssm parameters");
@@ -116,11 +115,14 @@ public class SetEnvCommandHandler : ICommandHandler
                 selectedProfileDo),
             $"Apply new environment variables");
         
+        resolvedSsmParameters.PrintSsmParameterToEnvironmentVariableNamesMapping(
+            selectedProfileDo);
+        
         appliedEnvironmentVariables.PrintEnvironmentVariablesWithSsmParametersValidationStatus(
             resolvedSsmParameters,
             selectedProfileDo);
         
-        ConsoleHelper.WriteLineInfo($"DONE - {Description} with profile [{selectedProfileName}] configuration");
+        ConsoleHelper.WriteLineInfo($"DONE - {Description} with profile [{selectedProfileName}]");
 
         return Task.CompletedTask;
     }

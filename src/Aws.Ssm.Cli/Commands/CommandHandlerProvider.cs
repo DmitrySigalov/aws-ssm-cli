@@ -13,9 +13,7 @@ public class CommandHandlerProvider
 
     private readonly ICommandHandler _defaultCommandHandler;
 
-    private readonly IDictionary<string, ICommandHandler> _allCommandHandlersByFullName;
-
-    private readonly IDictionary<string, ICommandHandler> _allCommandHandlersByShortName;
+    private readonly IDictionary<string, ICommandHandler> _allCommandHandlers;
 
     public CommandHandlerProvider(
         UserParameters userParameters,
@@ -30,16 +28,9 @@ public class CommandHandlerProvider
         
         _helpCommandHandler = helpCommandHandler;
 
-        _allCommandHandlersByFullName = new [] { _helpCommandHandler } 
+        _allCommandHandlers = new [] { _helpCommandHandler } 
             .Union(handlers)
-            .ToDictionary(h => h.BaseName, h => h);
-
-        _allCommandHandlersByShortName = _allCommandHandlersByFullName
-            .Values
-            .Where(x => !string.IsNullOrWhiteSpace(x.ShortName))
-            .ToDictionary(
-                x => x.ShortName,
-                y => y);
+            .ToDictionary(h => h.CommandName, h => h);
     }
     
     public ICommandHandler Get()
@@ -50,12 +41,11 @@ public class CommandHandlerProvider
         {
             commandName = Prompt.Select(
                 "Select command",
-                _allCommandHandlersByFullName.Select(x => x.Key),
-                defaultValue: _defaultCommandHandler?.BaseName);
+                _allCommandHandlers.Select(x => x.Key),
+                defaultValue: _defaultCommandHandler?.CommandName);
         }
 
-        if (!_allCommandHandlersByFullName.TryGetValue(commandName, out var handler) &&
-            !_allCommandHandlersByShortName.TryGetValue(commandName, out handler))
+        if (!_allCommandHandlers.TryGetValue(commandName, out var handler))
         {
             ConsoleHelper.WriteLineError("Invalid command argument");
             Console.WriteLine();

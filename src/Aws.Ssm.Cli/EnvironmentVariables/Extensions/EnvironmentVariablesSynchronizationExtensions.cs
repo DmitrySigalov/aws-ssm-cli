@@ -46,7 +46,7 @@ public static class EnvironmentVariablesSynchronizationExtensions
                 .Select(x => new
                 {
                     Name = x + "(*)",
-                    Status = "MissingSsmParameters",
+                    Status = "InvalidSsmPath",
                 }));
         
         result.UnionWith(

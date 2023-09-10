@@ -3,7 +3,7 @@ using Aws.Ssm.Cli.Helpers;
 using Aws.Ssm.Cli.UserRuntime;
 using Microsoft.Extensions.Logging;
 
-namespace Aws.Ssm.Cli.EnvironmentVariables.Providers;
+namespace Aws.Ssm.Cli.EnvironmentVariables.Services;
 
 public class OsxEnvironmentVariablesProvider : IEnvironmentVariablesProvider
 {

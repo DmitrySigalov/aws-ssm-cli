@@ -1,4 +1,4 @@
-namespace Aws.Ssm.Cli.EnvironmentVariables.Providers;
+namespace Aws.Ssm.Cli.EnvironmentVariables.Services;
 
 public class WindowsEnvironmentVariablesProvider : IEnvironmentVariablesProvider
 {

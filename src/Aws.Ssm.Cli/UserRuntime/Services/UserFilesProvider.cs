@@ -1,13 +1,21 @@
-using System.Reflection;
+using System.Runtime.InteropServices;
+using Microsoft.Extensions.Configuration;
 
 namespace Aws.Ssm.Cli.UserRuntime.Services;
 
 public class UserFilesProvider : IUserFilesProvider
 {
+    private readonly IConfiguration _configuration;
+    
+    public UserFilesProvider(IConfiguration configuration)
+    {
+        _configuration = configuration;
+    }
+    
     public IEnumerable<string> GetFileNames(string searchPattern)
     {
-        var rootFolderPath = GetRuntimeRootFolder();
-
+        var rootFolderPath = GetUserFolder();
+        
         return Directory
             .GetFiles(rootFolderPath, searchPattern)
             .Select(x => new FileInfo(x))
@@ -72,19 +80,38 @@ public class UserFilesProvider : IUserFilesProvider
             throw new ArgumentNullException(fileName);
         }
         
-        var rootFolderPath = GetRuntimeRootFolder();
+        var rootFolderPath = GetUserFolder();
 
         return Path.Combine(rootFolderPath, fileName);
     }
     
-    private string GetRuntimeRootFolder()
+    private string GetUserFolder()
     {
-        var runtimePath = Assembly.GetExecutingAssembly().Location;
+        var path = _configuration.GetValue<string>("USER_FOLDER_PATH");
+        
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                path = $"C:/Users/{_configuration["USERNAME"]}/.aws-ssm-cli";
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                path = $"/Users/{Environment.UserName}/.aws-ssm-cli";
+            }
+            else
+            {
+                throw new NotSupportedException("Not supported for operation system");
+            }
+        }
 
-        var fullPath = new FileInfo(runtimePath)
-            .Directory!
-            .FullName;
+        path = Path.GetFullPath(path);
 
-        return Path.GetFullPath(fullPath);
+        if (!Directory.Exists(path))
+        {
+            Directory.CreateDirectory(path);
+        }
+
+        return path;
     }
 }

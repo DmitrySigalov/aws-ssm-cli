@@ -88,18 +88,18 @@ public class ConfigProfileCommandHandler : ICommandHandler
 
         while (!allowToExit)
         {
-            var exitOperationName = "Exit"; 
+            var completeOperationName = "Complete and view configuration"; 
             var removeSsmPathOperationName = $"Remove from {nameof(profileDetails.ProfileDo.SsmPaths)}";
             var manageOperationsLookup = new Dictionary<string, Func<ProfileConfig, bool>>
             {
-                { exitOperationName, Exit },
+                { completeOperationName, Exit },
                 { $"Add into {nameof(profileDetails.ProfileDo.SsmPaths)}", AddSsmPath },
                 { removeSsmPathOperationName, RemoveSsmPaths },
                 { $"Configure {nameof(profileDetails.ProfileDo.EnvironmentVariablePrefix)}", SetEnvironmentVariablePrefix },
            };
             if (profileDetails.ProfileDo.SsmPaths.Any() != true)
             {
-                manageOperationsLookup.Remove(exitOperationName);
+                manageOperationsLookup.Remove(completeOperationName);
                 manageOperationsLookup.Remove(removeSsmPathOperationName);
             }
 

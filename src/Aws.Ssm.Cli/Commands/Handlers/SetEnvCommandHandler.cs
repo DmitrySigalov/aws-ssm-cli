@@ -29,7 +29,7 @@ public class SetEnvCommandHandler : ICommandHandler
         _ssmParametersProvider = ssmParametersProvider;
     }
     
-    public string CommandName => "set";
+    public string CommandName => "set-env";
     
     public string ShortName => "";
 

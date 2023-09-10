@@ -29,7 +29,7 @@ public class GetEnvCommandHandler : ICommandHandler
         _ssmParametersProvider = ssmParametersProvider;
     }
     
-    public string CommandName => "get";
+    public string CommandName => "get-env";
     
     public string Description => "Get environment variables";
 

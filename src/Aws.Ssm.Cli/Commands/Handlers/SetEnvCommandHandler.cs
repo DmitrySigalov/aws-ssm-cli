@@ -29,9 +29,9 @@ public class SetEnvCommandHandler : ICommandHandler
         _ssmParametersProvider = ssmParametersProvider;
     }
     
-    public string BaseName => "set-env";
+    public string CommandName => "set";
     
-    public string ShortName => "se";
+    public string ShortName => "";
 
     public string Description => "Set environment variables";
 
@@ -120,7 +120,7 @@ public class SetEnvCommandHandler : ICommandHandler
             resolvedSsmParameters,
             selectedProfileDo);
         
-        ConsoleHelper.WriteLineInfo($"DONE - {Description} with profile [{selectedProfileName}] configuration");
+        ConsoleHelper.WriteLineInfo($"DONE - {Description} with profile [{selectedProfileName}]");
 
         return Task.CompletedTask;
     }

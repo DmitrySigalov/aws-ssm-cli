@@ -13,16 +13,6 @@ public static class ConsoleOutputExtensions
     {
         environmentVariables.PrintEnvironmentVariables();
 
-        environmentVariables.PrintInvalidEnvironmentVariables(
-            ssmParameters,
-            profileConfig);
-    }
-
-    public static void PrintInvalidEnvironmentVariables(
-        this IDictionary<string, string> environmentVariables,
-        IDictionary<string, string> ssmParameters,
-        ProfileConfig profileConfig)
-    {
         var invalidData = environmentVariables
             .GetEnvironmentVariablesWithInvalidSynchronizationStatus(
                 ssmParameters,
@@ -30,7 +20,7 @@ public static class ConsoleOutputExtensions
 
         PrintInvalidEnvironmentVariables(invalidData);
     }
-    
+
     private static void PrintEnvironmentVariables(
         this IDictionary<string, string> environmentVariables)
     {
@@ -41,14 +31,13 @@ public static class ConsoleOutputExtensions
             return;
         }
 
-        var table = new ConsoleTable("environment-variable-name", "value");
+        Console.WriteLine(JsonSerializationHelper.Serialize(
+            new
+            {
+                environmentVariables,
+            }));
 
-        foreach (var envVar in environmentVariables)
-        {
-            table.AddRow(envVar.Key, envVar.Value);
-        }
-
-        table.Write(Format.Minimal);
+        Console.WriteLine();
     }
 
     private static void PrintInvalidEnvironmentVariables(IDictionary<string, string> invalidData)

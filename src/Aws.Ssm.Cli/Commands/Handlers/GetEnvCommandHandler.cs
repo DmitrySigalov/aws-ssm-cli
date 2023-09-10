@@ -29,10 +29,8 @@ public class GetEnvCommandHandler : ICommandHandler
         _ssmParametersProvider = ssmParametersProvider;
     }
     
-    public string BaseName => "get-env";
+    public string CommandName => "get";
     
-    public string ShortName => "ge";
-
     public string Description => "Get environment variables";
 
     public Task Handle(CancellationToken cancellationToken)
@@ -82,8 +80,6 @@ public class GetEnvCommandHandler : ICommandHandler
             () => _ssmParametersProvider.GetDictionaryBy(selectedProfileDo.SsmPaths),
             "Get ssm parameters from AWS System Manager");
         
-        resolvedSsmParameters.PrintSsmParameters(selectedProfileDo);
-
         resolvedSsmParameters.PrintSsmParameterToEnvironmentVariableNamesMapping(
             selectedProfileDo);
         
@@ -95,7 +91,7 @@ public class GetEnvCommandHandler : ICommandHandler
             resolvedSsmParameters,
             selectedProfileDo);
         
-        ConsoleHelper.WriteLineInfo($"DONE - {Description} with profile [{selectedProfileName}] configuration");
+        ConsoleHelper.WriteLineInfo($"DONE - {Description} with profile [{selectedProfileName}]");
 
         return Task.CompletedTask;
     }

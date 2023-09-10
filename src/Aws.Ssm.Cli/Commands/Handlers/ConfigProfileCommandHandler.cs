@@ -13,7 +13,7 @@ using Sharprompt;
 
 namespace Aws.Ssm.Cli.Commands.Handlers;
 
-public class ConfigCommandHandler : ICommandHandler
+public class ConfigProfileCommandHandler : ICommandHandler
 {
     private readonly IProfileConfigProvider _profileConfigProvider;
 
@@ -28,7 +28,7 @@ public class ConfigCommandHandler : ICommandHandler
         Update,
     }
 
-    public ConfigCommandHandler(
+    public ConfigProfileCommandHandler(
         IProfileConfigProvider profileConfigProvider,
         IEnvironmentVariablesProvider environmentVariablesProvider,
         ISsmParametersProvider ssmParametersProvider)
@@ -40,9 +40,7 @@ public class ConfigCommandHandler : ICommandHandler
         _ssmParametersProvider = ssmParametersProvider;
     }
 
-    public string BaseName => "config";
-
-    public string ShortName => "";
+    public string CommandName => "config";
 
     public string Description => "Profile(s) configuration";
 
@@ -90,7 +88,7 @@ public class ConfigCommandHandler : ICommandHandler
 
         while (!allowToExit)
         {
-            var exitOperationName = "Exit and get environment variables"; 
+            var exitOperationName = "Exit"; 
             var removeSsmPathOperationName = $"Remove from {nameof(profileDetails.ProfileDo.SsmPaths)}";
             var manageOperationsLookup = new Dictionary<string, Func<ProfileConfig, bool>>
             {
@@ -127,7 +125,7 @@ public class ConfigCommandHandler : ICommandHandler
         ConsoleHelper.WriteLineInfo($"DONE - Profile [{profileDetails.ProfileName}] configuration");
         Console.WriteLine();
 
-        ConsoleHelper.WriteLineNotification($"START - Get environment variables with profile [{profileDetails.ProfileName}] configuration");
+        ConsoleHelper.WriteLineNotification($"START - View profile [{profileDetails.ProfileName}] configuration");
         Console.WriteLine();
 
         var resolvedSsmParameters = SpinnerHelper.Run(
@@ -139,15 +137,22 @@ public class ConfigCommandHandler : ICommandHandler
         resolvedSsmParameters.PrintSsmParameterToEnvironmentVariableNamesMapping(
             profileDetails.ProfileDo);
 
-        var actualEnvironmentVariables = SpinnerHelper.Run(
-            () => _environmentVariablesProvider.GetAll(profileDetails.ProfileDo),
-            "Get environment variables");
+        var convertedEnvironmentVariables = resolvedSsmParameters
+            .Select(x => new
+            {
+                Name = EnvironmentVariableNameConverter.ConvertFromSsmPath(x.Key, profileDetails.ProfileDo),
+                Value = x.Value,
+            })
+            .GroupBy(x => x.Name)
+            .ToDictionary(
+                x => x.Key,
+                x => x.Last().Value);
 
-        actualEnvironmentVariables.PrintEnvironmentVariablesWithSsmParametersValidationStatus(
+        convertedEnvironmentVariables.PrintEnvironmentVariablesWithSsmParametersValidationStatus(
             resolvedSsmParameters,
             profileDetails.ProfileDo);
 
-        ConsoleHelper.WriteLineInfo($"DONE - Get environment variables with profile [{profileDetails.ProfileName}] configuration");
+        ConsoleHelper.WriteLineInfo($"DONE - View profile [{profileDetails.ProfileName}] configuration");
 
         return Task.CompletedTask;
     }

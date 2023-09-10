@@ -1,8 +1,7 @@
-using System.Runtime.CompilerServices;
+using Aws.Ssm.Cli.EnvironmentVariables.Extensions;
 using Aws.Ssm.Cli.EnvironmentVariables.Rules;
 using Aws.Ssm.Cli.Helpers;
 using Aws.Ssm.Cli.Profiles;
-using Aws.Ssm.Cli.EnvironmentVariables.Extensions;
 using ConsoleTables;
 
 namespace Aws.Ssm.Cli.SsmParameters.Extensions;
@@ -26,35 +25,28 @@ public static class ConsoleOutputExtensions
             }
             table.Write(Format.Minimal);
         }
-        
-        ssmParameters.PrintInvalidSsmParameters(
-            profileConfig);
     }
 
-    public static void PrintInvalidSsmParameters(
+    public static void PrintSsmParametersToEnvironmentVariables(
         this IDictionary<string, string> ssmParameters,
         ProfileConfig profileConfig)
     {
-        var invalidPaths = profileConfig.SsmPaths
-            .Distinct()
-            .Where(x => ssmParameters.Keys.All(y => !y.StartsWith(x)))
-            .ToArray();
-
-        if (invalidPaths.Any() == true)
-        {
-            ConsoleHelper.Error(() =>
+        var convertedEnvironmentVariables = ssmParameters
+            .Select(x => new
             {
-                var table = new ConsoleTable("ssm-path", "status");
-                foreach (var ssmPath in invalidPaths.OrderBy(x => x))
-                {
-                    table.AddRow(ssmPath, "Unavailable");
-                }
+                Name = EnvironmentVariableNameConverter.ConvertFromSsmPath(x.Key, profileConfig),
+                Value = x.Value,
+            })
+            .GroupBy(x => x.Name)
+            .ToDictionary(
+                x => x.Key,
+                x => x.Last().Value);
 
-                table.Write(Format.Minimal);
-            });
-        }
+        convertedEnvironmentVariables.PrintEnvironmentVariablesWithSsmParametersValidationStatus(
+            ssmParameters,
+            profileConfig);
     }
-    
+
     public static void PrintSsmParameterToEnvironmentVariableNamesMapping(
         this IDictionary<string, string> ssmParameters,
         ProfileConfig profileConfig)
@@ -91,18 +83,4 @@ public static class ConsoleOutputExtensions
         // table.Write(Format.Minimal);
     }
 
-    private static IDictionary<string, string> GetSsmParameterNameToEnvironmentVariableNameMapping(
-        this IDictionary<string, string> ssmParameters,
-        ProfileConfig profileConfig)
-    {
-        return ssmParameters
-            .Select(x => new
-            {
-                SsmParameterName = x.Key,
-                EnvironmentVariableName = EnvironmentVariableNameConverter.ConvertFromSsmPath(x.Key, profileConfig),
-            })
-            .ToDictionary(
-                x => x.SsmParameterName,
-                y => y.EnvironmentVariableName);
-    }
 }

@@ -10,7 +10,7 @@ using Sharprompt;
 
 namespace Aws.Ssm.Cli.Commands.Handlers;
 
-public class ViewCommandHandler : ICommandHandler
+public class ViewProfileHandler : ICommandHandler
 {
     private readonly IProfileConfigProvider _profileConfigProvider;
 
@@ -18,7 +18,7 @@ public class ViewCommandHandler : ICommandHandler
     
     private readonly ISsmParametersProvider _ssmParametersProvider;
 
-    public ViewCommandHandler(
+    public ViewProfileHandler(
         IProfileConfigProvider profileConfigProvider,
         IEnvironmentVariablesProvider environmentVariablesProvider,
         ISsmParametersProvider ssmParametersProvider)
@@ -30,11 +30,9 @@ public class ViewCommandHandler : ICommandHandler
         _ssmParametersProvider = ssmParametersProvider;
     }
     
-    public string BaseName => "view";
+    public string CommandName => "view";
     
-    public string ShortName => "";
-
-    public string Description => "View environment variables configuration";
+    public string Description => "View profile configuration";
     
     public Task Handle(CancellationToken cancellationToken)
     {
@@ -83,35 +81,10 @@ public class ViewCommandHandler : ICommandHandler
             () => _ssmParametersProvider.GetDictionaryBy(selectedProfileDo.SsmPaths),
             "Get ssm parameters from AWS System Manager");
 
-        resolvedSsmParameters.PrintInvalidSsmParameters(selectedProfileDo);
-        
-        resolvedSsmParameters.PrintSsmParameterToEnvironmentVariableNamesMapping(
+        resolvedSsmParameters.PrintSsmParametersToEnvironmentVariables(
             selectedProfileDo);
         
-        var convertedEnvironmentVariables = resolvedSsmParameters
-            .Select(x => new
-            {
-                Name = EnvironmentVariableNameConverter.ConvertFromSsmPath(x.Key, selectedProfileDo),
-                Value = x.Value,
-            })
-            .GroupBy(x => x.Name)
-            .ToDictionary(
-                x => x.Key,
-                x => x.Last().Value);
-
-
-        Console.WriteLine(JsonSerializationHelper.Serialize(
-            new
-            {
-                environmentVariables = convertedEnvironmentVariables,
-            }));
-        Console.WriteLine();
-
-        convertedEnvironmentVariables.PrintInvalidEnvironmentVariables(
-            resolvedSsmParameters,
-            selectedProfileDo);
-
-        ConsoleHelper.WriteLineInfo($"DONE - {Description} with profile [{selectedProfileName}] configuration");
+        ConsoleHelper.WriteLineInfo($"DONE - {Description} with profile [{selectedProfileName}]");
 
         return Task.CompletedTask;
     }

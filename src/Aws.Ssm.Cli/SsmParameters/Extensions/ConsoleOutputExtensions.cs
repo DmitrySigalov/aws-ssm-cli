@@ -27,26 +27,6 @@ public static class ConsoleOutputExtensions
         }
     }
 
-    public static void PrintSsmParametersToEnvironmentVariables(
-        this IDictionary<string, string> ssmParameters,
-        ProfileConfig profileConfig)
-    {
-        var convertedEnvironmentVariables = ssmParameters
-            .Select(x => new
-            {
-                Name = EnvironmentVariableNameConverter.ConvertFromSsmPath(x.Key, profileConfig),
-                Value = x.Value,
-            })
-            .GroupBy(x => x.Name)
-            .ToDictionary(
-                x => x.Key,
-                x => x.Last().Value);
-
-        convertedEnvironmentVariables.PrintEnvironmentVariablesWithSsmParametersValidationStatus(
-            ssmParameters,
-            profileConfig);
-    }
-
     public static void PrintSsmParameterToEnvironmentVariableNamesMapping(
         this IDictionary<string, string> ssmParameters,
         ProfileConfig profileConfig)
@@ -83,4 +63,23 @@ public static class ConsoleOutputExtensions
         // table.Write(Format.Minimal);
     }
 
+    public static void PrintSsmParametersToEnvironmentVariables(
+        this IDictionary<string, string> ssmParameters,
+        ProfileConfig profileConfig)
+    {
+        var convertedEnvironmentVariables = ssmParameters
+            .Select(x => new
+            {
+                Name = EnvironmentVariableNameConverter.ConvertFromSsmPath(x.Key, profileConfig),
+                Value = x.Value,
+            })
+            .GroupBy(x => x.Name)
+            .ToDictionary(
+                x => x.Key,
+                x => x.Last().Value);
+
+        convertedEnvironmentVariables.PrintEnvironmentVariablesWithSsmParametersValidationStatus(
+            ssmParameters,
+            profileConfig);
+    }
 }

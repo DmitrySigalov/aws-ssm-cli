@@ -6,7 +6,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aws.Ssm.Cli", "src\Aws.Ssm.
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{3E24AD91-F9CE-43FE-92D3-F4BFD274CE67}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aws.Ssm.Cli.UnitTests", "test\Aws.Ssm.Cli.UnitTests\Aws.Ssm.Cli.UnitTests.csproj", "{D0A5BB60-BEC2-4C29-8151-62E4AD28E70F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aws.Ssm.Cli.Tests", "test\Aws.Ssm.Cli.Tests\Aws.Ssm.Cli.Tests.csproj", "{D0A5BB60-BEC2-4C29-8151-62E4AD28E70F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

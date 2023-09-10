@@ -50,9 +50,9 @@ public class EnvironmentVariableNameConverterTests
             EnvironmentVariablePrefix = "TEST_Prefix_",
         };
 
-        var ssmPath = "/a/b{c}d\\e[f]g-h$i(j)k:l;m-n'o\"";
+        var ssmPath = "/a/b{c}d\\e[f]g-h$i(j)k:l;m-n'o\"p@q#r^s?t!u&v ";
 
-        var expectedResult = "TEST_PREFIX_A_B_C_D_E_F_G_H_I_J_K_L_M_N_O_";
+        var expectedResult = "TEST_PREFIX_A_B_C_D_E_F_G_H_I_J_K_L_M_N_O_P_Q_R_S_T_U_V_";
         
         var actualResult = EnvironmentVariableNameConverter.ConvertFromSsmPath(
             ssmPath,

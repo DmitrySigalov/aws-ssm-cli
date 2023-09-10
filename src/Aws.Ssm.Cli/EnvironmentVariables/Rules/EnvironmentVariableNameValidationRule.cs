@@ -1,9 +1,17 @@
 using System.ComponentModel.DataAnnotations;
+using Aws.Ssm.Cli.SsmParameters;
 
 namespace Aws.Ssm.Cli.EnvironmentVariables.Rules;
 
 public static class EnvironmentVariableNameValidationRule
 {
+    public static char[] InvalidVariableNameCharacters => new []
+    {
+        SsmParametersConsts.KeyDelimeter, 
+        '/', '\\', ':', '-', '.', ',', '\'', '"', '`', '{', '}', '[', ']', '$', ';', '(', ')', '@', '#', 
+        '^', '?', '!', '&', ' ',
+    };
+
     public static ValidationResult HandlePrefix(string check)
     {
         check = check?.Trim();
@@ -18,20 +26,7 @@ public static class EnvironmentVariableNameValidationRule
             return new ValidationResult("Invalid value - Too long value (exceeded 10 characters)");
         }
 
-        if (check.Contains(' ') ||
-            check.Contains('/') ||
-            check.Contains('\\') ||
-            check.Contains('|') ||
-            check.Contains('"') ||
-            check.Contains('\'') ||
-            check.Contains('$') ||
-            check.Contains('!') ||
-            check.Contains('`') ||
-            check.Contains('^') ||
-            check.Contains('&') ||
-            check.Contains('(') ||
-            check.Contains(')') ||
-            check.Contains('@'))
+        if (InvalidVariableNameCharacters.Any(x => check.Contains(x)))
         {
             return new ValidationResult("Invalid value - Contains invalid character");
         }

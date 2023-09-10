@@ -68,13 +68,45 @@ public class OsxEnvironmentVariablesProvider : IEnvironmentVariablesProvider
         var updatedScript = _userFilesProvider.GetFullFilePath(
             EnvironmentVariablesConsts.FileNames.ScriptName,
             UserFileLevelEnum.Application);
-        
-        var filePath = _userFilesProvider.GetFullFilePath(
+
+        var resultComment = $"Updated: {updatedScript}";
+
+        var rootFileScriptPath = _userFilesProvider.GetFullFilePath(
             EnvironmentVariablesConsts.FileNames.ScriptExtension,
             UserFileLevelEnum.Root);
 
-        return $"Updated: {updatedScript}\n" +
-               $"Reopen shell or run: source {filePath}";
+        if (!File.Exists(rootFileScriptPath))
+        {
+            resultComment += Environment.NewLine +
+                             $"No found script file '{rootFileScriptPath}' according to shell configuration";
+        }
+        else
+        {
+            var fileScriptAllText = _userFilesProvider.ReadTextFileIfExist(
+                EnvironmentVariablesConsts.FileNames.ScriptExtension,
+                UserFileLevelEnum.Root);
+
+            var partialScriptText = $"source {updatedScript}";
+            if (fileScriptAllText?.Contains(partialScriptText) != true)
+            {
+                fileScriptAllText += Environment.NewLine +
+                                  partialScriptText +
+                                  Environment.NewLine;
+
+                _userFilesProvider.WriteTextFile(
+                    EnvironmentVariablesConsts.FileNames.ScriptExtension,
+                    fileScriptAllText,
+                    UserFileLevelEnum.Root);
+                
+                resultComment += Environment.NewLine +
+                                 $"Updated: {rootFileScriptPath}";
+            }
+            
+            resultComment += Environment.NewLine +
+                             $"Reopen terminal/rider or run: source {rootFileScriptPath}";
+        }
+        
+        return resultComment;
     }
 
     private SortedDictionary<string, string> LoadEnvironmentVariablesFromDescriptor()

@@ -83,7 +83,6 @@ public class SetEnvCommandHandler : ICommandHandler
             "Get ssm parameters from AWS System Manager");
         
         resolvedSsmParameters.PrintSsmParameters(selectedProfileDo);
-
         if (resolvedSsmParameters.Any() == false)
         {
             ConsoleHelper.WriteLineError("NOT DONE - Unavailable ssm parameters");

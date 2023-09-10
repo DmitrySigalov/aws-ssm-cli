@@ -80,6 +80,8 @@ public class GetEnvCommandHandler : ICommandHandler
             () => _ssmParametersProvider.GetDictionaryBy(selectedProfileDo.SsmPaths),
             "Get ssm parameters from AWS System Manager");
         
+        resolvedSsmParameters.PrintSsmParameters(selectedProfileDo);
+
         resolvedSsmParameters.PrintSsmParameterToEnvironmentVariableNamesMapping(
             selectedProfileDo);
         

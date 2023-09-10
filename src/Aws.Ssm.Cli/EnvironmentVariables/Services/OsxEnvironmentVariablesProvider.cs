@@ -63,6 +63,11 @@ public class OsxEnvironmentVariablesProvider : IEnvironmentVariablesProvider
         Environment.SetEnvironmentVariable(name, value, EnvironmentVariableTarget.Process);
     }
 
+    public string CompleteActivationEnvironmentVariables()
+    {
+        return "Reopen shell or run: source ~/.zshrc";
+    }
+
     private SortedDictionary<string, string> LoadEnvironmentVariablesFromDescriptor()
     {
         if (_loadedDescriptor != null)

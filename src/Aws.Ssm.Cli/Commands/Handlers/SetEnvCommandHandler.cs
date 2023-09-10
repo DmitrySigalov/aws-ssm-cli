@@ -124,6 +124,12 @@ public class SetEnvCommandHandler : ICommandHandler
         
         ConsoleHelper.WriteLineInfo($"DONE - {Description} with profile [{selectedProfileName}]");
 
+        var activationNotes = _environmentVariablesProvider.CompleteActivationEnvironmentVariables();
+        if (!string.IsNullOrWhiteSpace(activationNotes))
+        {
+            Console.WriteLine(activationNotes);
+        }
+
         return Task.CompletedTask;
     }
 }

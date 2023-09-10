@@ -2,11 +2,13 @@ namespace Aws.Ssm.Cli.UserRuntime;
 
 public interface IUserFilesProvider
 {
-    IEnumerable<string> GetFileNames(string searchPattern);
+    string GetFullFilePath(string fileName, UserFileLevelEnum level);
+    
+    IEnumerable<string> GetFileNames(string searchPattern, UserFileLevelEnum level);
 
-    string ReadTextFileIfExist(string name);
+    string ReadTextFileIfExist(string name, UserFileLevelEnum level);
     
-    void WriteTextFile(string name, string text);
+    void WriteTextFile(string name, string text, UserFileLevelEnum level);
     
-    void DeleteFile(string name);
+    void DeleteFile(string name, UserFileLevelEnum level);
 }

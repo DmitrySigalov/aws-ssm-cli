@@ -7,4 +7,6 @@ public interface IEnvironmentVariablesProvider
     string Get(string name);
 
     void Set(string name, string value);
+
+    string CompleteActivationEnvironmentVariables();
 }

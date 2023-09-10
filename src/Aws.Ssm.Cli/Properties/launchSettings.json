@@ -4,7 +4,7 @@
       "commandName": "Project",
       "commandLineArgs": "",
       "environmentVariables": {
-        "DOTNET_ENVIRONMENT": "Development"
+        //"USER_FOLDER_PATH": "." // Using for the debugging only
       }
     }
   }

@@ -3,7 +3,7 @@ using Aws.Ssm.Cli.Helpers;
 using Aws.Ssm.Cli.UserRuntime;
 using Microsoft.Extensions.Logging;
 
-namespace Aws.Ssm.Cli.EnvironmentVariables.Providers;
+namespace Aws.Ssm.Cli.EnvironmentVariables.Services;
 
 public class OsxEnvironmentVariablesProvider : IEnvironmentVariablesProvider
 {
@@ -63,6 +63,52 @@ public class OsxEnvironmentVariablesProvider : IEnvironmentVariablesProvider
         Environment.SetEnvironmentVariable(name, value, EnvironmentVariableTarget.Process);
     }
 
+    public string CompleteActivationEnvironmentVariables()
+    {
+        var updatedScript = _userFilesProvider.GetFullFilePath(
+            EnvironmentVariablesConsts.FileNames.ScriptName,
+            UserFileLevelEnum.Application);
+
+        var resultComment = $"Updated: {updatedScript}";
+
+        var rootFileScriptPath = _userFilesProvider.GetFullFilePath(
+            EnvironmentVariablesConsts.FileNames.ScriptExtension,
+            UserFileLevelEnum.Root);
+
+        if (!File.Exists(rootFileScriptPath))
+        {
+            resultComment += Environment.NewLine +
+                             $"No found script file '{rootFileScriptPath}' according to shell configuration";
+        }
+        else
+        {
+            var fileScriptAllText = _userFilesProvider.ReadTextFileIfExist(
+                EnvironmentVariablesConsts.FileNames.ScriptExtension,
+                UserFileLevelEnum.Root);
+
+            var partialScriptText = $"source {updatedScript}";
+            if (fileScriptAllText?.Contains(partialScriptText) != true)
+            {
+                fileScriptAllText += Environment.NewLine +
+                                  partialScriptText +
+                                  Environment.NewLine;
+
+                _userFilesProvider.WriteTextFile(
+                    EnvironmentVariablesConsts.FileNames.ScriptExtension,
+                    fileScriptAllText,
+                    UserFileLevelEnum.Root);
+                
+                resultComment += Environment.NewLine +
+                                 $"Updated: {rootFileScriptPath}";
+            }
+            
+            resultComment += Environment.NewLine +
+                             $"Reopen terminal/rider or run: source {rootFileScriptPath}";
+        }
+        
+        return resultComment;
+    }
+
     private SortedDictionary<string, string> LoadEnvironmentVariablesFromDescriptor()
     {
         if (_loadedDescriptor != null)
@@ -74,7 +120,7 @@ public class OsxEnvironmentVariablesProvider : IEnvironmentVariablesProvider
 
         try
         {
-            var fileDescriptorText = _userFilesProvider.ReadTextFileIfExist(fileDescriptorName);
+            var fileDescriptorText = _userFilesProvider.ReadTextFileIfExist(fileDescriptorName, UserFileLevelEnum.Application);
 
             if (!string.IsNullOrEmpty(fileDescriptorText))
             {
@@ -94,15 +140,15 @@ public class OsxEnvironmentVariablesProvider : IEnvironmentVariablesProvider
     private void DumpEnvironmentVariables(SortedDictionary<string, string> environmentVariables)
     {
         var fileDescriptorName = EnvironmentVariablesConsts.FileNames.Descriptor;
-        var fileScriptName = EnvironmentVariablesConsts.FileNames.Script;
+        var fileScriptName = EnvironmentVariablesConsts.FileNames.ScriptName;
 
         try
         {
             var fileDescriptorText = JsonSerializationHelper.Serialize(environmentVariables);
-            _userFilesProvider.WriteTextFile(fileDescriptorName, fileDescriptorText);
+            _userFilesProvider.WriteTextFile(fileDescriptorName, fileDescriptorText, UserFileLevelEnum.Application);
 
             var fileScriptText = EnvironmentVariablesScriptTextBuilder.Build(environmentVariables);
-            _userFilesProvider.WriteTextFile(fileScriptName, fileScriptText);
+            _userFilesProvider.WriteTextFile(fileScriptName, fileScriptText, UserFileLevelEnum.Application);
         }
         catch (Exception e)
         {

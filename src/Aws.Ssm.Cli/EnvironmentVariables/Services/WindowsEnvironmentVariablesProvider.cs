@@ -1,4 +1,4 @@
-namespace Aws.Ssm.Cli.EnvironmentVariables.Providers;
+namespace Aws.Ssm.Cli.EnvironmentVariables.Services;
 
 public class WindowsEnvironmentVariablesProvider : IEnvironmentVariablesProvider
 {
@@ -29,4 +29,6 @@ public class WindowsEnvironmentVariablesProvider : IEnvironmentVariablesProvider
     {
         Environment.SetEnvironmentVariable(name, value, EnvironmentVariableTarget.User);
     }
+
+    public string CompleteActivationEnvironmentVariables() => null; // Windows supports for user environment variables
 }

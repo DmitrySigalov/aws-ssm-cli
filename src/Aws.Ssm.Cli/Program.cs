@@ -30,7 +30,7 @@ services
         builder.AddConsole();
     })
     .AddSingleton<IConfiguration>(configuration)
-    .AddRuntimeServices(args);
+    .AddUserRuntimeServices(args);
 
 services
     .AddCommandHandlers()

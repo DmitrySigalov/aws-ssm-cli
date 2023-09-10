@@ -65,7 +65,16 @@ public class OsxEnvironmentVariablesProvider : IEnvironmentVariablesProvider
 
     public string CompleteActivationEnvironmentVariables()
     {
-        return "Reopen shell or run: source ~/.zshrc";
+        var updatedScript = _userFilesProvider.GetFullFilePath(
+            EnvironmentVariablesConsts.FileNames.ScriptName,
+            UserFileLevelEnum.Application);
+        
+        var filePath = _userFilesProvider.GetFullFilePath(
+            EnvironmentVariablesConsts.FileNames.ScriptExtension,
+            UserFileLevelEnum.Root);
+
+        return $"Updated: {updatedScript}\n" +
+               $"Reopen shell or run: source {filePath}";
     }
 
     private SortedDictionary<string, string> LoadEnvironmentVariablesFromDescriptor()
@@ -79,7 +88,7 @@ public class OsxEnvironmentVariablesProvider : IEnvironmentVariablesProvider
 
         try
         {
-            var fileDescriptorText = _userFilesProvider.ReadTextFileIfExist(fileDescriptorName);
+            var fileDescriptorText = _userFilesProvider.ReadTextFileIfExist(fileDescriptorName, UserFileLevelEnum.Application);
 
             if (!string.IsNullOrEmpty(fileDescriptorText))
             {
@@ -99,15 +108,15 @@ public class OsxEnvironmentVariablesProvider : IEnvironmentVariablesProvider
     private void DumpEnvironmentVariables(SortedDictionary<string, string> environmentVariables)
     {
         var fileDescriptorName = EnvironmentVariablesConsts.FileNames.Descriptor;
-        var fileScriptName = EnvironmentVariablesConsts.FileNames.Script;
+        var fileScriptName = EnvironmentVariablesConsts.FileNames.ScriptName;
 
         try
         {
             var fileDescriptorText = JsonSerializationHelper.Serialize(environmentVariables);
-            _userFilesProvider.WriteTextFile(fileDescriptorName, fileDescriptorText);
+            _userFilesProvider.WriteTextFile(fileDescriptorName, fileDescriptorText, UserFileLevelEnum.Application);
 
             var fileScriptText = EnvironmentVariablesScriptTextBuilder.Build(environmentVariables);
-            _userFilesProvider.WriteTextFile(fileScriptName, fileScriptText);
+            _userFilesProvider.WriteTextFile(fileScriptName, fileScriptText, UserFileLevelEnum.Application);
         }
         catch (Exception e)
         {

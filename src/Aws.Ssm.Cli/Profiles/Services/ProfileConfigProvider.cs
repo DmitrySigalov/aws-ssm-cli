@@ -35,7 +35,7 @@ public class ProfileConfigProvider : IProfileConfigProvider
     public ISet<string> GetNames()
     {
         return _userFilesProvider
-            .GetFileNames(ProfileFileNameResolver.SearchFileNamePattern)
+            .GetFileNames(ProfileFileNameResolver.SearchFileNamePattern, UserFileLevelEnum.Application)
             .Select(ProfileFileNameResolver.ExtractProfileName)
             .OrderBy(x => x)
             .ToHashSet();
@@ -48,7 +48,7 @@ public class ProfileConfigProvider : IProfileConfigProvider
         try
         {
             var fileText = _userFilesProvider
-                .ReadTextFileIfExist(fileName);
+                .ReadTextFileIfExist(fileName, UserFileLevelEnum.Application);
 
             return JsonSerializationHelper.Deserialize<ProfileConfig>(fileText);
         }
@@ -70,7 +70,7 @@ public class ProfileConfigProvider : IProfileConfigProvider
         {
             var fileText = JsonSerializationHelper.Serialize(data);
         
-            _userFilesProvider.WriteTextFile(fileName, fileText);
+            _userFilesProvider.WriteTextFile(fileName, fileText, UserFileLevelEnum.Application);
         }
         catch (Exception e)
         {
@@ -86,7 +86,7 @@ public class ProfileConfigProvider : IProfileConfigProvider
 
         try
         {
-            _userFilesProvider.DeleteFile(fileName);
+            _userFilesProvider.DeleteFile(fileName, UserFileLevelEnum.Application);
         }
         catch (Exception e)
         {

@@ -12,9 +12,21 @@ public class UserFilesProvider : IUserFilesProvider
         _configuration = configuration;
     }
     
-    public IEnumerable<string> GetFileNames(string searchPattern)
+    public string GetFullFilePath(string fileName, UserFileLevelEnum level)
     {
-        var rootFolderPath = GetUserFolder();
+        if (string.IsNullOrEmpty(fileName))
+        {
+            throw new ArgumentNullException(fileName);
+        }
+        
+        var rootFolderPath = GetUserFolder(level);
+
+        return Path.Combine(rootFolderPath, fileName);
+    }
+    
+    public IEnumerable<string> GetFileNames(string searchPattern, UserFileLevelEnum level)
+    {
+        var rootFolderPath = GetUserFolder(level);
         
         return Directory
             .GetFiles(rootFolderPath, searchPattern)
@@ -24,9 +36,9 @@ public class UserFilesProvider : IUserFilesProvider
             .ToHashSet();
     }
 
-    public string ReadTextFileIfExist(string name)
+    public string ReadTextFileIfExist(string name, UserFileLevelEnum level)
     {
-        var fullFilePath = GetFullFilePath(name);
+        var fullFilePath = GetFullFilePath(name, level);
 
         if (!File.Exists(fullFilePath))
         {
@@ -38,9 +50,9 @@ public class UserFilesProvider : IUserFilesProvider
         return fileStream.ReadToEnd();
     }
 
-    public void WriteTextFile(string name, string text)
+    public void WriteTextFile(string name, string text, UserFileLevelEnum level)
     {
-        var fullFilePath = GetFullFilePath(name);
+        var fullFilePath = GetFullFilePath(name, level);
 
         MoveFileToBackupIfExists(fullFilePath);
 
@@ -51,9 +63,9 @@ public class UserFilesProvider : IUserFilesProvider
         fileStream.Flush();
     }
 
-    public void DeleteFile(string name)
+    public void DeleteFile(string name, UserFileLevelEnum level)
     {
-        var fullFilePath = GetFullFilePath(name);
+        var fullFilePath = GetFullFilePath(name, level);
 
         MoveFileToBackupIfExists(fullFilePath);
     }
@@ -73,19 +85,7 @@ public class UserFilesProvider : IUserFilesProvider
         }
     }
     
-    private string GetFullFilePath(string fileName)
-    {
-        if (string.IsNullOrEmpty(fileName))
-        {
-            throw new ArgumentNullException(fileName);
-        }
-        
-        var rootFolderPath = GetUserFolder();
-
-        return Path.Combine(rootFolderPath, fileName);
-    }
-    
-    private string GetUserFolder()
+    private string GetUserFolder(UserFileLevelEnum level)
     {
         var path = _configuration.GetValue<string>("USER_FOLDER_PATH");
         
@@ -93,19 +93,24 @@ public class UserFilesProvider : IUserFilesProvider
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                path = $"C:/Users/{_configuration["USERNAME"]}/.aws-ssm-cli";
+                path = $"C:/Users/{_configuration["USERNAME"]}";
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
-                path = $"/Users/{Environment.UserName}/.aws-ssm-cli";
+                path = $"/Users/{Environment.UserName}";
             }
             else
             {
                 throw new NotSupportedException("Not supported for operation system");
             }
         }
-
+        
         path = Path.GetFullPath(path);
+
+        if (level == UserFileLevelEnum.Application)
+        {
+            path = Path.Combine(path, ".aws-ssm-cli");
+        }
 
         if (!Directory.Exists(path))
         {

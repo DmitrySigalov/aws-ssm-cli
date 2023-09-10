@@ -14,6 +14,8 @@ public static class EnvironmentVariablesConsts
 
         public static string Descriptor => $"{Base}.json";
     
-        public static string Script => $"{Base}.zshrc";
+        public static string ScriptExtension => $".zshrc";
+    
+        public static string ScriptName => $"{Base}{ScriptExtension}";
     }
 }

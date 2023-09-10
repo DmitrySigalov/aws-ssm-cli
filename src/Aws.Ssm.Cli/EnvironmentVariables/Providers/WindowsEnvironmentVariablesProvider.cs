@@ -1,12 +1,12 @@
 namespace Aws.Ssm.Cli.EnvironmentVariables.Providers;
 
-public class DefaultEnvironmentVariablesProvider : IEnvironmentVariablesProvider
+public class WindowsEnvironmentVariablesProvider : IEnvironmentVariablesProvider
 {
     public ISet<string> GetNames(string baseName = null)
     {
         baseName = baseName?.Trim();
         
-        var result = System.Environment
+        var result = Environment
             .GetEnvironmentVariables()
             .Keys
             .Cast<string>()
@@ -22,10 +22,10 @@ public class DefaultEnvironmentVariablesProvider : IEnvironmentVariablesProvider
 
     public string Get(string name)
     {
-        return System.Environment.GetEnvironmentVariable(name);
+        return Environment.GetEnvironmentVariable(name);
     }
 
-    public virtual void Set(string name, string value)
+    public void Set(string name, string value)
     {
         Environment.SetEnvironmentVariable(name, value, EnvironmentVariableTarget.User);
     }

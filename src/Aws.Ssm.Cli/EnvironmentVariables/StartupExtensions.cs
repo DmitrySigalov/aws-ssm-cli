@@ -11,7 +11,7 @@ public static class StartupExtensions
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
             serviceCollection
-                .AddSingleton<IEnvironmentVariablesProvider, DefaultEnvironmentVariablesProvider>();
+                .AddSingleton<IEnvironmentVariablesProvider, WindowsEnvironmentVariablesProvider>();
         }
         else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {

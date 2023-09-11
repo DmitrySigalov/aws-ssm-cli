@@ -78,14 +78,14 @@ public class ConfigProfileCommandHandler : ICommandHandler
         while (!allowToExit)
         {
             var completeOperationName = "Complete and view configuration"; 
-            var removeSsmPathOperationName = $"Remove from {nameof(profileDetails.ProfileDo.SsmPaths)}";
+            var removeSsmPathOperationName = "Remove ssm-path(s)";
             var manageOperationsLookup = new Dictionary<string, Func<ProfileConfig, bool>>
             {
                 { completeOperationName, Exit },
-                { $"Add into {nameof(profileDetails.ProfileDo.SsmPaths)} (available ssm-path only)", (profile) => AddSsmPath(profile, allowAddUnavailableSsmPath: false) },
-                { $"Add into {nameof(profileDetails.ProfileDo.SsmPaths)} (ignore ssm-path availability)", (profile) => AddSsmPath(profile, allowAddUnavailableSsmPath: true) },
+                { "Set prefix", SetEnvironmentVariablePrefix },
+                { "Add ssm-path (available only)", (profile) => AddSsmPath(profile, allowAddUnavailableSsmPath: false) },
+                { "Add ssm-path (ignore availability)", (profile) => AddSsmPath(profile, allowAddUnavailableSsmPath: true) },
                 { removeSsmPathOperationName, RemoveSsmPaths },
-                { $"Configure {nameof(profileDetails.ProfileDo.EnvironmentVariablePrefix)}", SetEnvironmentVariablePrefix },
            };
             if (profileDetails.ProfileDo.SsmPaths.Any() != true)
             {

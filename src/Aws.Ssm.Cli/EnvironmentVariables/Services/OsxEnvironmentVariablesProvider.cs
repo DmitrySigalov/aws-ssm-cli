@@ -103,7 +103,7 @@ public class OsxEnvironmentVariablesProvider : IEnvironmentVariablesProvider
             }
             
             resultComment += Environment.NewLine +
-                             $"Reopen terminal/rider or run: source {rootFileScriptPath}";
+                             $"Reopen application (terminal/rider) or run command in the terminal: source {rootFileScriptPath}";
         }
         
         return resultComment;

@@ -51,19 +51,8 @@ public class ConfigProfileCommandHandler : ICommandHandler
 
         var profileDetails = GetProfileDetailsForConfiguration();
 
-        if (profileDetails.Operation != OperationEnum.New &&
-            profileDetails.ProfileName == _profileConfigProvider.ActiveName &&
-            profileDetails.ProfileDo.IsValid)
-        {
-            ConsoleHelper.WriteLineNotification($"Deactivate profile [{profileDetails.ProfileName}] before any configuration changes");
-
-            SpinnerHelper.Run(
-                () => _environmentVariablesProvider.DeleteAll(profileDetails.ProfileDo),
-                "Delete active environment variables");
-
-            _profileConfigProvider.ActiveName = null;
-        }
-
+        var backupProfileDo = profileDetails.ProfileDo.Clone();
+        
         if (profileDetails.Operation == OperationEnum.New)
         {
             SpinnerHelper.Run(
@@ -93,7 +82,8 @@ public class ConfigProfileCommandHandler : ICommandHandler
             var manageOperationsLookup = new Dictionary<string, Func<ProfileConfig, bool>>
             {
                 { completeOperationName, Exit },
-                { $"Add into {nameof(profileDetails.ProfileDo.SsmPaths)}", AddSsmPath },
+                { $"Add into {nameof(profileDetails.ProfileDo.SsmPaths)} (available ssm-path only)", (profile) => AddSsmPath(profile, allowAddUnavailableSsmPath: false) },
+                { $"Add into {nameof(profileDetails.ProfileDo.SsmPaths)} (ignore ssm-path availability)", (profile) => AddSsmPath(profile, allowAddUnavailableSsmPath: true) },
                 { removeSsmPathOperationName, RemoveSsmPaths },
                 { $"Configure {nameof(profileDetails.ProfileDo.EnvironmentVariablePrefix)}", SetEnvironmentVariablePrefix },
            };
@@ -114,6 +104,21 @@ public class ConfigProfileCommandHandler : ICommandHandler
 
             if (!allowToExit)
             {
+                if (profileDetails.Operation != OperationEnum.New &&
+                    profileDetails.ProfileName == _profileConfigProvider.ActiveName &&
+                    backupProfileDo?.IsValid == true)
+                {
+                    ConsoleHelper.WriteLineNotification($"Deactivate profile [{profileDetails.ProfileName}] before any configuration changes");
+
+                    SpinnerHelper.Run(
+                        () => _environmentVariablesProvider.DeleteAll(profileDetails.ProfileDo),
+                        "Delete active environment variables");
+
+                    _profileConfigProvider.ActiveName = null;
+
+                    backupProfileDo = null;
+                }
+
                 SpinnerHelper.Run(
                     () => _profileConfigProvider.Save(profileDetails.ProfileName, profileDetails.ProfileDo),
                     $"Save profile [{profileDetails.ProfileName}] configuration new settings");
@@ -201,7 +206,7 @@ public class ConfigProfileCommandHandler : ICommandHandler
 
     private bool Exit(ProfileConfig profileConfig) => true;
     
-    private bool AddSsmPath(ProfileConfig profileConfig)
+    private bool AddSsmPath(ProfileConfig profileConfig, bool allowAddUnavailableSsmPath)
     {
         var newSsmPath = Prompt.Input<string>(
             "Enter new ssm-path (start from the /)",
@@ -209,12 +214,23 @@ public class ConfigProfileCommandHandler : ICommandHandler
             {
                 (check) =>
                 {
-                    if (check == null) return ValidationResult.Success;
+                    if (check == null)
+                    {
+                        return ValidationResult.Success;
+                    }
                     
                     return SsmPathValidationRules.Handle(
                         (string) check,
-                        _ssmParametersProvider,
                         profileConfig.SsmPaths);
+                },
+                (check) =>
+                {
+                    if (check == null)
+                    {
+                        return ValidationResult.Success;
+                    }
+                    
+                    return CheckSsmPathAvailability(check.ToString(), allowAddUnavailableSsmPath);
                 },
             })?.Trim();
 
@@ -227,6 +243,20 @@ public class ConfigProfileCommandHandler : ICommandHandler
         }
 
         return false;
+    }
+
+    private ValidationResult CheckSsmPathAvailability(string check, bool allowAddUnavailableSsmPath)
+    {
+        var ssmParameters = SpinnerHelper.Run(
+            () => _ssmParametersProvider.GetDictionaryBy(new HashSet<string> { check, }),
+            "Get ssm parameters from AWS System Manager to validate the ssm-path");
+
+        if (ssmParameters?.Any() != true && !allowAddUnavailableSsmPath)
+        {
+            return new ValidationResult("Unavailable ssm path");
+        }
+
+        return ValidationResult.Success;
     }
     
     private bool RemoveSsmPaths(ProfileConfig profileConfig)

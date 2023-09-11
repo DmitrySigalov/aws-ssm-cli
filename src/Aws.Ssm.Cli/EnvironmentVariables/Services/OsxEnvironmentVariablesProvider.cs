@@ -72,7 +72,7 @@ public class OsxEnvironmentVariablesProvider : IEnvironmentVariablesProvider
         var resultComment = $"Updated: {updatedScript}";
 
         var rootFileScriptPath = _userFilesProvider.GetFullFilePath(
-            EnvironmentVariablesConsts.FileNames.ScriptExtension,
+            ShellHelper.GetShellScriptFileName(),
             UserFileLevelEnum.Root);
 
         if (!File.Exists(rootFileScriptPath))

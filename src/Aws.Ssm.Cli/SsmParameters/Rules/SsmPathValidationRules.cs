@@ -6,9 +6,9 @@ namespace Aws.Ssm.Cli.SsmParameters.Rules;
 public static class SsmPathValidationRules
 {
     public static ValidationResult Handle(
-        string check, 
-        IEnumerable<string> configuredSsmPaths,
-        ISsmParametersProvider ssmParametersProvider)
+        string check,
+        ISsmParametersProvider ssmParametersProvider, 
+        IEnumerable<string> configuredSsmPaths)
     {
         check = check?.Trim();
 
@@ -24,13 +24,13 @@ public static class SsmPathValidationRules
             return new ValidationResult($"Invalid value - start from {SsmParametersConsts.KeyDelimeter}");
         }
 
-        var firstFoundParameter = configuredSsmPaths.FirstOrDefault(x => check.StartsWith(x, StringComparison.InvariantCultureIgnoreCase));
+        var firstFoundParameter = configuredSsmPaths.FirstOrDefault(x => check.StartsWith(x + SsmParametersConsts.KeyDelimeter, StringComparison.InvariantCultureIgnoreCase));
         if (firstFoundParameter != null)
         {
             return new ValidationResult($"Duplicated parent ssm path - {firstFoundParameter} ");
         }
 
-        firstFoundParameter = configuredSsmPaths.FirstOrDefault(x => x.StartsWith(check, StringComparison.InvariantCultureIgnoreCase));
+        firstFoundParameter = configuredSsmPaths.FirstOrDefault(x => x.StartsWith(check + SsmParametersConsts.KeyDelimeter, StringComparison.InvariantCultureIgnoreCase));
         if (firstFoundParameter != null)
         {
             return new ValidationResult($"Duplicated child ssm path - {firstFoundParameter} ");

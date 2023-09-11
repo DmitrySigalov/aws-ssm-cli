@@ -31,8 +31,8 @@ public class SsmPathValidationRulesTests
 
         var result = SsmPathValidationRules.Handle(
             check,
-            configuredSsmPaths,
-            _mockISsmParametersProvider.Object);
+            _mockISsmParametersProvider.Object,
+            configuredSsmPaths);
         
         Assert.Null(result);
         
@@ -54,8 +54,8 @@ public class SsmPathValidationRulesTests
 
         var result = SsmPathValidationRules.Handle(
             check,
-            configuredSsmPaths,
-            _mockISsmParametersProvider.Object);
+            _mockISsmParametersProvider.Object,
+            configuredSsmPaths);
         
         Assert.NotNull(result);
         
@@ -75,8 +75,8 @@ public class SsmPathValidationRulesTests
 
         var result = SsmPathValidationRules.Handle(
             check,
-            configuredSsmPaths,
-            _mockISsmParametersProvider.Object);
+            _mockISsmParametersProvider.Object,
+            configuredSsmPaths);
         
         Assert.NotNull(result);
         
@@ -96,8 +96,8 @@ public class SsmPathValidationRulesTests
 
         var result = SsmPathValidationRules.Handle(
             check,
-            configuredSsmPaths,
-            _mockISsmParametersProvider.Object);
+            _mockISsmParametersProvider.Object,
+            configuredSsmPaths);
         
         Assert.NotNull(result);
         
@@ -117,8 +117,8 @@ public class SsmPathValidationRulesTests
 
         var result = SsmPathValidationRules.Handle(
             check,
-            configuredSsmPaths,
-            _mockISsmParametersProvider.Object);
+            _mockISsmParametersProvider.Object,
+            configuredSsmPaths);
         
         Assert.NotNull(result);
         
@@ -138,8 +138,8 @@ public class SsmPathValidationRulesTests
 
         var result = SsmPathValidationRules.Handle(
             check,
-            configuredSsmPaths,
-            _mockISsmParametersProvider.Object);
+            _mockISsmParametersProvider.Object,
+            configuredSsmPaths);
         
         Assert.NotNull(result);
         

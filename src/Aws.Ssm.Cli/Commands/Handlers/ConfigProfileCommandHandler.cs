@@ -212,9 +212,9 @@ public class ConfigProfileCommandHandler : ICommandHandler
                     if (check == null) return ValidationResult.Success;
                     
                     return SsmPathValidationRules.Handle(
-                        (string)check,
-                        profileConfig.SsmPaths,
-                        _ssmParametersProvider);
+                        (string) check,
+                        _ssmParametersProvider,
+                        profileConfig.SsmPaths);
                 },
             })?.Trim();
 

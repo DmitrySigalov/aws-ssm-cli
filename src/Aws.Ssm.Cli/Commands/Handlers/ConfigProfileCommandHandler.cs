@@ -83,9 +83,9 @@ public class ConfigProfileCommandHandler : ICommandHandler
             {
                 { completeOperationName, Exit },
                 { "Set prefix", SetEnvironmentVariablePrefix },
-                { "Add ssm-path (available only)", (profile) => AddSsmPath(profile, allowAddUnavailableSsmPath: false) },
                 { "Add ssm-path (ignore availability)", (profile) => AddSsmPath(profile, allowAddUnavailableSsmPath: true) },
                 { removeSsmPathOperationName, RemoveSsmPaths },
+                { "Import configuration from json", ImportConfigurationFromJson },
            };
             if (profileDetails.ProfileDo.SsmPaths.Any() != true)
             {
@@ -216,15 +216,24 @@ public class ConfigProfileCommandHandler : ICommandHandler
     
     private bool SetEnvironmentVariablePrefix(ProfileConfig profileConfig)
     {
-        profileConfig.EnvironmentVariablePrefix = Prompt.Input<string>(
+        var newPrefix = Prompt.Input<string>(
             $"Set {nameof(profileConfig.EnvironmentVariablePrefix)} (space is undefined)",
             defaultValue: profileConfig.EnvironmentVariablePrefix ?? " ",
             validators: new List<Func<object, ValidationResult>>
             {
                 (check) => EnvironmentVariableNameValidationRule.HandlePrefix((string) check),
-            }).Trim();
+            })?.Trim() ?? string.Empty;
 
-        return true;
+        var hasChanges = profileConfig.EnvironmentVariablePrefix != newPrefix;
+
+        if (hasChanges)
+        {
+            profileConfig.EnvironmentVariablePrefix = newPrefix;
+
+            return true;
+        }
+        
+        return false;
     }
     
     private bool AddSsmPath(ProfileConfig profileConfig, bool allowAddUnavailableSsmPath)
@@ -281,7 +290,7 @@ public class ConfigProfileCommandHandler : ICommandHandler
 
         return ValidationResult.Success;
     }
-    
+
     private bool RemoveSsmPaths(ProfileConfig profileConfig)
     {
         var ssmPathsToDelete = Prompt
@@ -291,9 +300,46 @@ public class ConfigProfileCommandHandler : ICommandHandler
                 minimum: 0)
             .OrderBy(x => x)
             .ToArray();
-        
+
         profileConfig.SsmPaths.ExceptWith(ssmPathsToDelete);
 
         return ssmPathsToDelete.Length > 0;
     }
- }
+
+    private bool ImportConfigurationFromJson(ProfileConfig profileConfig)
+    {
+        var newJson = Prompt.Input<string>(
+            "Copy json",
+            validators: new List<Func<object, ValidationResult>>
+            {
+                (check) =>
+                {
+                    if (check == null)
+                    {
+                        return ValidationResult.Success;
+                    }
+
+                    var newProfileConfig = JsonSerializationHelper.Deserialize<ProfileConfig>(
+                        (string) check);
+
+                    if (newProfileConfig?.IsValid != true)
+                    {
+                        return new ValidationResult("Invalid profile configuration");
+                    }
+
+                    return ValidationResult.Success;
+                },
+            });
+
+        if (!string.IsNullOrWhiteSpace(newJson))
+        {
+            var newProfileConfig = JsonSerializationHelper.Deserialize<ProfileConfig>(newJson);
+
+            profileConfig.CopyFrom(newProfileConfig);
+
+            return true;
+        }
+
+        return false;
+    }
+}

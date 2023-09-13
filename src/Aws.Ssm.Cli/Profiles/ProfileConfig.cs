@@ -4,7 +4,7 @@ namespace Aws.Ssm.Cli.Profiles;
 
 public class ProfileConfig
 {
-    public string EnvironmentVariablePrefix { get; set; } = "SSM_";
+    public string EnvironmentVariablePrefix { get; set; } = "";
 
     public HashSet<string> SsmPaths { get; set; } = new();
 

@@ -10,6 +10,7 @@ using Aws.Ssm.Cli.EnvironmentVariables.Extensions;
 using Aws.Ssm.Cli.Profiles.Extensions;
 using Aws.Ssm.Cli.SsmParameters.Extensions;
 using Sharprompt;
+using TextCopy;
 
 namespace Aws.Ssm.Cli.Commands.Handlers;
 
@@ -73,31 +74,34 @@ public class ConfigProfileCommandHandler : ICommandHandler
             return Task.CompletedTask;
         }
 
-        var allowToExit = false;
+        string lastSelectedOperationKey = null;        
 
-        while (!allowToExit)
+        var completeExitOperationKey = "Complete/exit configuration"; 
+
+        while (lastSelectedOperationKey != completeExitOperationKey)
         {
-            var completeOperationName = "Complete/exit configuration"; 
-            var removeSsmPathOperationName = "Remove ssm-path(s)";
+            var removeSsmPathOperationKey = "Remove ssm-path(s)";
             var manageOperationsLookup = new Dictionary<string, Func<ProfileConfig, bool>>
             {
-                { completeOperationName, Exit },
+                { completeExitOperationKey, Exit },
                 { "Set prefix", SetEnvironmentVariablePrefix },
                 { "Add ssm-path (ignore availability)", (profile) => AddSsmPath(profile, allowAddUnavailableSsmPath: true) },
-                { removeSsmPathOperationName, RemoveSsmPaths },
-                { "Import configuration from json", ImportConfigurationFromJson },
+                { removeSsmPathOperationKey, RemoveSsmPaths },
+                { "Import configuration (json)", ImportJsonConfiguration },
+                { "Import configuration (json) from clipboard", ImportJsonConfigurationFromClipboard },
+                { "Export/copy configuration (json) into clipboard", ExportJsonConfigurationIntoClipboard },
            };
             if (profileDetails.ProfileDo.SsmPaths.Any() != true)
             {
-                manageOperationsLookup.Remove(removeSsmPathOperationName);
+                manageOperationsLookup.Remove(removeSsmPathOperationKey);
             }
 
-            var operationKey = Prompt.Select(
+            lastSelectedOperationKey = Prompt.Select(
                 "Select operation",
                 items: manageOperationsLookup.Keys,
                 defaultValue: manageOperationsLookup.Keys.First());
 
-            var operationFunction = manageOperationsLookup[operationKey];
+            var operationFunction = manageOperationsLookup[lastSelectedOperationKey];
 
             var hasChanges = operationFunction(profileDetails.ProfileDo);
 
@@ -124,8 +128,6 @@ public class ConfigProfileCommandHandler : ICommandHandler
             
                 profileDetails.ProfileDo.PrintProfileSettings();
             }
-            
-            allowToExit = operationKey == completeOperationName;
         }
 
         ConsoleHelper.WriteLineInfo($"DONE - Profile [{profileDetails.ProfileName}] configuration");
@@ -306,7 +308,7 @@ public class ConfigProfileCommandHandler : ICommandHandler
         return ssmPathsToDelete.Length > 0;
     }
 
-    private bool ImportConfigurationFromJson(ProfileConfig profileConfig)
+    private bool ImportJsonConfiguration(ProfileConfig profileConfig)
     {
         var newJson = Prompt.Input<string>(
             "Copy json",
@@ -339,6 +341,54 @@ public class ConfigProfileCommandHandler : ICommandHandler
 
             return true;
         }
+
+        return false;
+    }
+
+    private bool ImportJsonConfigurationFromClipboard(ProfileConfig profileConfig)
+    {
+        var newJson = ClipboardService.GetText()?.Trim(); 
+        
+        if (!string.IsNullOrWhiteSpace(newJson))
+        {
+            try
+            {
+                var newProfileConfig = JsonSerializationHelper.Deserialize<ProfileConfig>(newJson);
+
+                if (newProfileConfig?.IsValid != true)
+                {
+                    throw new ApplicationException("Invalid profile configuration");
+                }
+
+                profileConfig.CopyFrom(newProfileConfig);
+
+                return true;
+            }
+            catch (Exception e)
+            {
+                ConsoleHelper.WriteLineNotification(newJson);
+
+                ConsoleHelper.WriteLineError(e.Message);
+
+                return false;
+            }
+        }
+
+        return false;
+    }
+    
+    private bool ExportJsonConfigurationIntoClipboard(ProfileConfig profileConfig)
+    {
+        if (profileConfig.IsValid == false)
+        {
+            ConsoleHelper.WriteLineError("Invalid profile configuration");
+
+            return false;
+        }
+        
+        var json = JsonSerializationHelper.Serialize(profileConfig);
+        
+        ClipboardService.SetText(json);
 
         return false;
     }

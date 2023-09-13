@@ -12,21 +12,21 @@ public class UserFilesProvider : IUserFilesProvider
         _configuration = configuration;
     }
     
-    public string GetFullFilePath(string fileName, UserFileLevelEnum level)
+    public string GetFullFilePath(string fileName, FolderTypeEnum folderType)
     {
         if (string.IsNullOrEmpty(fileName))
         {
             throw new ArgumentNullException(fileName);
         }
         
-        var rootFolderPath = GetUserFolder(level);
+        var rootFolderPath = GetFolderPath(folderType);
 
         return Path.Combine(rootFolderPath, fileName);
     }
     
-    public IEnumerable<string> GetFileNames(string searchPattern, UserFileLevelEnum level)
+    public IEnumerable<string> GetFileNames(string searchPattern, FolderTypeEnum folderType)
     {
-        var rootFolderPath = GetUserFolder(level);
+        var rootFolderPath = GetFolderPath(folderType);
         
         return Directory
             .GetFiles(rootFolderPath, searchPattern)
@@ -36,9 +36,9 @@ public class UserFilesProvider : IUserFilesProvider
             .ToHashSet();
     }
 
-    public string ReadTextFileIfExist(string name, UserFileLevelEnum level)
+    public string ReadTextFileIfExist(string name, FolderTypeEnum folderType)
     {
-        var fullFilePath = GetFullFilePath(name, level);
+        var fullFilePath = GetFullFilePath(name, folderType);
 
         if (!File.Exists(fullFilePath))
         {
@@ -50,9 +50,9 @@ public class UserFilesProvider : IUserFilesProvider
         return fileStream.ReadToEnd();
     }
 
-    public void WriteTextFile(string name, string text, UserFileLevelEnum level)
+    public void WriteTextFile(string name, string text, FolderTypeEnum folderType)
     {
-        var fullFilePath = GetFullFilePath(name, level);
+        var fullFilePath = GetFullFilePath(name, folderType);
 
         MoveFileToBackupIfExists(fullFilePath);
 
@@ -63,9 +63,9 @@ public class UserFilesProvider : IUserFilesProvider
         fileStream.Flush();
     }
 
-    public void DeleteFile(string name, UserFileLevelEnum level)
+    public void DeleteFile(string name, FolderTypeEnum folderType)
     {
-        var fullFilePath = GetFullFilePath(name, level);
+        var fullFilePath = GetFullFilePath(name, folderType);
 
         MoveFileToBackupIfExists(fullFilePath);
     }
@@ -85,7 +85,7 @@ public class UserFilesProvider : IUserFilesProvider
         }
     }
     
-    private string GetUserFolder(UserFileLevelEnum level)
+    private string GetFolderPath(FolderTypeEnum folderType)
     {
         var path = _configuration.GetValue<string>("USER_FOLDER_PATH");
         
@@ -107,7 +107,7 @@ public class UserFilesProvider : IUserFilesProvider
         
         path = Path.GetFullPath(path);
 
-        if (level == UserFileLevelEnum.Application)
+        if (folderType == FolderTypeEnum.UserConfiguration)
         {
             path = Path.Combine(path, ".aws-ssm-cli");
         }

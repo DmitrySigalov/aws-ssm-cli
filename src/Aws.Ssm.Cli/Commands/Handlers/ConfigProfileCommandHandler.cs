@@ -206,6 +206,19 @@ public class ConfigProfileCommandHandler : ICommandHandler
 
     private bool Exit(ProfileConfig profileConfig) => true;
     
+    private bool SetEnvironmentVariablePrefix(ProfileConfig profileConfig)
+    {
+        profileConfig.EnvironmentVariablePrefix = Prompt.Input<string>(
+            $"Set {nameof(profileConfig.EnvironmentVariablePrefix)} (space is undefined)",
+            defaultValue: profileConfig.EnvironmentVariablePrefix ?? " ",
+            validators: new List<Func<object, ValidationResult>>
+            {
+                (check) => EnvironmentVariableNameValidationRule.HandlePrefix((string) check),
+            }).Trim();
+
+        return false;
+    }
+    
     private bool AddSsmPath(ProfileConfig profileConfig, bool allowAddUnavailableSsmPath)
     {
         var newSsmPath = Prompt.Input<string>(
@@ -273,17 +286,4 @@ public class ConfigProfileCommandHandler : ICommandHandler
 
         return false;
     }
-    
-    private bool SetEnvironmentVariablePrefix(ProfileConfig profileConfig)
-    {
-        profileConfig.EnvironmentVariablePrefix = Prompt.Input<string>(
-            $"Set {nameof(profileConfig.EnvironmentVariablePrefix)} (space is undefined)",
-            defaultValue: profileConfig.EnvironmentVariablePrefix ?? " ",
-            validators: new List<Func<object, ValidationResult>>
-            {
-                (check) => EnvironmentVariableNameValidationRule.HandlePrefix((string) check),
-            }).Trim();
-
-        return false;
-    }
-}
+ }

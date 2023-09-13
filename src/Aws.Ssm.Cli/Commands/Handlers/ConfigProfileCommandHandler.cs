@@ -77,7 +77,7 @@ public class ConfigProfileCommandHandler : ICommandHandler
 
         while (!allowToExit)
         {
-            var completeOperationName = "Complete and view configuration"; 
+            var completeOperationName = "Complete/exit configuration"; 
             var removeSsmPathOperationName = "Remove ssm-path(s)";
             var manageOperationsLookup = new Dictionary<string, Func<ProfileConfig, bool>>
             {
@@ -89,7 +89,6 @@ public class ConfigProfileCommandHandler : ICommandHandler
            };
             if (profileDetails.ProfileDo.SsmPaths.Any() != true)
             {
-                manageOperationsLookup.Remove(completeOperationName);
                 manageOperationsLookup.Remove(removeSsmPathOperationName);
             }
 
@@ -100,9 +99,9 @@ public class ConfigProfileCommandHandler : ICommandHandler
 
             var operationFunction = manageOperationsLookup[operationKey];
 
-            allowToExit = operationFunction(profileDetails.ProfileDo);
+            var hasChanges = operationFunction(profileDetails.ProfileDo);
 
-            if (!allowToExit)
+            if (hasChanges)
             {
                 if (profileDetails.Operation != OperationEnum.New &&
                     profileDetails.ProfileName == _profileConfigProvider.ActiveName &&
@@ -116,7 +115,7 @@ public class ConfigProfileCommandHandler : ICommandHandler
 
                     _profileConfigProvider.ActiveName = null;
 
-                    backupProfileDo = null;
+                    backupProfileDo = null; // Reset deactivated backup profile
                 }
 
                 SpinnerHelper.Run(
@@ -125,6 +124,8 @@ public class ConfigProfileCommandHandler : ICommandHandler
             
                 profileDetails.ProfileDo.PrintProfileSettings();
             }
+            
+            allowToExit = operationKey == completeOperationName;
         }
 
         ConsoleHelper.WriteLineInfo($"DONE - Profile [{profileDetails.ProfileName}] configuration");
@@ -132,6 +133,13 @@ public class ConfigProfileCommandHandler : ICommandHandler
 
         ConsoleHelper.WriteLineNotification($"START - View profile [{profileDetails.ProfileName}] configuration");
         Console.WriteLine();
+
+        if (profileDetails.ProfileDo.IsValid != true)
+        {
+            ConsoleHelper.WriteLineError($"Not configured profile [{profileDetails.ProfileName}]");
+
+            return Task.CompletedTask;
+        }
 
         var resolvedSsmParameters = SpinnerHelper.Run(
             () => _ssmParametersProvider.GetDictionaryBy(profileDetails.ProfileDo.SsmPaths),
@@ -204,7 +212,7 @@ public class ConfigProfileCommandHandler : ICommandHandler
         return (operation, profileName, profileDo);
     }
 
-    private bool Exit(ProfileConfig profileConfig) => true;
+    private bool Exit(ProfileConfig profileConfig) => false;
     
     private bool SetEnvironmentVariablePrefix(ProfileConfig profileConfig)
     {
@@ -216,7 +224,7 @@ public class ConfigProfileCommandHandler : ICommandHandler
                 (check) => EnvironmentVariableNameValidationRule.HandlePrefix((string) check),
             }).Trim();
 
-        return false;
+        return true;
     }
     
     private bool AddSsmPath(ProfileConfig profileConfig, bool allowAddUnavailableSsmPath)
@@ -253,6 +261,8 @@ public class ConfigProfileCommandHandler : ICommandHandler
                 profileConfig.SsmPaths
                     .Union(new [] { newSsmPath })
                     .OrderBy(x => x));
+
+            return true;
         }
 
         return false;
@@ -284,6 +294,6 @@ public class ConfigProfileCommandHandler : ICommandHandler
         
         profileConfig.SsmPaths.ExceptWith(ssmPathsToDelete);
 
-        return false;
+        return ssmPathsToDelete.Length > 0;
     }
  }

@@ -8,6 +8,7 @@ using Aws.Ssm.Cli.Profiles.Services;
 using Aws.Ssm.Cli.UserRuntime;
 using Aws.Ssm.Cli.SsmParameters;
 using Aws.Ssm.Cli.SsmParameters.Services;
+using Okta.Aws.Cli.Abstractions;
 
 var cts = new CancellationTokenSource();
 Console.CancelKeyPress += (s, e) =>
@@ -30,7 +31,8 @@ services
         builder.AddConsole();
     })
     .AddSingleton<IConfiguration>(configuration)
-    .AddUserRuntimeServices(args);
+    .AddUserRuntimeServices(args)
+    .AddVersionServices();
 
 services
     .AddCommandHandlers()
@@ -44,11 +46,16 @@ try
 {
     Console.WriteLine(Figgle.FiggleFonts.Standard.Render("Aws-Ssm-Cli"));
 
+    var versionService = serviceProvider
+        .GetRequiredService<IVersionService>();
+    var taskVersionService = versionService.CheckAsync(cts.Token);
+    
     var cliHandler = serviceProvider
         .GetRequiredService<CommandHandlerProvider>()
         .Get();
-
-    await cliHandler.Handle(cts.Token);
+    var taskCliHandler = cliHandler.Handle(cts.Token);
+    
+    await Task.WhenAll(taskVersionService, taskCliHandler);
 }
 catch (Exception e)
 {

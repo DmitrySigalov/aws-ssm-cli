@@ -10,6 +10,7 @@ using Aws.Ssm.Cli.EnvironmentVariables.Extensions;
 using Aws.Ssm.Cli.Profiles.Extensions;
 using Aws.Ssm.Cli.SsmParameters.Extensions;
 using Sharprompt;
+using TextCopy;
 
 namespace Aws.Ssm.Cli.Commands.Handlers;
 
@@ -51,19 +52,8 @@ public class ConfigProfileCommandHandler : ICommandHandler
 
         var profileDetails = GetProfileDetailsForConfiguration();
 
-        if (profileDetails.Operation != OperationEnum.New &&
-            profileDetails.ProfileName == _profileConfigProvider.ActiveName &&
-            profileDetails.ProfileDo.IsValid)
-        {
-            ConsoleHelper.WriteLineNotification($"Deactivate profile [{profileDetails.ProfileName}] before any configuration changes");
-
-            SpinnerHelper.Run(
-                () => _environmentVariablesProvider.DeleteAll(profileDetails.ProfileDo),
-                "Delete active environment variables");
-
-            _profileConfigProvider.ActiveName = null;
-        }
-
+        var backupProfileDo = profileDetails.ProfileDo.Clone();
+        
         if (profileDetails.Operation == OperationEnum.New)
         {
             SpinnerHelper.Run(
@@ -84,36 +74,54 @@ public class ConfigProfileCommandHandler : ICommandHandler
             return Task.CompletedTask;
         }
 
-        var allowToExit = false;
+        string lastSelectedOperationKey = null;        
 
-        while (!allowToExit)
+        var completeExitOperationKey = "Complete/exit configuration"; 
+
+        while (lastSelectedOperationKey != completeExitOperationKey)
         {
-            var completeOperationName = "Complete and view configuration"; 
-            var removeSsmPathOperationName = $"Remove from {nameof(profileDetails.ProfileDo.SsmPaths)}";
+            var removeSsmPathOperationKey = "Remove ssm-path(s)";
             var manageOperationsLookup = new Dictionary<string, Func<ProfileConfig, bool>>
             {
-                { completeOperationName, Exit },
-                { $"Add into {nameof(profileDetails.ProfileDo.SsmPaths)}", AddSsmPath },
-                { removeSsmPathOperationName, RemoveSsmPaths },
-                { $"Configure {nameof(profileDetails.ProfileDo.EnvironmentVariablePrefix)}", SetEnvironmentVariablePrefix },
+                { completeExitOperationKey, Exit },
+                { "Set prefix for environment variable(s)", SetEnvironmentVariablePrefix },
+                { "Add ssm-path (ignore availability)", (profile) => AddSsmPath(profile, allowAddUnavailableSsmPath: true) },
+                { removeSsmPathOperationKey, RemoveSsmPaths },
+                { "Import configuration (json)", ImportJsonConfiguration },
+                { "Import configuration (json) from clipboard", ImportJsonConfigurationFromClipboard },
+                { "Export/copy configuration (json) into clipboard", ExportJsonConfigurationIntoClipboard },
            };
             if (profileDetails.ProfileDo.SsmPaths.Any() != true)
             {
-                manageOperationsLookup.Remove(completeOperationName);
-                manageOperationsLookup.Remove(removeSsmPathOperationName);
+                manageOperationsLookup.Remove(removeSsmPathOperationKey);
             }
 
-            var operationKey = Prompt.Select(
+            lastSelectedOperationKey = Prompt.Select(
                 "Select operation",
                 items: manageOperationsLookup.Keys,
                 defaultValue: manageOperationsLookup.Keys.First());
 
-            var operationFunction = manageOperationsLookup[operationKey];
+            var operationFunction = manageOperationsLookup[lastSelectedOperationKey];
 
-            allowToExit = operationFunction(profileDetails.ProfileDo);
+            var hasChanges = operationFunction(profileDetails.ProfileDo);
 
-            if (!allowToExit)
+            if (hasChanges)
             {
+                if (profileDetails.Operation != OperationEnum.New &&
+                    profileDetails.ProfileName == _profileConfigProvider.ActiveName &&
+                    backupProfileDo?.IsValid == true)
+                {
+                    ConsoleHelper.WriteLineNotification($"Deactivate profile [{profileDetails.ProfileName}] before any configuration changes");
+
+                    SpinnerHelper.Run(
+                        () => _environmentVariablesProvider.DeleteAll(profileDetails.ProfileDo),
+                        "Delete active environment variables");
+
+                    _profileConfigProvider.ActiveName = null;
+
+                    backupProfileDo = null; // Reset deactivated backup profile
+                }
+
                 SpinnerHelper.Run(
                     () => _profileConfigProvider.Save(profileDetails.ProfileName, profileDetails.ProfileDo),
                     $"Save profile [{profileDetails.ProfileName}] configuration new settings");
@@ -127,6 +135,13 @@ public class ConfigProfileCommandHandler : ICommandHandler
 
         ConsoleHelper.WriteLineNotification($"START - View profile [{profileDetails.ProfileName}] configuration");
         Console.WriteLine();
+
+        if (profileDetails.ProfileDo.IsValid != true)
+        {
+            ConsoleHelper.WriteLineError($"Not configured profile [{profileDetails.ProfileName}]");
+
+            return Task.CompletedTask;
+        }
 
         var resolvedSsmParameters = SpinnerHelper.Run(
             () => _ssmParametersProvider.GetDictionaryBy(profileDetails.ProfileDo.SsmPaths),
@@ -199,9 +214,31 @@ public class ConfigProfileCommandHandler : ICommandHandler
         return (operation, profileName, profileDo);
     }
 
-    private bool Exit(ProfileConfig profileConfig) => true;
+    private bool Exit(ProfileConfig profileConfig) => false;
     
-    private bool AddSsmPath(ProfileConfig profileConfig)
+    private bool SetEnvironmentVariablePrefix(ProfileConfig profileConfig)
+    {
+        var newPrefix = Prompt.Input<string>(
+            $"Set {nameof(profileConfig.EnvironmentVariablePrefix)} (space is undefined)",
+            defaultValue: profileConfig.EnvironmentVariablePrefix ?? " ",
+            validators: new List<Func<object, ValidationResult>>
+            {
+                (check) => EnvironmentVariableNameValidationRule.HandlePrefix((string) check),
+            })?.Trim() ?? string.Empty;
+
+        var hasChanges = profileConfig.EnvironmentVariablePrefix != newPrefix;
+
+        if (hasChanges)
+        {
+            profileConfig.EnvironmentVariablePrefix = newPrefix;
+
+            return true;
+        }
+        
+        return false;
+    }
+    
+    private bool AddSsmPath(ProfileConfig profileConfig, bool allowAddUnavailableSsmPath)
     {
         var newSsmPath = Prompt.Input<string>(
             "Enter new ssm-path (start from the /)",
@@ -209,12 +246,23 @@ public class ConfigProfileCommandHandler : ICommandHandler
             {
                 (check) =>
                 {
-                    if (check == null) return ValidationResult.Success;
+                    if (check == null)
+                    {
+                        return ValidationResult.Success;
+                    }
                     
                     return SsmPathValidationRules.Handle(
-                        (string)check,
-                        profileConfig.SsmPaths,
-                        _ssmParametersProvider);
+                        (string) check,
+                        profileConfig.SsmPaths);
+                },
+                (check) =>
+                {
+                    if (check == null)
+                    {
+                        return ValidationResult.Success;
+                    }
+                    
+                    return CheckSsmPathAvailability(check.ToString(), allowAddUnavailableSsmPath);
                 },
             })?.Trim();
 
@@ -224,11 +272,27 @@ public class ConfigProfileCommandHandler : ICommandHandler
                 profileConfig.SsmPaths
                     .Union(new [] { newSsmPath })
                     .OrderBy(x => x));
+
+            return true;
         }
 
         return false;
     }
-    
+
+    private ValidationResult CheckSsmPathAvailability(string check, bool allowAddUnavailableSsmPath)
+    {
+        var ssmParameters = SpinnerHelper.Run(
+            () => _ssmParametersProvider.GetDictionaryBy(new HashSet<string> { check, }),
+            "Get ssm parameters from AWS System Manager to validate the ssm-path");
+
+        if (ssmParameters?.Any() != true && !allowAddUnavailableSsmPath)
+        {
+            return new ValidationResult("Unavailable ssm path");
+        }
+
+        return ValidationResult.Success;
+    }
+
     private bool RemoveSsmPaths(ProfileConfig profileConfig)
     {
         var ssmPathsToDelete = Prompt
@@ -238,21 +302,93 @@ public class ConfigProfileCommandHandler : ICommandHandler
                 minimum: 0)
             .OrderBy(x => x)
             .ToArray();
-        
+
         profileConfig.SsmPaths.ExceptWith(ssmPathsToDelete);
+
+        return ssmPathsToDelete.Length > 0;
+    }
+
+    private bool ImportJsonConfiguration(ProfileConfig profileConfig)
+    {
+        var newJson = Prompt.Input<string>(
+            "Copy json",
+            validators: new List<Func<object, ValidationResult>>
+            {
+                (check) =>
+                {
+                    if (check == null)
+                    {
+                        return ValidationResult.Success;
+                    }
+
+                    var newProfileConfig = JsonSerializationHelper.Deserialize<ProfileConfig>(
+                        (string) check);
+
+                    if (newProfileConfig?.IsValid != true)
+                    {
+                        return new ValidationResult("Invalid profile configuration");
+                    }
+
+                    return ValidationResult.Success;
+                },
+            });
+
+        if (!string.IsNullOrWhiteSpace(newJson))
+        {
+            var newProfileConfig = JsonSerializationHelper.Deserialize<ProfileConfig>(newJson);
+
+            profileConfig.CopyFrom(newProfileConfig);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    private bool ImportJsonConfigurationFromClipboard(ProfileConfig profileConfig)
+    {
+        var newJson = ClipboardService.GetText()?.Trim(); 
+        
+        if (!string.IsNullOrWhiteSpace(newJson))
+        {
+            try
+            {
+                var newProfileConfig = JsonSerializationHelper.Deserialize<ProfileConfig>(newJson);
+
+                if (newProfileConfig?.IsValid != true)
+                {
+                    throw new ApplicationException("Invalid profile configuration");
+                }
+
+                profileConfig.CopyFrom(newProfileConfig);
+
+                return true;
+            }
+            catch (Exception e)
+            {
+                ConsoleHelper.WriteLineNotification(newJson);
+
+                ConsoleHelper.WriteLineError(e.Message);
+
+                return false;
+            }
+        }
 
         return false;
     }
     
-    private bool SetEnvironmentVariablePrefix(ProfileConfig profileConfig)
+    private bool ExportJsonConfigurationIntoClipboard(ProfileConfig profileConfig)
     {
-        profileConfig.EnvironmentVariablePrefix = Prompt.Input<string>(
-            $"Set {nameof(profileConfig.EnvironmentVariablePrefix)} (space is undefined)",
-            defaultValue: profileConfig.EnvironmentVariablePrefix ?? " ",
-            validators: new List<Func<object, ValidationResult>>
-            {
-                (check) => EnvironmentVariableNameValidationRule.HandlePrefix((string) check),
-            }).Trim();
+        if (profileConfig.IsValid == false)
+        {
+            ConsoleHelper.WriteLineError("Invalid profile configuration");
+
+            return false;
+        }
+        
+        var json = JsonSerializationHelper.Serialize(profileConfig);
+        
+        ClipboardService.SetText(json);
 
         return false;
     }

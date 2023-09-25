@@ -47,7 +47,7 @@ try
     var cliHandler = serviceProvider
         .GetRequiredService<CommandHandlerProvider>()
         .Get();
-
+    
     await cliHandler.Handle(cts.Token);
 }
 catch (Exception e)

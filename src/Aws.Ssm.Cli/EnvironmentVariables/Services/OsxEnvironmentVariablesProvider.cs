@@ -67,13 +67,13 @@ public class OsxEnvironmentVariablesProvider : IEnvironmentVariablesProvider
     {
         var updatedScript = _userFilesProvider.GetFullFilePath(
             EnvironmentVariablesConsts.FileNames.ScriptName,
-            UserFileLevelEnum.Application);
+            FolderTypeEnum.UserConfiguration);
 
         var resultComment = $"Updated: {updatedScript}";
 
         var rootFileScriptPath = _userFilesProvider.GetFullFilePath(
-            EnvironmentVariablesConsts.FileNames.ScriptExtension,
-            UserFileLevelEnum.Root);
+            ShellHelper.GetShellScriptFileName(),
+            FolderTypeEnum.RootUser);
 
         if (!File.Exists(rootFileScriptPath))
         {
@@ -84,7 +84,7 @@ public class OsxEnvironmentVariablesProvider : IEnvironmentVariablesProvider
         {
             var fileScriptAllText = _userFilesProvider.ReadTextFileIfExist(
                 EnvironmentVariablesConsts.FileNames.ScriptExtension,
-                UserFileLevelEnum.Root);
+                FolderTypeEnum.RootUser);
 
             var partialScriptText = $"source {updatedScript}";
             if (fileScriptAllText?.Contains(partialScriptText) != true)
@@ -96,14 +96,14 @@ public class OsxEnvironmentVariablesProvider : IEnvironmentVariablesProvider
                 _userFilesProvider.WriteTextFile(
                     EnvironmentVariablesConsts.FileNames.ScriptExtension,
                     fileScriptAllText,
-                    UserFileLevelEnum.Root);
+                    FolderTypeEnum.RootUser);
                 
                 resultComment += Environment.NewLine +
                                  $"Updated: {rootFileScriptPath}";
             }
             
             resultComment += Environment.NewLine +
-                             $"Reopen terminal/rider or run: source {rootFileScriptPath}";
+                             $"Reopen application (terminal/rider) or run command in the terminal: source {rootFileScriptPath}";
         }
         
         return resultComment;
@@ -120,7 +120,7 @@ public class OsxEnvironmentVariablesProvider : IEnvironmentVariablesProvider
 
         try
         {
-            var fileDescriptorText = _userFilesProvider.ReadTextFileIfExist(fileDescriptorName, UserFileLevelEnum.Application);
+            var fileDescriptorText = _userFilesProvider.ReadTextFileIfExist(fileDescriptorName, FolderTypeEnum.UserConfiguration);
 
             if (!string.IsNullOrEmpty(fileDescriptorText))
             {
@@ -145,10 +145,10 @@ public class OsxEnvironmentVariablesProvider : IEnvironmentVariablesProvider
         try
         {
             var fileDescriptorText = JsonSerializationHelper.Serialize(environmentVariables);
-            _userFilesProvider.WriteTextFile(fileDescriptorName, fileDescriptorText, UserFileLevelEnum.Application);
+            _userFilesProvider.WriteTextFile(fileDescriptorName, fileDescriptorText, FolderTypeEnum.UserConfiguration);
 
             var fileScriptText = EnvironmentVariablesScriptTextBuilder.Build(environmentVariables);
-            _userFilesProvider.WriteTextFile(fileScriptName, fileScriptText, UserFileLevelEnum.Application);
+            _userFilesProvider.WriteTextFile(fileScriptName, fileScriptText, FolderTypeEnum.UserConfiguration);
         }
         catch (Exception e)
         {

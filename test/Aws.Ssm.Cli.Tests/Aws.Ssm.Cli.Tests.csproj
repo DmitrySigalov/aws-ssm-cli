@@ -27,6 +27,4 @@
       <ProjectReference Include="..\..\src\Aws.Ssm.Cli\Aws.Ssm.Cli.csproj" />
     </ItemGroup>
 
-
-
 </Project>

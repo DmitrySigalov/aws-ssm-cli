@@ -1,18 +1,9 @@
-using Moq;
-
 namespace Aws.Ssm.Cli.SsmParameters.Rules;
 
 public class SsmPathValidationRulesTests
 {
-    private readonly Mock<ISsmParametersProvider> _mockISsmParametersProvider;
-
-    public SsmPathValidationRulesTests()
-    {
-        _mockISsmParametersProvider = new Mock<ISsmParametersProvider>();
-    }
-
     [Fact]
-    public void Handle_ValidSsmPath_Check_SuccessResult_CallSsmParametersProvider()
+    public void Handle_ValidSsmPath_Check_SuccessResult()
     {
         var check = "/test";
 
@@ -22,27 +13,15 @@ public class SsmPathValidationRulesTests
             "/configuredSsmPath2",
         };
 
-        _mockISsmParametersProvider
-            .Setup(x => x.GetDictionaryBy(new HashSet<string> { check, }))
-            .Returns(new Dictionary<string, string>
-            {
-                { check + "/param1", "value1" },
-            });
-
         var result = SsmPathValidationRules.Handle(
             check,
-            configuredSsmPaths,
-            _mockISsmParametersProvider.Object);
+            configuredSsmPaths);
         
         Assert.Null(result);
-        
-        _mockISsmParametersProvider.Verify(
-            x => x.GetDictionaryBy(new HashSet<string> { check, }),
-            Times.Once);
     }
 
     [Fact]
-    public void Handle_EmptySsmPath_Check_FailResult_NoCallSsmParametersProvider()
+    public void Handle_EmptySsmPath_Check_FailResult()
     {
         var check = "";
 
@@ -54,16 +33,13 @@ public class SsmPathValidationRulesTests
 
         var result = SsmPathValidationRules.Handle(
             check,
-            configuredSsmPaths,
-            _mockISsmParametersProvider.Object);
+            configuredSsmPaths);
         
         Assert.NotNull(result);
-        
-        _mockISsmParametersProvider.VerifyNoOtherCalls();
     }
 
     [Fact]
-    public void Handle_NotStartedFromKeyDelimeterSsmPath_Check_FailResult_NoCallSsmParametersProvider()
+    public void Handle_NotStartedFromKeyDelimeterSsmPath_Check_FailResult()
     {
         var check = "test";
 
@@ -75,16 +51,31 @@ public class SsmPathValidationRulesTests
 
         var result = SsmPathValidationRules.Handle(
             check,
-            configuredSsmPaths,
-            _mockISsmParametersProvider.Object);
+            configuredSsmPaths);
         
         Assert.NotNull(result);
-        
-        _mockISsmParametersProvider.VerifyNoOtherCalls();
     }
 
     [Fact]
-    public void Handle_DuplicatedParentParentSsmPath_Check_FailResult_NoCallSsmParametersProvider()
+    public void Handle_DuplicatedSsmPath_Check_FailResult()
+    {
+        var configuredSsmPaths = new[]
+        {
+            "/configuredSsmPath1",
+            "/configuredSsmPath2",
+        };
+
+        var check = configuredSsmPaths.First();
+
+        var result = SsmPathValidationRules.Handle(
+            check,
+            configuredSsmPaths);
+        
+        Assert.NotNull(result);
+    }
+
+    [Fact]
+    public void Handle_DuplicatedParentSsmPath_Check_FailResult()
     {
         var configuredSsmPaths = new[]
         {
@@ -96,16 +87,13 @@ public class SsmPathValidationRulesTests
 
         var result = SsmPathValidationRules.Handle(
             check,
-            configuredSsmPaths,
-            _mockISsmParametersProvider.Object);
+            configuredSsmPaths);
         
         Assert.NotNull(result);
-        
-        _mockISsmParametersProvider.VerifyNoOtherCalls();
     }
 
     [Fact]
-    public void Handle_DuplicatedChildParentSsmPath_Check_FailResult_NoCallSsmParametersProvider()
+    public void Handle_DuplicatedChildSsmPath_Check_FailResult()
     {
         var check = "/test";
 
@@ -117,34 +105,8 @@ public class SsmPathValidationRulesTests
 
         var result = SsmPathValidationRules.Handle(
             check,
-            configuredSsmPaths,
-            _mockISsmParametersProvider.Object);
+            configuredSsmPaths);
         
         Assert.NotNull(result);
-        
-        _mockISsmParametersProvider.VerifyNoOtherCalls();
-    }
-
-    [Fact]
-    public void Handle_UnavailableSsmPath_Check_FailResult_CallSsmParametersProvider()
-    {
-        var check = "/test";
-
-        var configuredSsmPaths = new[]
-        {
-            "/configuredSsmPath1",
-            "/configuredSsmPath2",
-        };
-
-        var result = SsmPathValidationRules.Handle(
-            check,
-            configuredSsmPaths,
-            _mockISsmParametersProvider.Object);
-        
-        Assert.NotNull(result);
-        
-        _mockISsmParametersProvider.Verify(
-            x => x.GetDictionaryBy(new HashSet<string> { check, }),
-            Times.Once);
     }
 }

@@ -13,26 +13,8 @@ public static class EnvironmentVariablesConsts
         private static string Base => "export-list";
 
         public static string Descriptor => $"{Base}.json";
-    
-        public static string ScriptExtension
-        {
-            get
-            {
-                var shell = Environment.GetEnvironmentVariable("SHELL");
 
-                if (shell?.Contains("zsh") == true)
-                {
-                    return ".zshrc";
-                }
-                
-                if (shell?.Contains("bashrc") == true)
-                {
-                    return ".bashrc";
-                }
-
-                return ".unknown";
-            }
-        }
+        public static string ScriptExtension => ".zshrc";
 
         public static string ScriptName => $"{Base}{ScriptExtension}";
     }

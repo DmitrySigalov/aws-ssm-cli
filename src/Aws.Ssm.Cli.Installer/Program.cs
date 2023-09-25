@@ -33,5 +33,37 @@ var process = Process.Start(new ProcessStartInfo
 
 await process!.WaitForExitAsync();
 
-Console.WriteLine("Adding app to machine path...");
+Console.WriteLine("Registration of application path...");
+
+if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+{
+
+    var name = "PATH";
+    var scope = EnvironmentVariableTarget.Machine;
+    var oldValue = Environment.GetEnvironmentVariable(name, scope);
+
+    if (InstallerHelper.ShouldUpdateWindowsPaths(oldValue!, appHomePath))
+    {
+        var newPaths = InstallerHelper.GetNewWindowsPaths(oldValue!, appHomePath);
+        Environment.SetEnvironmentVariable(name, newPaths, scope);
+    }
+}
+else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+{
+    var pathsFile = $"/etc/paths.d/{InstallerHelper.ClientAppName}";
+
+    await File.WriteAllTextAsync(pathsFile, appHomePath);
+    
+    var runProcess = Process.Start(new ProcessStartInfo
+    {
+        FileName = "chmod",
+        WorkingDirectory = appHomePath,
+        Arguments = "+x ascli"
+    });
+
+    await runProcess!.WaitForExitAsync();
+}
+
+Console.WriteLine("Done, press any key to exit...");
+Console.ReadKey();
 

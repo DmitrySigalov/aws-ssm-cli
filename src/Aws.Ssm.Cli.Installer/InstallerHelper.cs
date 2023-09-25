@@ -5,7 +5,7 @@ namespace Aws.Ssm.Cli.Installer;
 
 public static class InstallerHelper
 {
-    private static string ClientToolName => "aws-ssm-cli";
+    public static string ClientAppName => "aws-ssm-cli";
     
     public static string GetBuildWorkingDirectory(IConfiguration configuration)
     {
@@ -40,14 +40,33 @@ public static class InstallerHelper
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
             var windowsPath = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
-            return Path.Combine(windowsPath, ClientToolName);
+            return Path.Combine(windowsPath, ClientAppName);
         }
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
-            return $"/usr/local/share/{ClientToolName}";
+            return $"/usr/local/share/{ClientAppName}";
         }
 
         throw new NotSupportedException($"Not supported {RuntimeInformation.RuntimeIdentifier}");
+    }
+    
+    public static bool ShouldUpdateWindowsPaths(string oldPath, string appPath) =>
+        !oldPath.Contains(appPath, StringComparison.InvariantCultureIgnoreCase);
+    
+    public static string GetNewWindowsPaths(string oldPath, string appPath)
+    {
+        string newValue;
+
+        if (oldPath.EndsWith(';'))
+        {
+            newValue = oldPath + $"{appPath};";
+        }
+        else
+        {
+            newValue = oldPath + $";{appPath};";
+        }
+
+        return newValue;
     }
 }

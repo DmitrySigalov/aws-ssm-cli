@@ -26,10 +26,6 @@ The installer can be found at the root folder under its own directory.
 - ### macOS
     - It will be easier to run the installer correctly with the following command, while in its directory:
 ```
-dotnet Installer.dll
-```
-or 
-```
 sudo dotnet Installer.dll
 ```
 
@@ -50,15 +46,10 @@ External tools:
 - [okta-aws-cli](https://github.com/nizanrosh/okta-aws-cli)
 - ...
 
+
 ```cmd
 aws-ssm-cli
 ```
-Select one of commands
-
-```cmd
-aws-ssm-cli <command>
-```
-
 FYI - The CLI can be executed using the commands `oacli` or `okta-aws-cli`.
 
 ## :clipboard: Profile configurations
@@ -67,8 +58,8 @@ First time for the profile configuration recommended to run/select command:
 ```cmd
 aws-ssm-cli config
 ```
-- Profile name - "default"
-- Set prefix for the environment variable(s) - "SSM_"
+- Set profile name - "default"
+- Recommendation to set prefix for the environment variable(s) - "SSM_"
 - Add ssm-path 
 - You can export already valid profile configuration in the json format (example):
 ```json
@@ -81,6 +72,18 @@ aws-ssm-cli config
 }
 ```
 - Complete/exit configuration
+
+## :books: Commands Extra Details
+
+### `set-env`
+Using to synchronize environment variables with SSM parameters
+For the macOS - for the activation required to recreate a process (terminal, Rider, ...)
+
+### `get-env`
+Using for the current synchronization status of the environment with SSM parameters
+
+### `view`
+Using for the easy configuration of infrastructure parameters (mapping ssm parameters to and environment variable names)
 
 ## License
 

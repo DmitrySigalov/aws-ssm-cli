@@ -84,7 +84,7 @@ public class ConfigProfileCommandHandler : ICommandHandler
             var manageOperationsLookup = new Dictionary<string, Func<ProfileConfig, bool>>
             {
                 { completeExitOperationKey, Exit },
-                { "Set prefix", SetEnvironmentVariablePrefix },
+                { "Set prefix for environment variable(s)", SetEnvironmentVariablePrefix },
                 { "Add ssm-path (ignore availability)", (profile) => AddSsmPath(profile, allowAddUnavailableSsmPath: true) },
                 { removeSsmPathOperationKey, RemoveSsmPaths },
                 { "Import configuration (json)", ImportJsonConfiguration },

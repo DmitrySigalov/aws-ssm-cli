@@ -50,7 +50,7 @@ Command line:
 ```cmd
 aws-ssm-cli
 ```
-FYI - The CLI can be executed using the commands `ascli` or `aws-ssm--cli`.
+FYI - The CLI can be executed using the commands `ascli` or `aws-ssm-cli`.
 
 ## :clipboard: Profile configurations
 

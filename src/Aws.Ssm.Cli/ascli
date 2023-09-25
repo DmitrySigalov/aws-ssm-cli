@@ -19,9 +19,9 @@ if [ ! -n "${AWS_SSM_CLI_HOME+x}" ]; then
   AWS_SSM_CLI_HOME=`dirname "$PRG"`
 
   # make it fully qualified
-  AWS_SSM_CLI_HOME=`cd "AWS_SSM_CLI_HOME" && pwd`
-  # echo "aws-ssm-cli Home: AWS_SSM_CLI_HOME"
+  AWS_SSM_CLI_HOME=`cd "$AWS_SSM_CLI_HOME" && pwd`
+  # echo "aws-ssm-cli Home: $AWS_SSM_CLI_HOME"
 fi
 
 export AWS_SSM_CLI_HOME
-AWS_SSM_CLI_HOME/aws-ssm-cli ${1+"$@"}
+$AWS_SSM_CLI_HOME/aws-ssm-cli ${1+"$@"}

@@ -33,7 +33,7 @@ var process = Process.Start(new ProcessStartInfo
 
 await process!.WaitForExitAsync();
 
-Console.WriteLine("Adding app to machine path...\n");
+Console.WriteLine("Adding app to machine path...");
 
 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
 {

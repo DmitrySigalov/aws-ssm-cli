@@ -46,11 +46,11 @@ External tools:
 - [okta-aws-cli](https://github.com/nizanrosh/okta-aws-cli)
 - ...
 
-
+Command line:
 ```cmd
 aws-ssm-cli
 ```
-FYI - The CLI can be executed using the commands `oacli` or `okta-aws-cli`.
+FYI - The CLI can be executed using the commands `ascli` or `aws-ssm--cli`.
 
 ## :clipboard: Profile configurations
 

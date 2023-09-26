@@ -84,7 +84,7 @@ aws-ssm-cli config
 ### `set-env`
 Using to synchronize environment variables with SSM parameters.
 #### macOS
-For the activation required to recreate a process (terminal, Rider, ...)
+For the activation of environment variables required to recreate a process (terminal, Rider, ...)
 
 ### `get-env`
 Using to view current synchronization status of the environment with SSM parameters

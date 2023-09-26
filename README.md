@@ -5,6 +5,12 @@
 
 A dotnet open source which provides aws system manager using tool
 
+### Features:
+- Best practice for the environment variables names according to system parameters configured in AWS system manager store
+- Configuration of ssm paths
+- Synchronization of environment variables with system parameters values
+- View current synchronization state of environment variables
+
 ## :sunny: .NET Runtime
 This project is built with DotNet 6.0 and is mandatory to install before using.
 
@@ -42,7 +48,7 @@ If everything ran smoothly, you should see the list of supported commands
 ## :tada: Usage
 
 The user should be authenticated (selected role) according to aws environment with access to AWS System Manager.
-External tools:
+Recommended external tools:
 - [okta-aws-cli](https://github.com/nizanrosh/okta-aws-cli)
 - ...
 
@@ -52,7 +58,7 @@ aws-ssm-cli
 ```
 FYI - The CLI can be executed using the commands `ascli` or `aws-ssm-cli`.
 
-## :clipboard: Profile configurations
+## :clipboard: Profile configuration
 
 First time for the profile configuration recommended to run/select command:
 ```cmd
@@ -73,14 +79,14 @@ aws-ssm-cli config
 ```
 - Complete/exit configuration
 
-## :books: Commands Extra Details
+## :books: Commands
 
 ### `set-env`
 Using to synchronize environment variables with SSM parameters
 For the macOS - for the activation required to recreate a process (terminal, Rider, ...)
 
 ### `get-env`
-Using for the current synchronization status of the environment with SSM parameters
+Using to view current synchronization status of the environment with SSM parameters
 
 ### `view`
 Using for the easy configuration of infrastructure parameters (mapping ssm parameters to and environment variable names)

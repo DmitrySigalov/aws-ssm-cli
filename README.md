@@ -5,7 +5,7 @@
 
 A dotnet open source which provides aws system manager using tool
 
-### Features:
+## :gift: Features:
 - Best practice for the environment variables names according to system parameters configured in AWS system manager store
 - Configuration of ssm paths
 - Synchronization of environment variables with system parameters values

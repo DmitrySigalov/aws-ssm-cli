@@ -65,6 +65,18 @@ public class ConfigProfileCommandHandler : ICommandHandler
 
         if (profileDetails.Operation == OperationEnum.Delete)
         {
+            if (profileDetails.ProfileName == _profileConfigProvider.ActiveName &&
+                backupProfileDo?.IsValid == true)
+            {
+                ConsoleHelper.WriteLineNotification($"Deactivate profile [{profileDetails.ProfileName}] before any configuration changes");
+
+                SpinnerHelper.Run(
+                    () => _environmentVariablesProvider.DeleteAll(profileDetails.ProfileDo),
+                    "Delete active environment variables");
+
+                _profileConfigProvider.ActiveName = null;
+            }
+
             SpinnerHelper.Run(
                 () => _profileConfigProvider.Delete(profileDetails.ProfileName),
                 $"Delete profile [{profileDetails.ProfileName}]");

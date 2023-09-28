@@ -49,11 +49,27 @@ public class ConfigProfileCommandHandler : ICommandHandler
     {
         ConsoleHelper.WriteLineNotification($"START - {Description}");
         Console.WriteLine();
-
-        var profileDetails = GetProfileDetailsForConfiguration();
-
-        var backupProfileDo = profileDetails.ProfileDo.Clone();
         
+        var lastActiveProfileName = _profileConfigProvider.ActiveName;
+        var lastActiveProfileDo = default(ProfileConfig);
+        if (!string.IsNullOrEmpty(lastActiveProfileName))
+        {
+            _profileConfigProvider.ActiveName = null;
+
+            lastActiveProfileDo = _profileConfigProvider.GetByName(lastActiveProfileName);
+
+            if (lastActiveProfileDo?.IsValid == true)
+            {
+                ConsoleHelper.WriteLineNotification($"Deactivate current profile [{lastActiveProfileName}] before any configuration changes");
+
+                SpinnerHelper.Run(
+                    () => _environmentVariablesProvider.DeleteAll(lastActiveProfileDo),
+                    "Delete active environment variables");
+            }
+        }
+
+        var profileDetails = GetProfileDetailsForConfiguration(lastActiveProfileName, lastActiveProfileDo);
+
         if (profileDetails.Operation == OperationEnum.New)
         {
             SpinnerHelper.Run(
@@ -65,18 +81,6 @@ public class ConfigProfileCommandHandler : ICommandHandler
 
         if (profileDetails.Operation == OperationEnum.Delete)
         {
-            if (profileDetails.ProfileName == _profileConfigProvider.ActiveName &&
-                backupProfileDo?.IsValid == true)
-            {
-                ConsoleHelper.WriteLineNotification($"Deactivate profile [{profileDetails.ProfileName}] before any configuration changes");
-
-                SpinnerHelper.Run(
-                    () => _environmentVariablesProvider.DeleteAll(profileDetails.ProfileDo),
-                    "Delete active environment variables");
-
-                _profileConfigProvider.ActiveName = null;
-            }
-
             SpinnerHelper.Run(
                 () => _profileConfigProvider.Delete(profileDetails.ProfileName),
                 $"Delete profile [{profileDetails.ProfileName}]");
@@ -120,21 +124,6 @@ public class ConfigProfileCommandHandler : ICommandHandler
 
             if (hasChanges)
             {
-                if (profileDetails.Operation != OperationEnum.New &&
-                    profileDetails.ProfileName == _profileConfigProvider.ActiveName &&
-                    backupProfileDo?.IsValid == true)
-                {
-                    ConsoleHelper.WriteLineNotification($"Deactivate profile [{profileDetails.ProfileName}] before any configuration changes");
-
-                    SpinnerHelper.Run(
-                        () => _environmentVariablesProvider.DeleteAll(profileDetails.ProfileDo),
-                        "Delete active environment variables");
-
-                    _profileConfigProvider.ActiveName = null;
-
-                    backupProfileDo = null; // Reset deactivated backup profile
-                }
-
                 SpinnerHelper.Run(
                     () => _profileConfigProvider.Save(profileDetails.ProfileName, profileDetails.ProfileDo),
                     $"Save profile [{profileDetails.ProfileName}] configuration new settings");
@@ -173,17 +162,13 @@ public class ConfigProfileCommandHandler : ICommandHandler
         return Task.CompletedTask;
     }
 
-    private (OperationEnum Operation, string ProfileName, ProfileConfig ProfileDo) GetProfileDetailsForConfiguration()
+    private (OperationEnum Operation, string ProfileName, ProfileConfig ProfileDo) GetProfileDetailsForConfiguration(
+        string lastActiveProfileName,
+        ProfileConfig currentProfileDo)
     {
         var profileNames = SpinnerHelper.Run(
             _profileConfigProvider.GetNames,
             "Get profile names");
-
-        var lastActiveProfileName = _profileConfigProvider.ActiveName;
-        if (!string.IsNullOrEmpty(lastActiveProfileName))
-        {
-            ConsoleHelper.WriteLineNotification($"Current active profile is [{lastActiveProfileName}]");
-        }
 
         var operation = OperationEnum.New;
         var profileName = "default";
@@ -218,11 +203,13 @@ public class ConfigProfileCommandHandler : ICommandHandler
                     items: profileNames,
                     defaultValue: lastActiveProfileName);
 
-        profileDo = 
-            SpinnerHelper.Run(
+        profileDo = lastActiveProfileName == profileName
+            ? currentProfileDo
+            : SpinnerHelper.Run(
                 () => _profileConfigProvider.GetByName(profileName),
-                $"Read profile [{profileName}]")
-            ?? new ProfileConfig(); 
+                $"Read selected profile [{profileName}]");
+
+        profileDo ??= new ProfileConfig(); 
 
         return (operation, profileName, profileDo);
     }

@@ -26,10 +26,8 @@ public class OsxEnvironmentVariablesProvider : IEnvironmentVariablesProvider
     {
         baseName = baseName?.Trim();
         
-        var result = Environment
-            .GetEnvironmentVariables()
+        var result = LoadEnvironmentVariablesFromDescriptor()
             .Keys
-            .Cast<string>()
             .ToHashSet();
 
         if (!string.IsNullOrEmpty(baseName))
@@ -42,7 +40,14 @@ public class OsxEnvironmentVariablesProvider : IEnvironmentVariablesProvider
 
     public string Get(string name)
     {
-        return Environment.GetEnvironmentVariable(name);
+        var environmentVariables = LoadEnvironmentVariablesFromDescriptor();
+
+        if (environmentVariables.TryGetValue(name, out var result))
+        {
+            return result;
+        }
+
+        return null;
     }
 
     public void Set(string name, string value)

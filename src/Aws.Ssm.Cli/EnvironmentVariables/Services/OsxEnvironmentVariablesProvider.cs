@@ -85,32 +85,30 @@ public class OsxEnvironmentVariablesProvider : IEnvironmentVariablesProvider
             resultComment += Environment.NewLine +
                              $"No found script file '{rootFileScriptPath}' according to shell configuration";
         }
-        else
+
+        var fileScriptAllText = _userFilesProvider.ReadTextFileIfExist(
+            EnvironmentVariablesConsts.FileNames.ScriptExtension,
+            FolderTypeEnum.RootUser);
+
+        var partialScriptText = $"source {updatedScript}";
+        if (fileScriptAllText?.Contains(partialScriptText) != true)
         {
-            var fileScriptAllText = _userFilesProvider.ReadTextFileIfExist(
+            fileScriptAllText += Environment.NewLine +
+                                 partialScriptText +
+                                 Environment.NewLine;
+
+            _userFilesProvider.WriteTextFile(
                 EnvironmentVariablesConsts.FileNames.ScriptExtension,
+                fileScriptAllText,
                 FolderTypeEnum.RootUser);
 
-            var partialScriptText = $"source {updatedScript}";
-            if (fileScriptAllText?.Contains(partialScriptText) != true)
-            {
-                fileScriptAllText += Environment.NewLine +
-                                  partialScriptText +
-                                  Environment.NewLine;
-
-                _userFilesProvider.WriteTextFile(
-                    EnvironmentVariablesConsts.FileNames.ScriptExtension,
-                    fileScriptAllText,
-                    FolderTypeEnum.RootUser);
-                
-                resultComment += Environment.NewLine +
-                                 $"Updated: {rootFileScriptPath}";
-            }
-            
             resultComment += Environment.NewLine +
-                             $"Reopen application (terminal/rider) or run command in the terminal: source {rootFileScriptPath}";
+                             $"Updated: {rootFileScriptPath}";
         }
-        
+
+        resultComment += Environment.NewLine +
+                         $"Reopen application (terminal/rider) or run command in the terminal: source {rootFileScriptPath}";
+
         return resultComment;
     }
 

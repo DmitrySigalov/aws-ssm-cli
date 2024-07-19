@@ -27,10 +27,13 @@ The Installer publishes the code to the machine applications directory and adds 
 The installer can be found at the root folder under its own directory.
 
 - ### Windows
-    - Run Installer.exe
+    - Run Installer.exe or run the following command as an Administrator
+```
+dotnet Installer.dll
+```
 
 - ### macOS
-    - It will be easier to run the installer correctly with the following command, while in its directory:
+    - Run the installer with the following command, while being in its directory:
 ```
 sudo dotnet Installer.dll
 ```

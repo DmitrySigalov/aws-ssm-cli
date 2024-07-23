@@ -35,7 +35,7 @@ public class WindowsEnvironmentVariablesProvider : IEnvironmentVariablesProvider
         {
             if (envKey.GetValue(name) != null)
             {
-                envKey.DeleteValue(name);
+                envKey.DeleteValue(name, throwOnMissingValue: false);
             }
         }
         else

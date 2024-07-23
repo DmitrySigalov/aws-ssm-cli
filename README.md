@@ -27,15 +27,15 @@ The Installer publishes the code to the machine applications directory and adds 
 The installer can be found at the root folder under its own directory.
 
 - ### Windows
-    - Run Installer.exe or run the following command as an Administrator
+    - Compile and run the installer project as an Administrator while being in repo root directory:
 ```
-dotnet Installer.dll
+dotnet run --project src/Aws.Ssm.Cli.Installer/Aws.Ssm.Cli.Installer.csproj
 ```
 
 - ### macOS
-    - Run the installer with the following command, while being in its directory:
+    - Compile and run the installer project while being in repo root directory:
 ```
-sudo dotnet Installer.dll
+sudo dotnet run --project src/Aws.Ssm.Cli.Installer/Aws.Ssm.Cli.Installer.csproj
 ```
 
 Open terminal / cmd and run:

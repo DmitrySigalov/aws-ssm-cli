@@ -12,9 +12,9 @@ A dotnet open source which provides aws system manager using tool
 - View current synchronization state of environment variables
 
 ## :sunny: .NET Runtime
-This project is built with DotNet 6.0 and is mandatory to install before using.
+This project is built with DotNet 8.0 and is mandatory to install before using.
 
-You can find and install it [here](https://dotnet.microsoft.com/en-us/download/dotnet/6.0).
+You can find and install it [here](https://dotnet.microsoft.com/en-us/download/dotnet/8.0).
 
 Verify your dotnet version:
 

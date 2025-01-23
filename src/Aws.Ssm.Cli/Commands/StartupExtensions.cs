@@ -15,6 +15,7 @@ public static class StartupExtensions
             // First after help command is default
             .AddSingleton<ICommandHandler, SetEnvCommandHandler>()
             .AddSingleton<ICommandHandler, GetEnvCommandHandler>()
+            .AddSingleton<ICommandHandler, CleanEnvCommandHandler>()
             .AddSingleton<ICommandHandler, ViewProfileHandler>()
             .AddSingleton<ICommandHandler, ConfigProfileCommandHandler>();
 

@@ -9,7 +9,7 @@ using Sharprompt;
 
 namespace Aws.Ssm.Cli.Commands.Handlers;
 
-public class SetEnvCommandHandler : ICommandHandler
+public class CleanEnvCommandHandler : ICommandHandler
 {
     private readonly IProfileConfigProvider _profileConfigProvider;
 
@@ -17,7 +17,7 @@ public class SetEnvCommandHandler : ICommandHandler
     
     private readonly ISsmParametersProvider _ssmParametersProvider;
 
-    public SetEnvCommandHandler(
+    public CleanEnvCommandHandler(
         IProfileConfigProvider profileConfigProvider,
         IEnvironmentVariablesProvider environmentVariablesProvider,
         ISsmParametersProvider ssmParametersProvider)
@@ -29,7 +29,7 @@ public class SetEnvCommandHandler : ICommandHandler
         _ssmParametersProvider = ssmParametersProvider;
     }
     
-    public string CommandName => "set-env";
+    public string CommandName => "clean-env";
 
     public string Description => "Set environment variables";
 

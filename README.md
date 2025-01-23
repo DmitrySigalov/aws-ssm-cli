@@ -24,8 +24,6 @@ Verify your dotnet version:
 
 The Installer publishes the code to the machine applications directory and adds it to your system's path.
 
-The installer can be found at the root folder under its own directory.
-
 - ### Windows
     - Compile and run the installer project as an Administrator while being in repo root directory:
 ```

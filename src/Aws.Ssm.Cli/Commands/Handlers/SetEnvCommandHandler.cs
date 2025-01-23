@@ -30,8 +30,6 @@ public class SetEnvCommandHandler : ICommandHandler
     }
     
     public string CommandName => "set-env";
-    
-    public string ShortName => "";
 
     public string Description => "Set environment variables";
 

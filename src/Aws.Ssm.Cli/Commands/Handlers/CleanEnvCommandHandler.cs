@@ -4,8 +4,6 @@ using Aws.Ssm.Cli.Profiles;
 using Aws.Ssm.Cli.SsmParameters;
 using Aws.Ssm.Cli.EnvironmentVariables.Extensions;
 using Aws.Ssm.Cli.Profiles.Extensions;
-using Aws.Ssm.Cli.SsmParameters.Extensions;
-using Sharprompt;
 
 namespace Aws.Ssm.Cli.Commands.Handlers;
 
@@ -31,7 +29,7 @@ public class CleanEnvCommandHandler : ICommandHandler
     
     public string CommandName => "clean-env";
 
-    public string Description => "Set environment variables";
+    public string Description => "Clean environment variables";
 
     public Task Handle(CancellationToken cancellationToken)
     {
@@ -50,83 +48,33 @@ public class CleanEnvCommandHandler : ICommandHandler
         }
 
         var lastActiveProfileName = _profileConfigProvider.ActiveName;
-        if (!string.IsNullOrEmpty(lastActiveProfileName))
+        if (string.IsNullOrEmpty(lastActiveProfileName))
         {
-            ConsoleHelper.WriteLineNotification($"Current active profile is [{lastActiveProfileName}]");
-        }
-
-        var selectedProfileName = 
-            profileNames.Count == 1
-            ? profileNames.Single()
-            : Prompt.Select(
-                "Select profile for the activation",
-                items: profileNames,
-                defaultValue: lastActiveProfileName);
-        
-        var selectedProfileDo = SpinnerHelper.Run(
-            () => _profileConfigProvider.GetByName(selectedProfileName),
-            $"Read profile [{selectedProfileName}]");
-
-        if (selectedProfileDo?.IsValid != true)
-        {
-            ConsoleHelper.WriteLineError($"Not configured profile [{selectedProfileName}]");
+            ConsoleHelper.WriteLineInfo($"No active profile");
 
             return Task.CompletedTask;
         }
 
-        selectedProfileDo.PrintProfileSettings();
+        var lastActiveProfileDo = SpinnerHelper.Run(
+            () => _profileConfigProvider.GetByName(lastActiveProfileName),
+            $"Read profile [{lastActiveProfileName}]");
 
-        var resolvedSsmParameters = SpinnerHelper.Run(
-            () => _ssmParametersProvider.GetDictionaryBy(selectedProfileDo.SsmPaths),
-            "Get ssm parameters from AWS System Manager");
-        
-        resolvedSsmParameters.PrintSsmParameters(selectedProfileDo);
-        if (resolvedSsmParameters.Any() == false)
+        if (lastActiveProfileDo?.IsValid != true)
         {
-            ConsoleHelper.WriteLineError("NOT DONE - Unavailable ssm parameters");
+            ConsoleHelper.WriteLineError($"Not found profile [{lastActiveProfileName}] configuration");
 
             return Task.CompletedTask;
         }
 
-        if (!string.IsNullOrEmpty(lastActiveProfileName))
-        {
-            var lastActiveProfileDo = 
-                lastActiveProfileName == selectedProfileName
-                    ? selectedProfileDo
-                    : SpinnerHelper.Run(
-                        () => _profileConfigProvider.GetByName(lastActiveProfileName),
-                        $"Read current active profile [{lastActiveProfileName}]");
+        lastActiveProfileDo.PrintProfileSettings();
 
-            if (lastActiveProfileDo?.IsValid == true)
-            {
-                SpinnerHelper.Run(
-                    () => _environmentVariablesProvider.DeleteAll(lastActiveProfileDo),
-                    "Delete current active environment variables");
-            }
-        }
+        SpinnerHelper.Run(
+            () => _environmentVariablesProvider.DeleteAll(lastActiveProfileDo),
+            "Delete current active environment variables");
 
-        _profileConfigProvider.ActiveName = selectedProfileName;
+        _profileConfigProvider.ActiveName = null;
         
-        var appliedEnvironmentVariables = SpinnerHelper.Run(
-            () => _environmentVariablesProvider.SetFromSsmParameters(
-                resolvedSsmParameters,
-                selectedProfileDo),
-            $"Apply new environment variables");
-        
-        resolvedSsmParameters.PrintSsmParameterToEnvironmentVariableNamesMapping(
-            selectedProfileDo);
-        
-        appliedEnvironmentVariables.PrintEnvironmentVariablesWithSsmParametersValidationStatus(
-            resolvedSsmParameters,
-            selectedProfileDo);
-        
-        ConsoleHelper.WriteLineInfo($"DONE - {Description} with profile [{selectedProfileName}]");
-
-        var activationNotes = _environmentVariablesProvider.CompleteActivationEnvironmentVariables();
-        if (!string.IsNullOrWhiteSpace(activationNotes))
-        {
-            Console.WriteLine(activationNotes);
-        }
+        ConsoleHelper.WriteLineInfo($"DONE - Deactivated profile [{lastActiveProfileDo}]");
 
         return Task.CompletedTask;
     }

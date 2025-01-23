@@ -76,6 +76,12 @@ public class CleanEnvCommandHandler : ICommandHandler
         
         ConsoleHelper.WriteLineInfo($"DONE - Deactivated profile [{lastActiveProfileDo}]");
 
+        var activationNotes = _environmentVariablesProvider.CompleteActivationEnvironmentVariables();
+        if (!string.IsNullOrWhiteSpace(activationNotes))
+        {
+            Console.WriteLine(activationNotes);
+        }
+
         return Task.CompletedTask;
     }
 }

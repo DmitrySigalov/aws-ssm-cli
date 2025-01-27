@@ -9,6 +9,7 @@ using Aws.Ssm.Cli.Profiles.Services;
 using Aws.Ssm.Cli.UserRuntime;
 using Aws.Ssm.Cli.SsmParameters;
 using Aws.Ssm.Cli.SsmParameters.Services;
+using Aws.Ssm.Cli.VersionControl;
 
 var cts = new CancellationTokenSource();
 Console.CancelKeyPress += (s, e) =>
@@ -25,14 +26,18 @@ var configuration = new ConfigurationBuilder()
 var services = new ServiceCollection();
 
 services
+    .AddSingleton<IConfiguration>(configuration)
     .AddLogging(builder =>
     {
         builder.ClearProviders();
-        builder.AddConsole();
+
+        builder
+            .SetMinimumLevel(LogLevel.Error)
+            .AddSimpleConsole();
     })
-    .AddSingleton<IConfiguration>(configuration)
     .AddUserRuntimeServices(args)
-    .AddGitHubServices();
+    .AddGitHubServices()
+    .AddVersionControlServices();
 
 services
     .AddCommandHandlers()
@@ -60,5 +65,11 @@ catch (Exception e)
 }
 finally
 {
+    Thread.Sleep(1000);
+    
     Console.WriteLine(Figgle.FiggleFonts.Standard.Render("Goodbye"));
+    
+    await serviceProvider
+        .GetRequiredService<IVersionControl>()
+        .CheckVersionAsync(cts.Token);
 }

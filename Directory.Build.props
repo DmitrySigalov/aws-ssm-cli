@@ -6,7 +6,7 @@
     <Authors>Dmitry V. Sigalov</Authors>
     <Copyright>Copyright © 2023-present Dmitry V. Sigalov</Copyright>
     <PackageProjectUrl>https://github.com/DmitrySigalov/aws-ssm-cli</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/DmitrySigalov/gclod-secret-manager-cli</RepositoryUrl>
+    <RepositoryUrl>https://github.com/DmitrySigalov/aws-ssm-cli</RepositoryUrl>
     <Description>A dotnet open source which provides connect to the AWS system manager</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>

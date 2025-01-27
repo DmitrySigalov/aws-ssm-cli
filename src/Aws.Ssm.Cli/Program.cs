@@ -3,11 +3,13 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Aws.Ssm.Cli.Commands;
 using Aws.Ssm.Cli.EnvironmentVariables;
+using Aws.Ssm.Cli.GitHub;
 using Aws.Ssm.Cli.Profiles;
 using Aws.Ssm.Cli.Profiles.Services;
 using Aws.Ssm.Cli.UserRuntime;
 using Aws.Ssm.Cli.SsmParameters;
 using Aws.Ssm.Cli.SsmParameters.Services;
+using Aws.Ssm.Cli.VersionControl;
 
 var cts = new CancellationTokenSource();
 Console.CancelKeyPress += (s, e) =>
@@ -24,13 +26,18 @@ var configuration = new ConfigurationBuilder()
 var services = new ServiceCollection();
 
 services
+    .AddSingleton<IConfiguration>(configuration)
     .AddLogging(builder =>
     {
         builder.ClearProviders();
-        builder.AddConsole();
+
+        builder
+            .SetMinimumLevel(LogLevel.Error)
+            .AddSimpleConsole();
     })
-    .AddSingleton<IConfiguration>(configuration)
-    .AddUserRuntimeServices(args);
+    .AddUserRuntimeServices(args)
+    .AddGitHubServices()
+    .AddVersionControlServices();
 
 services
     .AddCommandHandlers()
@@ -58,5 +65,11 @@ catch (Exception e)
 }
 finally
 {
+    Thread.Sleep(1000);
+    
     Console.WriteLine(Figgle.FiggleFonts.Standard.Render("Goodbye"));
+    
+    await serviceProvider
+        .GetRequiredService<IVersionControl>()
+        .CheckVersionAsync(cts.Token);
 }

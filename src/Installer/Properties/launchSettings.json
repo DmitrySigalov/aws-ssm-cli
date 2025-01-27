@@ -1,0 +1,16 @@
+{
+  "profiles": {
+    "Installer": {
+      "commandName": "Project",
+      "commandLineArgs": ""
+    },
+    "Installer.Osx_Test": {
+      "commandName": "Project",
+      "commandLineArgs": "--BuildWorkingDirectory ../../../../.. --OsxAppPath aws-ssm-cli-test --OsxPathsD aws-ssm-cli-test.d --OsxShortcut ascli-test"
+    },
+    "Installer.Windows_Test": {
+      "commandName": "Project",
+      "commandLineArgs": "--BuildWorkingDirectory ../../../../.. --WinAppPath aws-ssm-cli-test"
+    }
+  }
+}

@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "Aws.Ssm.Cli.Installer": {
-      "commandName": "Project",
-      "commandLineArgs": "--buildWorkingDirectory . --appHomePath app"
-    }
-  }
-}

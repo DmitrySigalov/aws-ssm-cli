@@ -24,19 +24,20 @@ Verify your dotnet version:
 
 The Installer publishes the code to the machine applications directory and adds it to your system's path.
 
+Installation steps:
+1. Download latest release to local machine
+2. Un-puck sources (installer and src folders)
+
 - ### Windows
-    - Compile and run the installer project as an Administrator while being in repo root directory:
-```
-dotnet run --project src/Aws.Ssm.Cli.Installer/Aws.Ssm.Cli.Installer.csproj
-```
+  - Run Installer.exe (as Administrator)
 
 - ### macOS
-    - Compile and run the installer project while being in repo root directory:
+  - It will be easier to run the installer correctly with the following command, while in its directory (cd command):
 ```
-sudo dotnet run --project src/Aws.Ssm.Cli.Installer/Aws.Ssm.Cli.Installer.csproj
+sudo dotnet Installer.dll
 ```
 
-Open terminal / cmd and run:
+3. Open terminal / cmd and run:
 ```
 aws-ssm-cli help
 ```
@@ -96,6 +97,16 @@ Using to clean environment variables
 ### `view`
 Using for the easy configuration of infrastructure parameters (mapping ssm parameters to and environment variable names)
 
+
+## :gift: New Release Creation Process
+
+- Update VersionPrefix (major, minor and build numbers) in the file [Directory.Build.props](Directory.Build.props).
+- After merge into main
+- Create a new release:
+  - Create new tag contains prefix 'v' and VersionPrefix. Example - 'v1.0.0'
+  - Release name is based on created tag name
+  - Mark a new release as latest
+- Every day command line check if changed a new latest release and indicate about changes with instructions.
 
 
 ## License

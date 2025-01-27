@@ -10,6 +10,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aws.Ssm.Cli.Tests", "test\A
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aws.Ssm.Cli.Installer", "src\Aws.Ssm.Cli.Installer\Aws.Ssm.Cli.Installer.csproj", "{3EA6F08D-7A15-4F7B-A202-D50CBB45068F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Installer", "src\Installer\Installer.csproj", "{C80F6C2A-6C3F-48E0-B223-2F88E355F6B7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -19,6 +21,7 @@ Global
 		{62975C31-9219-4BE9-A715-CAB2B04773EA} = {19983796-EB52-480F-86C9-B2B3D492DCD4}
 		{D0A5BB60-BEC2-4C29-8151-62E4AD28E70F} = {3E24AD91-F9CE-43FE-92D3-F4BFD274CE67}
 		{3EA6F08D-7A15-4F7B-A202-D50CBB45068F} = {19983796-EB52-480F-86C9-B2B3D492DCD4}
+		{C80F6C2A-6C3F-48E0-B223-2F88E355F6B7} = {19983796-EB52-480F-86C9-B2B3D492DCD4}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{62975C31-9219-4BE9-A715-CAB2B04773EA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -33,5 +36,9 @@ Global
 		{3EA6F08D-7A15-4F7B-A202-D50CBB45068F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3EA6F08D-7A15-4F7B-A202-D50CBB45068F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3EA6F08D-7A15-4F7B-A202-D50CBB45068F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C80F6C2A-6C3F-48E0-B223-2F88E355F6B7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C80F6C2A-6C3F-48E0-B223-2F88E355F6B7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C80F6C2A-6C3F-48E0-B223-2F88E355F6B7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C80F6C2A-6C3F-48E0-B223-2F88E355F6B7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

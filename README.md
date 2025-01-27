@@ -90,6 +90,9 @@ For the activation of environment variables required to recreate a process (term
 ### `get-env`
 Using to view current synchronization status of the environment with SSM parameters
 
+### `clean-env`
+Using to clean environment variables
+
 ### `view`
 Using for the easy configuration of infrastructure parameters (mapping ssm parameters to and environment variable names)
 

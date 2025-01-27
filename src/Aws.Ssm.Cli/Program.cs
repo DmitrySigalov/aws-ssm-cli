@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Aws.Ssm.Cli.Commands;
 using Aws.Ssm.Cli.EnvironmentVariables;
+using Aws.Ssm.Cli.GitHub;
 using Aws.Ssm.Cli.Profiles;
 using Aws.Ssm.Cli.Profiles.Services;
 using Aws.Ssm.Cli.UserRuntime;
@@ -30,7 +31,8 @@ services
         builder.AddConsole();
     })
     .AddSingleton<IConfiguration>(configuration)
-    .AddUserRuntimeServices(args);
+    .AddUserRuntimeServices(args)
+    .AddGitHubServices();
 
 services
     .AddCommandHandlers()
